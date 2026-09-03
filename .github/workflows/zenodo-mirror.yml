@@ -6,6 +6,11 @@ name: Mirror Zenodo dataset
 # Claude session) is what actually talks to zenodo.org.
 
 on:
+  push:
+    branches:
+      - claude/zenodo-dataset-mirror-7trnei
+    paths:
+      - .github/workflows/zenodo-mirror.yml
   workflow_dispatch:
     inputs:
       record_id:
