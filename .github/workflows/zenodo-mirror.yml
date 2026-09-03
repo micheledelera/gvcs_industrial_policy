@@ -1,0 +1,115 @@
+name: Mirror Zenodo dataset
+
+# Mirrors a Zenodo record's files into a GitHub Release, since the raw data
+# is too large to commit into the repository itself. GitHub-hosted runners
+# have unrestricted internet access, so this workflow (not the interactive
+# Claude session) is what actually talks to zenodo.org.
+
+on:
+  workflow_dispatch:
+    inputs:
+      record_id:
+        description: "Zenodo record ID (numeric part of the DOI, e.g. 22282107 for 10.5281/zenodo.22282107)"
+        required: false
+        default: "22282107"
+      release_tag:
+        description: "Tag/name of the GitHub Release to publish the mirrored files under"
+        required: false
+        default: "zenodo-22282107"
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch Zenodo record metadata
+        id: meta
+        env:
+          RECORD_ID: ${{ github.event.inputs.record_id || '22282107' }}
+        run: |
+          set -euo pipefail
+          curl -sSL -f "https://zenodo.org/api/records/${RECORD_ID}" -o record.json
+          echo "Record metadata:"
+          jq '.' record.json | head -c 2000
+          echo
+          {
+            echo "record_id=${RECORD_ID}"
+            echo "title=$(jq -r '.metadata.title // .title // "unknown"' record.json)"
+            echo "doi=$(jq -r '.pids.doi.identifier // .doi // "unknown"' record.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Normalize file list (handles both legacy list and InvenioRDM 'entries' map formats)
+        run: |
+          set -euo pipefail
+          jq '
+            if (.files | type) == "array" then
+              [.files[] | {key: .key, size: .size, checksum: .checksum, url: .links.self}]
+            elif (.files.entries | type) == "object" then
+              [.files.entries[] | {key: .key, size: .size, checksum: .checksum, url: (.links.content // .links.self)}]
+            else
+              error("Unrecognized Zenodo files schema")
+            end
+          ' record.json > files.json
+          echo "Files to mirror:"
+          jq '.' files.json
+
+      - name: Download files & verify checksums
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          jq -c '.[]' files.json | while read -r f; do
+            key=$(echo "$f" | jq -r '.key')
+            url=$(echo "$f" | jq -r '.url')
+            checksum=$(echo "$f" | jq -r '.checksum')
+            algo="${checksum%%:*}"
+            expected="${checksum#*:}"
+            echo "Downloading ${key} from ${url} ..."
+            curl -sSL -f "$url" -o "dist/${key}"
+            actual=$("${algo}sum" "dist/${key}" | awk '{print $1}')
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::Checksum mismatch for ${key}: expected ${expected}, got ${actual}"
+              exit 1
+            fi
+            size=$(stat -c%s "dist/${key}")
+            echo "OK: ${key} (${algo} verified, ${size} bytes)"
+            if [ "$size" -gt 2147483648 ]; then
+              echo "::warning::${key} is ${size} bytes, which exceeds the 2GB GitHub release asset limit and will likely fail to upload."
+            fi
+          done
+          cp record.json dist/zenodo_record_metadata.json
+          ls -lh dist/
+
+      - name: Build release notes
+        run: |
+          {
+            echo "Mirror of Zenodo record [${{ steps.meta.outputs.doi }}](https://doi.org/${{ steps.meta.outputs.doi }})."
+            echo
+            echo "**Title:** ${{ steps.meta.outputs.title }}"
+            echo
+            echo "Files below are byte-for-byte copies of the Zenodo record's files, verified against"
+            echo "the checksums Zenodo reports. \`zenodo_record_metadata.json\` is the full upstream"
+            echo "record metadata as returned by the Zenodo API at mirror time."
+            echo
+            echo "Source: https://doi.org/${{ steps.meta.outputs.doi }}"
+          } > release_notes.md
+
+      - name: Create or update GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.inputs.release_tag || 'zenodo-22282107' }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists, uploading/updating assets."
+            gh release upload "$TAG" dist/* --clobber
+          else
+            echo "Creating release $TAG."
+            gh release create "$TAG" dist/* \
+              --title "Zenodo mirror: ${{ steps.meta.outputs.title }}" \
+              --notes-file release_notes.md
+          fi
