@@ -1,0 +1,6 @@
+# Mirrored/derived dataset artifacts (large binaries live in the GitHub Release, not the repo)
+data/*.dta
+data/*.dta.part*
+data/*.pkl
+data/*.csv
+data/estimate.log
