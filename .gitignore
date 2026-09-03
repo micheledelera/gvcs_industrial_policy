@@ -3,5 +3,6 @@ data/*.dta
 data/*.dta.part*
 data/*.pkl
 data/*.csv
+!data/ppml_*_results.csv
 data/*.log
 data/swapfile
