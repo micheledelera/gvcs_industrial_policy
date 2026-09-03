@@ -3,5 +3,5 @@ data/*.dta
 data/*.dta.part*
 data/*.pkl
 data/*.csv
-data/estimate.log
+data/*.log
 data/swapfile
