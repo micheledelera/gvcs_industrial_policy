@@ -63,10 +63,13 @@ jobs:
           echo "Files to mirror:"
           jq '.' files.json
 
-      - name: Download files & verify checksums
+      - name: Download, verify, and split oversized files
         run: |
           set -euo pipefail
           mkdir -p dist
+          MAX_ASSET_SIZE=2147483648   # GitHub's per-file release asset limit
+          SPLIT_CHUNK_SIZE=1900M      # keeps each part safely under the limit (split's M = MiB)
+          : > dist/MANIFEST.txt
           jq -c '.[]' files.json | while read -r f; do
             key=$(echo "$f" | jq -r '.key')
             url=$(echo "$f" | jq -r '.url')
@@ -82,11 +85,19 @@ jobs:
             fi
             size=$(stat -c%s "dist/${key}")
             echo "OK: ${key} (${algo} verified, ${size} bytes)"
-            if [ "$size" -gt 2147483648 ]; then
-              echo "::warning::${key} is ${size} bytes, which exceeds the 2GB GitHub release asset limit and will likely fail to upload."
+            if [ "$size" -gt "$MAX_ASSET_SIZE" ]; then
+              echo "${key} exceeds GitHub's 2GB release asset limit; splitting into ${SPLIT_CHUNK_SIZE} chunks."
+              split -b "$SPLIT_CHUNK_SIZE" -d -a 3 "dist/${key}" "dist/${key}.part"
+              rm "dist/${key}"
+              parts=$(cd dist && ls "${key}".part* | sort | paste -sd, -)
+              echo "${key}: split into [${parts}] -- reassemble with: cat ${key}.part* > ${key} -- original ${algo}:${expected}, original_size_bytes:${size}" >> dist/MANIFEST.txt
+            else
+              echo "${key}: single file -- ${algo}:${expected}, size_bytes:${size}" >> dist/MANIFEST.txt
             fi
           done
           cp record.json dist/zenodo_record_metadata.json
+          echo "---- MANIFEST ----"
+          cat dist/MANIFEST.txt
           ls -lh dist/
 
       - name: Build release notes
@@ -99,6 +110,13 @@ jobs:
             echo "Files below are byte-for-byte copies of the Zenodo record's files, verified against"
             echo "the checksums Zenodo reports. \`zenodo_record_metadata.json\` is the full upstream"
             echo "record metadata as returned by the Zenodo API at mirror time."
+            echo
+            echo "**Files split into parts:** GitHub release assets are capped at 2GB each. Any source"
+            echo "file over that limit was split into \`<filename>.part000\`, \`.part001\`, etc. Reassemble with:"
+            echo '```'
+            echo "cat <filename>.part* > <filename>"
+            echo '```'
+            echo "then verify against the checksum in \`MANIFEST.txt\` (same algorithm Zenodo publishes, e.g. \`md5sum <filename>\`)."
             echo
             echo "Source: https://doi.org/${{ steps.meta.outputs.doi }}"
           } > release_notes.md
