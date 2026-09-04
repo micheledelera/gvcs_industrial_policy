@@ -4,5 +4,6 @@ data/*.dta.part*
 data/*.pkl
 data/*.csv
 !data/ppml_*_results.csv
+!data/rq_us_only_*.csv
 data/*.log
 data/swapfile
