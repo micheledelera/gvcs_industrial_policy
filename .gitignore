@@ -12,6 +12,7 @@ data/*.csv
 !data/event_hybrid_results.csv
 !data/fe_ladder_lag0_results.csv
 !data/gravity_share_results.csv
+!data/gravity_decomp_*.csv
 !data/ppml_*_comparison.csv
 data/*.log
 data/swapfile
