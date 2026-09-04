@@ -74,7 +74,7 @@ for L in LAGS:
             log(f"L{L} {m}: " + "  ".join(f"{x['ladder']}={x['IP']:+.3f}({x['IP_p']:.2f})" for x in r))
 
 res = pd.DataFrame(rows)
-res.to_csv("fe_ladder_lagged_results.csv", index=False)
+res.to_csv("fe_ladder_lag0_results.csv", index=False)
 
 def show(val, pval, title):
     print(f"\n{'='*100}\n{title}\n{'='*100}")
