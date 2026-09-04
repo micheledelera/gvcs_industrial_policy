@@ -5,5 +5,7 @@ data/*.pkl
 data/*.csv
 !data/ppml_*_results.csv
 !data/rq_us_only_*.csv
+!data/gravity_improved_*.csv
+!data/ppml_*_comparison.csv
 data/*.log
 data/swapfile
