@@ -19,11 +19,13 @@ ADVANCED_CODES = {
     352: "Iceland", 372: "Ireland", 376: "Israel", 380: "Italy", 392: "Japan",
     410: "Korea, Rep.", 428: "Latvia", 440: "Lithuania", 442: "Luxembourg",
     446: "Macao SAR", 470: "Malta", 528: "Netherlands", 554: "New Zealand",
-    578: "Norway", 620: "Portugal", 630: "Puerto Rico", 674: "San Marino",
+    579: "Norway", 620: "Portugal", 630: "Puerto Rico", 674: "San Marino",
     702: "Singapore", 703: "Slovak Republic", 705: "Slovenia", 724: "Spain",
-    752: "Sweden", 756: "Switzerland", 490: "Taiwan (Other Asia, nes)",
+    752: "Sweden", 757: "Switzerland", 490: "Taiwan (Other Asia, nes)",
     826: "United Kingdom", 842: "United States",
 }
+# NB: 757 (not ISO-numeric 756) for Switzerland, 579 (not 578) for Norway --
+# both confirmed against codes actually present in the data. See patch_advanced.py.
 
 df = pd.read_pickle("trade_df_isic.pkl")
 log(f"loaded: {df.shape}")
