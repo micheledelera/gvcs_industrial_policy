@@ -16,8 +16,11 @@ log(f"loaded: {agg.shape}")
 
 agg['i_int'] = agg['i'].astype('int32')
 agg['t_int'] = agg['t'].astype('int32')
-agg = agg[agg['j'].astype('int32').isin(DEST) & (agg['i_int'] != CHINA)].copy()
-log(f"restricted dests + China excluded: {agg.shape}")
+# China STAYS in the sample -- it keeps disciplining alpha_jst and keeps the
+# sector-year totals real. It is removed only from the coefficient of interest,
+# by giving it its own terms.
+agg = agg[agg['j'].astype('int32').isin(DEST)].copy()
+log(f"restricted dests (China retained): {agg.shape}")
 
 agg['fe_ist'] = agg.groupby(['i','ISIC4c','t'], observed=True).ngroup().astype('int32')
 agg['fe_jst'] = agg.groupby(['j','ISIC4c','t'], observed=True).ngroup().astype('int32')
@@ -27,52 +30,61 @@ agg['cl_is']  = agg.groupby(['i','ISIC4c'], observed=True).ngroup().astype('int3
 log("FE + cluster keys built")
 
 d = 'frac_policies'
-dev = (1 - agg['Advanced_i']).astype('float32')
-adv = agg['Advanced_i'].astype('float32')
-us  = agg['US_trade'].astype('float32')
-dec = agg['Decouple_intensity_st'].astype('float32')
+china = (agg['i_int'] == CHINA).astype('float32')
+adv   = agg['Advanced_i'].astype('float32')
+dev   = ((1 - agg['Advanced_i']) * (1 - china)).astype('float32')   # developing EX-CHINA
+us    = agg['US_trade'].astype('float32')
+dec   = agg['Decouple_intensity_st'].astype('float32')
+log(f"group shares -- China {china.mean()*100:.2f}% | dev ex-China {dev.mean()*100:.1f}% | advanced {adv.mean()*100:.1f}%")
 
-# pre-trade-war IP stance at (i,s)
+# pre-trade-war IP stance at (i,s), and binary IP (benchmark's baseline is a dummy)
 pre = (agg[agg['t_int'].isin(PRE_YEARS)]
        .groupby(['i','ISIC4c'], observed=True)[d].mean().rename('IP_pre'))
 agg = agg.merge(pre, left_on=['i','ISIC4c'], right_index=True, how='left')
 agg['IP_pre'] = agg['IP_pre'].fillna(0).astype('float32')
-
-# binary IP treatment (benchmark's baseline is a dummy, not a count)
 agg['IP_bin'] = (agg[d] > 0).astype('float32')
 
-for tag, ipvar in [('pre', agg['IP_pre']), ('bin', agg['IP_bin'])]:
-    agg[f'DDD_{tag}_dev'] = (dec * ipvar * us * dev).astype('float32')
-    agg[f'DDD_{tag}_adv'] = (dec * ipvar * us * adv).astype('float32')
-    agg[f'IPxUS_{tag}_dev'] = (ipvar * us * dev).astype('float32')
-    agg[f'IPxUS_{tag}_adv'] = (ipvar * us * adv).astype('float32')
-log(f"IP_pre nonzero {(agg['IP_pre']>0).mean()*100:.1f}% | IP_bin nonzero {(agg['IP_bin']>0).mean()*100:.1f}%")
+for tag, ip in [('frac', agg[d].astype('float32')),
+                ('pre',  agg['IP_pre']),
+                ('bin',  agg['IP_bin'])]:
+    agg[f'DDD_{tag}_dev'] = (dec * ip * us * dev).astype('float32')
+    agg[f'DDD_{tag}_adv'] = (dec * ip * us * adv).astype('float32')
+    agg[f'IPxUS_{tag}_dev'] = (ip * us * dev).astype('float32')
+    agg[f'IPxUS_{tag}_adv'] = (ip * us * adv).astype('float32')
+    agg[f'IPxUS_{tag}_china'] = (ip * us * china).astype('float32')
 
-BASE = f"DDD2_{d}_dev + DDD2_{d}_adv + {d}_x_US_dev + {d}_x_US_adv + Adv_x_Decouple_x_US"
+# China's own decoupling term: the validation / first-stage check.
+# If Decouple_intensity_st measures what we think, this should be strongly negative.
+agg['Dec_x_US_China'] = (dec * us * china).astype('float32')
+agg['Adv_x_Dec_x_US'] = (adv * dec * us).astype('float32')
+
+def terms(tag):
+    return (f"Dec_x_US_China + DDD_{tag}_dev + DDD_{tag}_adv + "
+            f"IPxUS_{tag}_dev + IPxUS_{tag}_adv + IPxUS_{tag}_china + Adv_x_Dec_x_US")
 
 VARIANTS = [
-    ("A. baseline improved (China out, cluster i,s)",
-     f"imports ~ {BASE} | fe_ist + fe_jst + fe_ij"),
-    ("C. pre-trade-war IP (2015-17), addresses reverse causality",
-     "imports ~ DDD_pre_dev + DDD_pre_adv + IPxUS_pre_dev + IPxUS_pre_adv + Adv_x_Decouple_x_US | fe_ist + fe_jst + fe_ij"),
-    ("D. binary IP treatment (benchmark-style dummy)",
-     "imports ~ DDD_bin_dev + DDD_bin_adv + IPxUS_bin_dev + IPxUS_bin_adv + Adv_x_Decouple_x_US | fe_ist + fe_jst + fe_ij"),
-    ("B. sector-specific pair FE (alpha_ijs, matches benchmark alpha_ijk)",
-     f"imports ~ {BASE} | fe_ist + fe_jst + fe_ijs"),
+    ("A", "baseline, China own term, cluster (i,s)",
+     f"imports ~ {terms('frac')} | fe_ist + fe_jst + fe_ij"),
+    ("C", "pre-trade-war IP (2015-17)",
+     f"imports ~ {terms('pre')} | fe_ist + fe_jst + fe_ij"),
+    ("D", "binary IP (benchmark-style dummy)",
+     f"imports ~ {terms('bin')} | fe_ist + fe_jst + fe_ij"),
+    ("B", "sector-specific pair FE (alpha_ijs)",
+     f"imports ~ {terms('frac')} | fe_ist + fe_jst + fe_ijs"),
 ]
 
-for name, formula in VARIANTS:
-    log(f"=== {name} ===")
+for tag, name, formula in VARIANTS:
+    log(f"=== {tag}. {name} ===")
     try:
         fit = pf.fepois(formula, data=agg, vcov={"CRV1": "cl_is"},
                         demeaner=pf.LsmrDemeaner(fixef_maxiter=2000),
                         lean=True, store_data=False, copy_data=False)
-        print(f"\n### {name}\nN = {fit._N:,}  |  {formula}  |  cluster (i,s)")
+        print(f"\n### {tag}. {name}\nN = {fit._N:,}  |  cluster (i,s)\n{formula}")
         print(fit.tidy().round(5).to_string())
-        fit.tidy().to_csv(f"gravity_improved_{name.split('.')[0]}.csv")
-        log(f"{name}: done")
+        fit.tidy().to_csv(f"gravity_improved_{tag}.csv")
+        log(f"{tag}: done")
         del fit
     except Exception as e:
-        log(f"{name}: FAILED -- {e}")
+        log(f"{tag}: FAILED -- {e}")
 
 log("ALL DONE")
