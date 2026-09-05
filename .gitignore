@@ -16,6 +16,7 @@ data/*.csv
 !data/gravity_full_lag*.csv
 !data/buildup_results.csv
 !data/china_fe_lag*.csv
+!data/gravity_full_noipxus_lag*.csv
 !data/ppml_*_comparison.csv
 data/*.log
 data/swapfile

@@ -130,6 +130,55 @@ it arrived fully formed.
 
 ---
 
+## 3c. Does the result survive without `IPxUS`?
+
+Asked because a headline that depends on one control invites scrutiny.
+Answer: **no specification gives a positive, significant `DDD_dev` with `IPxUS` omitted.**
+
+| | with `IPxUS` | without `IPxUS` |
+|---|---:|---:|
+| restricted, lag 3 | +0.0335 (p=0.016) | +0.0208 (p=0.085) |
+| **full, lag 3** | **+0.0524 (p=0.002)** | **+0.0150 (p=0.242)** |
+
+**But the two specs estimate different quantities, and the arithmetic confirms it.**
+In the full spec `IPxUS_dev` = −0.0376 and `DDD_dev` = +0.0524, so the *level*
+effect in decoupling sectors is γ₁ + β₁ = **+0.0148**. The no-`IPxUS` estimate is
+**+0.0150** — a match to within 0.0002. With no `IPxUS_dev` in the model, `DDD_dev`
+is the only regressor carrying `IP × US × dev` variation, so it cannot measure a
+differential against non-decoupling US flows; it collapses onto the level. The two
+results are internally consistent rather than contradictory.
+
+So:
+- **level** of the IP→US relationship in decoupling sectors: +1.5%, not significant
+- **differential** between decoupling and non-decoupling sectors: +5.2%, p=0.002
+
+The paper's claim is about the differential, which is the right estimand for
+"targeting pays off *more* where decoupling is happening". But the headline does
+depend on a control whose economic channel is not cleanly articulated, and that is
+a legitimate line of referee attack. Either name the channel, or state the estimand
+explicitly as a differential and report both numbers.
+
+Side note: `Adv_Dec_US` reaches significance in this spec (−0.1376, p=0.047, vs
+p=0.072 with `IPxUS`), so RQ1 firms up.
+
+---
+
+## 3d. Robustness to how China is handled
+
+Option A absorbs China's US flows with a fixed effect — one level per (sector, year)
+among China→US observations — instead of the two parametric terms. Non-parametric,
+and reports nothing mechanical.
+
+| | parametric (`Dec_US_chn` + `IPxUS_chn`) | China-FE |
+|---|---:|---:|
+| lag 3 | +0.0335 (p=0.016) | **+0.0386 (p=0.005)** |
+| lag 0 | +0.0131 (p=0.390) | +0.0167 (p=0.274) |
+
+The FE version runs slightly larger at both lags and reaches the same conclusions,
+including the lag contrast. The headline does not depend on how China is controlled.
+
+---
+
 ## 4. FE ladder — where the raw association lives
 
 US-bound only, developing ex-China, per 1 SD, lag 3, clustered by exporter.
