@@ -246,6 +246,49 @@ anything else on the list.
 
 ---
 
+## 3f. Exporter-level clustering
+
+§3e showed only 38 exporters ever carry a nonzero `DDD_dev`, so the (i,s) clustering
+used throughout may assume away correlation that matters. Variants A and C refit with
+CRV1 on the exporter alone — same sample, lag, regressors and fixed effects, so any
+movement is attributable to the clustering level. 229 exporter clusters, vs 26,290 at
+(i,s): comfortably above any small-cluster threshold, so CRV1 is on solid ground.
+
+| | coefficient | se, cluster (i,s) | se, cluster (i) | p, (i,s) | p, (i) |
+|---|---:|---:|---:|---:|---:|
+| A. baseline `α_ij` | +0.0335 | 0.0138 | **0.0127** | 0.016 | 0.008 |
+| C. pair-year `α_ijt` | +0.0358 | 0.0149 | **0.0129** | 0.016 | 0.006 |
+
+**The standard errors fall.** This is not a mistake and not mechanical in the other
+direction: coarser clustering permits within-cluster correlation of *either sign*, and
+here the within-country, cross-sector score contributions are negatively correlated.
+That is what reallocation looks like — when a country's US-bound exports tilt toward
+electronics they tilt away from textiles, so sector-level terms partly cancel when
+aggregated to the country. Every off-diagonal block that (i,s) clustering set to zero
+is on average negative, so summing them shrinks the variance.
+
+The pattern runs through the whole column and is sharpest where reallocation is
+strongest, on the China terms (variant A):
+
+| | se, (i,s) | se, (i) |
+|---|---:|---:|
+| `IPxUS_chn` | 0.0408 | 0.0227 |
+| `Dec_US_chn` | 0.0868 | 0.0579 |
+
+### What to report
+
+**Keep (i,s) as the headline.** The conservative standard error is the larger one, and
+here that is (i,s). Switching to exporter clustering because it improves the p-value
+would be indefensible, and a referee who sees a *smaller* se under coarser clustering
+will assume cherry-picking unless the larger one leads.
+
+The result this delivers is narrower than hoped but was the live threat: **the finding
+is not an artefact of assuming independence across sectors within a country.** Relaxing
+that assumption moves the point estimate not at all (+0.0335 and +0.0358 are unchanged
+to four decimals) and tightens rather than widens the interval.
+
+---
+
 ## 4. FE ladder — where the raw association lives
 
 US-bound only, developing ex-China, per 1 SD, lag 3, clustered by exporter.
@@ -331,10 +374,9 @@ in decoupling sectors, with a multi-year lag."
    on a US-only DiD with a different FE structure and was inconclusive (noisy annual
    coefficients, no clean trend but no clean flat either). The headline is now a
    gravity result and needs its own pre-trend test.
-2. **Exporter-level clustering** as the conservative alternative to (i,s). Promoted
-   to the top of this list by §3e: only 38 exporters ever contribute a nonzero
-   `DDD_dev`, so if the errors correlate within exporter, 2,454 (i,s) clusters
-   flatter the inference.
+2. ~~**Exporter-level clustering.**~~ Settled in §3f: the standard errors *fall*
+   under exporter clustering, because within-country cross-sector residuals are
+   negatively correlated. (i,s) stays the headline as the conservative choice.
 5. **Concentration.** Mexico and India alone are 43% of the weighted treatment
    mass. A leave-one-exporter-out sweep over the top 10 would show whether the
    estimate is a broad regularity or a handful of country stories.

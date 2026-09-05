@@ -22,3 +22,4 @@ data/*.csv
 data/*.log
 data/swapfile
 !data/leverage_by_exporter.csv
+!data/clus_exporter_*.csv
