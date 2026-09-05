@@ -18,5 +18,6 @@ data/*.csv
 !data/china_fe_lag*.csv
 !data/gravity_full_noipxus_lag*.csv
 !data/ppml_*_comparison.csv
+!data/geography_*.csv
 data/*.log
 data/swapfile
