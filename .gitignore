@@ -13,6 +13,7 @@ data/*.csv
 !data/fe_ladder_lag0_results.csv
 !data/gravity_share_results.csv
 !data/gravity_decomp_*.csv
+!data/gravity_full_lag*.csv
 !data/ppml_*_comparison.csv
 data/*.log
 data/swapfile
