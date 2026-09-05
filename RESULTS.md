@@ -179,6 +179,73 @@ including the lag contrast. The headline does not depend on how China is control
 
 ---
 
+## 3e. Geography — does the FE structure control for Vietnam and Mexico?
+
+Vietnam borders China and Mexico borders the US, so both are natural friendshoring
+winners for reasons that have nothing to do with industrial policy. `α_ij` absorbs
+the *level* of each bilateral relationship, but it is time-invariant, so it cannot
+absorb any *change* in the return to geography — and decoupling is precisely a shock
+to that return. `α_ist` catches a proximity advantage that lifts a country's sales
+everywhere, but not one that is US-specific; `α_jst` is common across exporters. A
+time-varying, US-specific, country-specific advantage therefore sits in the residual.
+
+Restricted sample (22 advanced destinations), lag 3, cluster (i,s).
+
+| | FE | what it absorbs | `DDD_dev` |
+|---|---|---|---:|
+| A | `α_ist + α_jst + α_ij` | baseline | +0.0335 (p=0.016) |
+| B | `α_ist + α_jst + α_ij×post` | any post-2018 shift in the bilateral relationship | +0.0337 (p=0.013) |
+| C | `α_ist + α_jst + α_ijt` | **any** year-specific bilateral shock | **+0.0358 (p=0.016)** |
+| D | baseline, dropping Vietnam + Mexico | the two named cases | +0.0216 (p=0.200) |
+
+`DDD_dev` stays identified under B and C because it varies across *sectors* within
+each (i, j, t) cell, while those FE are constant within it.
+
+**C is the answer to the geography question.** It absorbs everything specific to a
+country-partner-year — proximity to China, proximity to the US, USMCA, tariff-line
+reallocation, any bilateral agreement or nearshoring wave — without functional form.
+What identifies the coefficient afterwards is only this: within US–Vietnam in a given
+year, sectors Vietnam had subsidised three years earlier grew faster than sectors it
+had not. Geography is a country-year fact and cannot generate that pattern, because
+it moves every sector in the bundle together. The coefficient does not fall.
+
+**D is a different test and it does not pass.** Dropping the two countries costs 36%
+of the point estimate and all of the significance. This is *not* evidence for the
+geography story — if geography were driving the result, C would have killed it.
+What D measures is concentration, and the leverage calculation says why:
+
+| | share of treated rows | share of PPML-weighted treatment mass |
+|---|---:|---:|
+| Mexico | 1.3% | 26.3% |
+| Vietnam | 2.1% | 8.9% |
+| **both** | **3.4%** | **35.1%** |
+
+PPML weights each observation by its fitted mean, so large suppliers dominate the
+score regardless of row counts. Dropping Vietnam and Mexico removes a third of the
+identifying variation, and +0.0216 sits comfortably inside the confidence interval of
+the baseline (the gap of 0.0119 is well under D's own SE of 0.0168). So D does not
+*contradict* A — it cannot confirm it with a third of the mass gone.
+
+The honest reading: **the result is robust to confounding by geography (C) but is not
+broad-based (D).** It rests on a thin identifying base.
+
+### How thin
+
+`DDD_dev` is nonzero only where all of {j = USA, `target_s` = 1, t ≥ 2018,
+developing ex-China, IP > 0} hold:
+
+- **8,858 treated observations** out of 3.58m
+- 2,454 treated (i, s) clusters, of 26,290
+- **38 treated exporters**, 99 treated sectors
+- top 5 countries (Mexico, India, Vietnam, South Africa, Bangladesh) = 64% of mass
+
+2,454 clusters is ample for CRV1 at (i,s). But if the true correlation of the errors
+is at the *exporter* level, the relevant count is 38, which is at the boundary where
+CRV1 becomes liberal. This is now the most important open robustness check, ahead of
+anything else on the list.
+
+---
+
 ## 4. FE ladder — where the raw association lives
 
 US-bound only, developing ex-China, per 1 SD, lag 3, clustered by exporter.
@@ -264,7 +331,13 @@ in decoupling sectors, with a multi-year lag."
    on a US-only DiD with a different FE structure and was inconclusive (noisy annual
    coefficients, no clean trend but no clean flat either). The headline is now a
    gravity result and needs its own pre-trend test.
-2. **Exporter-level clustering** as the conservative alternative to (i,s).
+2. **Exporter-level clustering** as the conservative alternative to (i,s). Promoted
+   to the top of this list by §3e: only 38 exporters ever contribute a nonzero
+   `DDD_dev`, so if the errors correlate within exporter, 2,454 (i,s) clusters
+   flatter the inference.
+5. **Concentration.** Mexico and India alone are 43% of the weighted treatment
+   mass. A leave-one-exporter-out sweep over the top 10 would show whether the
+   estimate is a broad regularity or a handful of country stories.
 3. **Extensive margin.** Zero flows are absent from the data; 12.6% of US-bound
    (exporter × sector) pairs churn between 2017 and 2024, and entry is invisible.
    The benchmark (IMF WP 2024/041) finds extensive-margin effects concentrated in

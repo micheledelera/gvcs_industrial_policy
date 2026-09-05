@@ -21,3 +21,4 @@ data/*.csv
 !data/geography_*.csv
 data/*.log
 data/swapfile
+!data/leverage_by_exporter.csv
