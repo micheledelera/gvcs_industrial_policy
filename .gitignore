@@ -1,0 +1,26 @@
+# Mirrored/derived dataset artifacts (large binaries live in the GitHub Release, not the repo)
+data/*.dta
+data/*.dta.part*
+data/*.pkl
+data/*.csv
+!data/ppml_*_results.csv
+!data/rq_us_only_*.csv
+!data/gravity_improved_*.csv
+!data/fe_ladder_results.csv
+!data/fe_ladder_lagged_results.csv
+!data/event_study_results.csv
+!data/event_hybrid_results.csv
+!data/fe_ladder_lag0_results.csv
+!data/gravity_share_results.csv
+!data/gravity_decomp_*.csv
+!data/gravity_full_lag*.csv
+!data/buildup_results.csv
+!data/china_fe_lag*.csv
+!data/gravity_full_noipxus_lag*.csv
+!data/ppml_*_comparison.csv
+!data/geography_*.csv
+data/*.log
+data/swapfile
+!data/leverage_by_exporter.csv
+!data/clus_exporter_*.csv
+!data/loo_results.csv
