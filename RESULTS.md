@@ -95,6 +95,41 @@ mean 0.20, so 0.101 × 0.20 ≈ +2.0% vs +3.4% for the binary).
 
 ---
 
+## 3b. Build-up ladder
+
+Restricted sample (22 destinations), `share_frac_policies`, cluster (i,s),
+FE `α_ist + α_jst + α_ij` fixed. China is in the sample with its own terms
+(`Dec_US_chn`, `IPxUS_chn`) at **every** step, so movement across steps reflects
+only the dev/adv structure.
+
+| Step | lag 3 `DDD_dev` | p | lag 0 `DDD_dev` | p |
+|---|---:|---:|---:|---:|
+| 1. DDD pooled (dev+adv together) | +0.0049 | 0.382 | +0.0017 | 0.696 |
+| 2. + dev/adv split | +0.0208 | 0.085 | +0.0073 | 0.589 |
+| 3. + `IPxUS` | **+0.0397** | **0.010** | +0.0185 | 0.259 |
+| 4. + `Adv_Dec_US` (full) | **+0.0335** | **0.016** | +0.0131 | 0.390 |
+
+`DDD_adv` is a stable zero throughout (lag 3: +0.0025 → −0.0015 → −0.0002).
+
+**Reading.** The parsimonious spec shows nothing. The dev/adv split quadruples the
+coefficient (advanced economies dilute rather than cancel, since `DDD_adv` ≈ 0);
+adding `IPxUS` nearly doubles it again and carries it across significance, because
+the general IP→US channel is negative and biases the triple toward zero when
+omitted. This settles the earlier question of whether `IPxUS` belongs in the
+specification: whether or not an economic channel can be named for it, omitting it
+is not innocuous.
+
+**Caveat to state explicitly in the paper.** The effect appears only with the full
+control set, which is the pattern specification searching produces. The defence is
+that each addition was motivated *before* estimation — the dev/adv split is the
+hypothesis itself, `IPxUS` is required by the triple-difference saturation
+literature (Olden & Møen 2022), and `Adv_Dec_US` was proposed on structural
+grounds — and the ordering is verifiable in the commit history. Present the
+build-up table with the reasoning for each step, rather than the full spec as if
+it arrived fully formed.
+
+---
+
 ## 4. FE ladder — where the raw association lives
 
 US-bound only, developing ex-China, per 1 SD, lag 3, clustered by exporter.
