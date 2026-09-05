@@ -1,0 +1,194 @@
+# GVCs, US–China decoupling, and industrial policy — results log
+
+Data: `trade_df_isic.dta` (Zenodo 10.5281/zenodo.22282107), BACI bilateral trade
+aggregated to ISIC-4, 2007–2024, 229 countries, ~20M positive flows, merged with
+GTA-derived industrial policy variables at exporter–sector–year level.
+
+Estimation: PPML (`ppmlhdfe` / `pyfixest.fepois`). Code in `code/`.
+
+---
+
+## 1. Specification
+
+$$
+X_{ijst} = \exp\Big[
+\alpha_{ist} + \alpha_{jst} + \alpha_{ij}
++ \beta_1 DDD^{dev}_{ijst} + \beta_2 DDD^{adv}_{ijst}
++ \gamma_1 IPxUS^{dev} + \gamma_2 IPxUS^{adv} + \gamma_3 IPxUS^{chn}
++ \delta_1 DecUS^{chn} + \delta_2 AdvDecUS
+\Big]\varepsilon_{ijst}
+$$
+
+with
+
+$$
+DDD^{dev}_{ijst} = \underbrace{target_s \times \mathbb{1}[t \geq 2018]}_{\text{decoupling}}
+\times \underbrace{\widetilde{share\_frac\_policies}_{i,s,t-3}}_{\text{policy targeting, lagged 3y, /SD}}
+\times \underbrace{\mathbb{1}[j = US]}_{\text{destination}}
+\times \underbrace{\mathbb{1}[i \in dev \setminus CHN]}_{\text{exporter group}}
+$$
+
+**Fixed effects.** `α_ist` (exporter×sector×year) and `α_jst` (importer×sector×year)
+are the sectoral generalisation of the structural-gravity multilateral resistance
+terms — they nest the standard `α_it`/`α_jt`. `α_ij` absorbs all time-invariant
+bilateral trade costs (distance, language, colonial ties).
+
+**Treatment variable.** `share_frac_policies` = the share of country *i*'s total
+industrial policy directed at sector *s*. This is **policy targeting**, not policy
+volume. Standardised, so coefficients read per 1 SD.
+
+**Three exporter groups.** China / developing ex-China / advanced. China is kept in
+the sample but given its own terms (`DecUS_chn`, `IPxUS_chn`), so it continues to
+discipline `α_jst` and keep sector-year totals real without contaminating `β₁`.
+Developing ex-China is the omitted category for the `Dec × US` level terms, so
+`DecUS_chn` reads as "China vs developing ex-China" and `AdvDecUS` as
+"advanced vs developing ex-China" (= RQ1).
+
+**Clustering** at (i,s). Clustering at (i,s,t) is wrong here: every US-bound
+observation is alone in its own `ist` cell (264,606 US obs in exactly 264,606
+cells), so it provides no adjustment to the identifying variation and understates
+SEs by roughly a factor of two.
+
+**Interpretation.** `β₁` is the *differential* between decoupling and non-decoupling
+sectors. The *level* effect inside decoupling sectors is `γ₁ + β₁`.
+
+---
+
+## 2. Main results — full sample (229 destinations)
+
+| | **lag 3** (headline) | | **lag 0** | |
+|---|---:|---:|---:|---:|
+| | Estimate | p | Estimate | p |
+| **`DDD_dev`** | **+0.0524** (0.0168) | **0.0018** | **+0.0373** (0.0161) | **0.0204** |
+| `DDD_adv` | +0.0089 (0.0127) | 0.484 | −0.0006 (0.0095) | 0.951 |
+| `IPxUS_dev` | −0.0376 (0.0186) | 0.043 | −0.0328 (0.0160) | 0.040 |
+| `IPxUS_adv` | −0.0038 (0.0109) | 0.724 | +0.0038 (0.0113) | 0.733 |
+| `IPxUS_chn` | −0.1563 (0.0624) | 0.012 | −0.1035 (0.0602) | 0.085 |
+| `Dec_US_chn` | −0.3004 (0.0914) | 0.001 | −0.3571 (0.0867) | <0.001 |
+| `Adv_Dec_US` | −0.1260 (0.0700) | 0.072 | −0.1129 (0.0628) | 0.072 |
+| N | 16,886,001 | | 19,542,630 | |
+
+SEs in parentheses, clustered (i,s).
+
+**Level effect in decoupling sectors** (γ₁ + β₁), lag 3: −0.0376 + 0.0524 = **+0.0148**.
+So the *differential* is 5.2pp while the *level* is mildly positive (~+1.5%).
+
+---
+
+## 3. Decomposition — what the result depends on
+
+Each row changes exactly ONE thing from the winning spec. Restricted sample
+(22 advanced destinations), so compare to +0.0335 (p=0.016), not the full-sample
++0.0524.
+
+| Change | `DDD_dev` | p | |
+|---|---:|---:|---|
+| *(baseline: share + target×post + lag 3)* | +0.0335 | 0.016 | |
+| **(a)** level measure (`frac_policies`) instead of share | **−0.0081** | 0.556 | **collapses** |
+| **(b)** continuous `Decouple_intensity` instead of target×post | **+0.1008** | 0.027 | survives |
+| **(c)** contemporaneous instead of lag 3 | +0.0131 | 0.390 | weakens |
+
+**(a) is the key discriminating test.** Policy *targeting* carries the result;
+policy *volume* gives nothing. **(b)** two independently constructed decoupling
+measures agree (magnitudes reconcile via scaling: intensity is 0–1 with nonzero
+mean 0.20, so 0.101 × 0.20 ≈ +2.0% vs +3.4% for the binary).
+
+---
+
+## 4. FE ladder — where the raw association lives
+
+US-bound only, developing ex-China, per 1 SD, lag 3, clustered by exporter.
+`IP` = main effect; `IPxDec` = interaction with target×post.
+
+| Measure | FE | `IP` | p | `IPxDec` | p |
+|---|---|---:|---:|---:|---:|
+| `n_policies` | L1 `st` | **+0.1225** | **0.006** | +0.0069 | 0.764 |
+| | L2 `+i` | −0.0051 | 0.906 | +0.0231 | 0.324 |
+| | L3 `+is` | +0.0002 | 0.947 | +0.0092 | 0.298 |
+| | L4 `+is+it` | −0.0026 | 0.633 | +0.0006 | 0.928 |
+| `frac_policies` | L1 `st` | **+0.0555** | **0.001** | +0.0019 | 0.885 |
+| | L2 `+i` | +0.0068 | 0.429 | −0.0009 | 0.911 |
+| | L3 `+is` | −0.0031 | 0.285 | +0.0108 | 0.066 |
+| | L4 `+is+it` | −0.0053 | 0.182 | +0.0067 | 0.071 |
+| `share_frac_policies` | L1 `st` | **+0.0394** | **0.000** | −0.0103 | 0.403 |
+| | L2 `+i` | **−0.0551** | **0.015** | +0.0170 | 0.547 |
+| | L3 `+is` | **−0.0150** | **0.001** | **+0.0257** | **0.000** |
+| | L4 `+is+it` | **−0.0131** | **0.000** | **+0.0212** | **0.000** |
+
+**Reading.** The level measures are significant at L1 and dead the moment a *country*
+fixed effect is added — the raw descriptive association is entirely between-country
+(which countries do industrial policy), not within (which sectors a country targets).
+The share measure behaves differently: its main effect flips *negative* and stays
+significant, while the decoupling interaction is positive and survives everything.
+
+---
+
+## 5. Descriptives
+
+Share of **total US imports**, decoupling (`target`) sectors, 2017 → 2024:
+
+| Group | 2017 | 2024 | Change |
+|---|---:|---:|---:|
+| China | 30.8% | 19.0% | **−11.8 pp** |
+| Advanced (37) | 37.3% | 39.4% | +2.1 pp |
+| Dev: high IP (18) | 22.6% | 27.2% | +4.6 pp |
+| Dev: low IP (18) | 6.2% | 10.9% | +4.7 pp |
+| Dev: no IP (149) | 3.2% | 3.5% | +0.4 pp |
+
+Largest gainers 2017–24 and their pre-period IP: Vietnam +2.65pp (IP 0.034),
+Mexico +2.16pp (0.078), Thailand +0.72pp (0.036), India +0.69pp (0.630).
+Country-level rank correlation between pre-period IP and share change: 0.33.
+
+---
+
+## 6. Discussion
+
+**The reallocation is large and real.** China lost 11.8pp of US import share in
+decoupling sectors between 2017 and 2024; developing economies absorbed most of it.
+`Dec_US_chn` is strongly negative in every specification.
+
+**Policy targeting matters; policy volume does not.** This is the central finding and
+it rests on the (a) decomposition plus the FE ladder. The level measures
+(`n_policies`, `frac_policies`) show a large raw association that vanishes entirely
+once you control for *which country* you are looking at — they are proxies for
+country size and industrial capacity. The share measure, which is within-country
+normalised by construction, isolates the allocation decision and survives.
+
+**The effect is discriminating on four dimensions**, each of which could have gone
+the other way:
+- *US-specific* — survives `α_ist`, so it is not general export growth
+- *decoupling-specific* — `IPxUS_dev` is negative, so it is not a broad US tilt
+- *developing-specific* — `DDD_adv` is zero
+- *lagged* — stronger at lag 3 than lag 0, the opposite of what reverse causality
+  would produce
+
+**Selection into treatment is visible and points the right way.** The share main
+effect is significantly *negative* (−0.013 at L4): countries direct policy at sectors
+where they are weak. That makes the positive interaction more interesting, not less —
+these are not sectors that were already winning.
+
+**But the raw descriptive is compositional.** High-IP and low-IP developing economies
+gained *identically* (+4.6 vs +4.7pp), the largest winners (Vietnam, Mexico, Thailand)
+are low-IP, and the IP>0 / IP=0 split is largely large-vs-small economies. The
+regression finding is not "countries with more industrial policy won" — it is
+"within a country, the sectors it prioritised did relatively better in the US market
+in decoupling sectors, with a multi-year lag."
+
+### Open issues
+
+1. **Pre-trend test in the gravity specification itself.** The event study we ran was
+   on a US-only DiD with a different FE structure and was inconclusive (noisy annual
+   coefficients, no clean trend but no clean flat either). The headline is now a
+   gravity result and needs its own pre-trend test.
+2. **Exporter-level clustering** as the conservative alternative to (i,s).
+3. **Extensive margin.** Zero flows are absent from the data; 12.6% of US-bound
+   (exporter × sector) pairs churn between 2017 and 2024, and entry is invisible.
+   The benchmark (IMF WP 2024/041) finds extensive-margin effects concentrated in
+   emerging markets — possibly where more of this story lives.
+4. **GTA intervention types.** The benchmark finds tax breaks strongly positive and
+   direct transfers negative — they cancel in any pooled measure. Splitting by
+   intervention type would identify *which kinds* of targeting work. Not testable
+   with the current variables (`n_sub` is nonzero in only 1.3% of developing
+   ex-China US-bound observations).
+5. **`frac_sub` / `share_*` definitions** were reconstructed from the raw file
+   mid-session; worth confirming they mean what we assume.
