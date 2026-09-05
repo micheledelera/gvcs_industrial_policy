@@ -289,6 +289,62 @@ to four decimals) and tightens rather than widens the interval.
 
 ---
 
+## 3g. Leave-one-exporter-out
+
+§3e left the concentration question open: Mexico and India are 43% of the
+PPML-weighted treatment mass, so is `DDD_dev` a broad regularity or a few country
+stories? Each of the top 10 exporters by treatment mass is dropped in turn from the
+headline specification (`α_ist + α_jst + α_ij`, lag 3, cluster (i,s)). IP is
+standardised once on the full restricted sample and that SD reused for every row, and
+only rows are subset, so nothing but the sample changes across fits.
+
+| dropped | mass share | N | treated obs | `DDD_dev` | se | p |
+|---|---:|---:|---:|---:|---:|---:|
+| **none (baseline)** | — | 3,543,453 | 8,858 | **+0.0335** | 0.0138 | 0.016 |
+| Mexico | 26.3% | 3,507,524 | 8,746 | +0.0244 | 0.0177 | 0.168 |
+| India | 16.6% | 3,503,758 | 8,203 | +0.0350 | 0.0144 | 0.015 |
+| Vietnam | 8.9% | 3,507,250 | 8,669 | +0.0330 | 0.0135 | 0.014 |
+| South Africa | 6.4% | 3,506,127 | 8,705 | +0.0315 | 0.0134 | 0.019 |
+| Bangladesh | 5.9% | 3,521,656 | 8,794 | +0.0361 | 0.0139 | 0.009 |
+| Indonesia | 4.3% | 3,507,217 | 8,248 | +0.0366 | 0.0139 | 0.008 |
+| Brazil | 4.3% | 3,505,869 | 8,379 | +0.0384 | 0.0139 | 0.006 |
+| UAE | 3.8% | 3,508,391 | 8,764 | +0.0291 | 0.0142 | 0.041 |
+| Thailand | 3.7% | 3,504,303 | 8,776 | +0.0365 | 0.0146 | 0.012 |
+| Malaysia | 3.7% | 3,507,029 | 8,746 | +0.0320 | 0.0134 | 0.017 |
+
+Range across drops **[+0.0244, +0.0384]**, median **+0.0335** — identical to the
+baseline. **Nine of ten drops stay significant at 5%.**
+
+**The result is not a single-country artefact.** That was the live worry after §3e,
+and the sweep answers it: no drop moves the point estimate by as much as one standard
+error, and the estimate is bounded in a narrow band either side of the baseline.
+
+**Mexico is the one influential case, and it is influential for precision more than
+for the point estimate.** Dropping it moves the coefficient by 0.0091 — about half a
+standard error, nowhere near a significant change — but *also* inflates the standard
+error by 28% (0.0138 → 0.0177), and it is the combination that costs significance
+rather than either alone. This is what variant D in §3e was picking up: D dropped
+Mexico and Vietnam together and landed at +0.0216, but the sweep shows Vietnam
+contributes essentially nothing to that (dropping Vietnam alone gives +0.0330,
+p=0.014). D was a Mexico result mislabelled as a Mexico-and-Vietnam result.
+
+Two further readings worth recording:
+
+- **The Vietnam concerns are empirically moot.** Both the geography worry (Vietnam
+  borders China, so it is a natural relocation destination) and the measurement worry
+  (GTA plausibly understates Vietnamese industrial policy, so coding it low-IP is
+  doubtful) bear on a country whose removal leaves the coefficient at +0.0330. Neither
+  problem is propagating into the headline. Both remain live for interpreting country
+  rankings; neither is generating `DDD_dev`.
+- **Mexico deserves a sentence in the paper, not a robustness scare.** USMCA concluded
+  in 2018 and nearshoring is a distinct Mexican story, so a referee will ask. The
+  answer is §3e variant C: `α_ijt` absorbs any US–Mexico year shock, whatever its
+  source, and the coefficient there is +0.0358 (p=0.016). Mexico matters for how
+  precisely the effect is estimated, not for whether it survives controlling for
+  Mexico-specific shocks.
+
+---
+
 ## 4. FE ladder — where the raw association lives
 
 US-bound only, developing ex-China, per 1 SD, lag 3, clustered by exporter.
@@ -377,9 +433,10 @@ in decoupling sectors, with a multi-year lag."
 2. ~~**Exporter-level clustering.**~~ Settled in §3f: the standard errors *fall*
    under exporter clustering, because within-country cross-sector residuals are
    negatively correlated. (i,s) stays the headline as the conservative choice.
-5. **Concentration.** Mexico and India alone are 43% of the weighted treatment
-   mass. A leave-one-exporter-out sweep over the top 10 would show whether the
-   estimate is a broad regularity or a handful of country stories.
+5. ~~**Concentration.**~~ Settled in §3g: across leave-one-out drops of the top
+   10 exporters the coefficient stays in [+0.0244, +0.0384] with a median equal
+   to the baseline, and 9 of 10 remain significant. Mexico is the one influential
+   case, and mainly through the standard error.
 3. **Extensive margin.** Zero flows are absent from the data; 12.6% of US-bound
    (exporter × sector) pairs churn between 2017 and 2024, and entry is invisible.
    The benchmark (IMF WP 2024/041) finds extensive-margin effects concentrated in
