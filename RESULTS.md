@@ -345,6 +345,105 @@ Two further readings worth recording:
 
 ---
 
+## 3h. Pre-trends in the gravity specification
+
+The earlier event study was a US-only DiD with a different FE structure. The headline
+is a gravity result, so it needs its own test. Replace `1[t≥2018]` with year
+interactions:
+
+```
+ES_τ = target_s × 1[t=τ] × IP_{i,s,t-3} × US_j × dev_i     (τ ≠ 2017)
+G_τ  =            1[t=τ] × IP_{i,s,t-3} × US_j × dev_i     (all τ)
+```
+
+`ES_τ` is the year-by-year analogue of `DDD_dev`, referenced to 2017.
+`target_s × 1[t=τ] × US_j` needs no term — `α_jst` absorbs it.
+
+### The first attempt failed on scaling
+
+Standardising IP by a single pooled SD does not work year by year. With IP lagged
+three years, coverage collapses at the start of the sample:
+
+| year | nonzero IP cells | % of cells | within-year SD ÷ pooled SD |
+|---|---:|---:|---:|
+| 2010 | 0 | 0.0% | 0.00 |
+| 2011 | 219 | 2.3% | 0.11 |
+| 2012 | 1,204 | 12.1% | 0.66 |
+| 2013–2024 | 1,218–1,878 | 10.7–17.5% | 0.49–1.60 |
+
+2010 is empty, which is why `ES_2010` and `G_2010` dropped for collinearity. 2011 has
+an SD one-tenth the pooled value, so `ES_2011` came back at **+2.10** — two orders of
+magnitude above the pooled DDD. That is a scaling artefact, not a pre-trend. From 2012
+coverage is stable, but the within-year SD still ranges over a factor of 3.3.
+
+This affects only the year-by-year design. In the main specification the pooled SD is
+a scaling constant on a single coefficient, and `α_ist` absorbs IP's level and trend.
+
+### Take 2: restrict to 2012+, and put IP on a comparable scale two ways
+
+**B, IP standardised within year** — still unstable. Coefficients range 0.013 to 0.64
+against a pooled anchor of +0.0373, with standard errors spanning a 12× range
+(0.033–0.39), and two pre-period coefficients individually significant.
+
+**C, binary `1[IP>0]`** — well behaved. Standard errors 0.17–0.26, a 1.5× range. So
+the instability is **scale** in the skewed continuous measure (86% of cells are zero,
+so its SD is driven by a thin positive tail), not collinearity between `G_τ` and
+`ES_τ`. Binary and continuous have the *same* 8,858 treated observations and differ
+only in how those observations are weighted.
+
+| | coef | se | p | | coef | se | p |
+|---|---:|---:|---:|---|---:|---:|---:|
+| pre 2012 | +0.1599 | 0.221 | 0.468 | POST 2018 | +0.1365 | 0.172 | 0.427 |
+| pre 2013 | +0.1486 | 0.253 | 0.556 | POST 2019 | −0.2347 | 0.234 | 0.317 |
+| pre 2014 | +0.1215 | 0.229 | 0.596 | POST 2020 | +0.2859 | 0.200 | 0.154 |
+| pre 2015 | +0.0327 | 0.242 | 0.892 | POST 2021 | −0.0043 | 0.217 | 0.984 |
+| pre 2016 | +0.0301 | 0.262 | 0.909 | POST 2022 | +0.3272 | 0.174 | 0.061 |
+| | | | | POST 2023 | +0.1050 | 0.197 | 0.594 |
+| | | | | POST 2024 | +0.0105 | 0.179 | 0.953 |
+
+**Pre-period: flat.** Nothing significant, max |t| = 0.73, and the path declines
+monotonically toward the 2017 reference (+0.160 → +0.030), which is the right shape.
+Joint Wald χ²(5) = 0.60, **p = 0.988**.
+
+**That p-value is the caveat, not the reassurance.** Under the null the expected χ² is
+5, and 0.60 is far below it. With standard errors around 0.22 the test would fail to
+reject a pre-trend of +0.4 as readily as one of zero. Report it as *the pre-period is
+flat and the test has little power*, not as a clean pass.
+
+### The flat post period is a power artefact, not a null
+
+The post-period coefficients are also insignificant, with no visible step at 2018
+(pre mean +0.099, post mean +0.089). Two readings: low power from splitting the
+treatment across 12 year coefficients, or a genuine null in which the finding depends
+on policy *intensity* and a simple incidence indicator carries no signal.
+
+The pooled binary DDD separates them, on the same sample and specification with only
+the treatment variable changed:
+
+| treatment | `DDD_dev` | se | p |
+|---|---:|---:|---:|
+| continuous, within-year SD | +0.0373 | — | 0.005 |
+| **binary `1[IP>0]`** | **+0.1456** | 0.0699 | **0.037** |
+
+**Significant — so it is low power.** The pooled binary effect of +0.1456 sits inside
+the range of the year-by-year coefficients, and against year standard errors of ~0.2
+implies a per-year t of about 0.73, exactly the maximum observed. Detecting +0.1456 at
+5% would need a standard error of 0.074, so roughly seven times the annual data.
+
+Two things follow that matter beyond the pre-trend question:
+
+1. **The result does not depend on the GTA count being a meaningful cardinal measure
+   of intensity.** A binary "any recorded policy" indicator delivers the same
+   qualitative finding. This directly limits the measurement-validity concern: whether
+   GTA understates a country's policy effort — the Vietnam problem — bears on the
+   ranking of intensities, and the headline does not rest on that ranking.
+2. **The sign pattern replicates.** `IPxUS_dev` = −0.1523 (p=0.007), so the level in
+   decoupling cells is γ₁+β₁ = −0.007, essentially zero, with the positive coefficient
+   again a *difference* from a negative baseline rather than a net advantage. Same
+   catch-up reading as §3c, on a completely different treatment definition.
+
+---
+
 ## 4. FE ladder — where the raw association lives
 
 US-bound only, developing ex-China, per 1 SD, lag 3, clustered by exporter.
@@ -426,10 +525,10 @@ in decoupling sectors, with a multi-year lag."
 
 ### Open issues
 
-1. **Pre-trend test in the gravity specification itself.** The event study we ran was
-   on a US-only DiD with a different FE structure and was inconclusive (noisy annual
-   coefficients, no clean trend but no clean flat either). The headline is now a
-   gravity result and needs its own pre-trend test.
+1. ~~**Pre-trend test in the gravity specification itself.**~~ Done in §3h. The
+   pre-period is flat (joint Wald p=0.988) but the test has little power, so it is
+   weak supporting evidence rather than a clean pass. A design with more annual
+   identifying variation would be needed to do better.
 2. ~~**Exporter-level clustering.**~~ Settled in §3f: the standard errors *fall*
    under exporter clustering, because within-country cross-sector residuals are
    negatively correlated. (i,s) stays the headline as the conservative choice.
