@@ -549,6 +549,96 @@ BACI HS6 rebuild is the test that could overturn it.
 
 ---
 
+## 3j. All policy measures — is it targeting or volume?
+
+The first question any referee will ask is why policy is defined in terms of
+*targeting* (the `share_*` family: what fraction of a country's policy effort goes to
+this sector) rather than *volume* (the `n_`/`frac_` family: how much policy the sector
+gets). Every measure, run on the **full sample** (229 destinations, 16,917,915 rows),
+lag 3, cluster (i,s), headline FE — only the policy variable changes. Each is
+standardised by its own SD, so coefficients are per-SD comparable.
+
+| measure | family | n treated | with `IPxUS` | without | γ₁ |
+|---|---|---:|---|---|---:|
+| `n_policies` | volume | 8,858 | +0.0782 (0.0467) * p=.094 | +0.0307 p=.373 | −0.0591 |
+| `frac_policies` | volume | 8,858 | +0.0140 (0.0185) p=.447 | −0.0053 p=.768 | −0.0213 |
+| **`share_n_policies`** | **targeting** | 8,858 | **+0.0636 (0.0212) \*\*\* p=.003** | +0.0059 p=.721 | −0.0589 |
+| **`share_frac_policies`** | **targeting** | 8,858 | **+0.0524 (0.0168) \*\*\* p=.002** | +0.0150 p=.242 | −0.0376 |
+| `n_sub` | volume (sub) | 847 | +0.0005 p=.980 | −0.0033 p=.847 | −0.0038 |
+| `frac_sub` | volume (sub) | 847 | −0.0172 p=.500 | +0.0013 p=.951 | +0.0187 |
+| `share_n_sub` | targeting (sub) | 847 | −0.0066 p=.845 | −0.0220 p=.028 ** | −0.0155 |
+| `share_frac_sub` | targeting (sub) | 847 | −0.0258 * p=.097 | −0.0206 p=.129 | +0.0053 |
+| `asinh_n_sub` | volume (sub) | 847 | +0.0160 p=.652 | +0.0060 p=.774 | −0.0105 |
+| `asinh_frac_sub` | volume (sub) | 847 | +0.0126 p=.707 | +0.0055 p=.777 | −0.0073 |
+
+`share_frac_policies` reproduces the known full-sample headline (+0.0524, p=0.0018)
+exactly, and its without-`IPxUS` counterpart reproduces §3c (+0.0150, p=0.242) — two
+internal validations that the sample construction, lag merge and 1e-6 tolerance all
+match earlier runs.
+
+### The result, stated at the strength the evidence supports
+
+**Both targeting measures are significant at 1%; neither volume measure reaches 5%.**
+
+But this should **not** be written as "targeting matters and volume does not", because
+`n_policies` has a *larger* point estimate (+0.0782) than `share_n_policies` (+0.0636).
+What separates them is precision: SE 0.0467 against 0.0212. The two are built from
+identical GTA interventions and differ only in normalisation, so the honest statement
+is:
+
+> Volume and targeting measures are constructed from the same interventions and differ
+> only in normalisation. The targeting measures recover the effect with roughly half
+> the standard error, while the volume measures cannot reject zero. This is what one
+> expects if raw counts carry country-level scale that the fixed effects cannot absorb,
+> while shares isolate the within-country prioritisation that §4's FE ladder showed is
+> the only place the level measures' association survives.
+
+`frac_policies` vs `share_frac_policies` (+0.0140 vs +0.0524, a factor of 3.7) is the
+cleanest single pair to show, since there the point estimates genuinely diverge rather
+than only the precision.
+
+Note also that the FE ladder in §4 is not independent confirmation of this: it already
+established that the level measures' raw association is entirely between-country. The
+two findings are the same fact seen from different angles.
+
+### Subsidies: a power statement, not a finding
+
+All six subsidy cells are null-to-negative on **847 treated observations**, against
+8,858 for the policy counts — the 0.93% coverage documented in `diag_measures.py`. The
+`asinh` variants matter here: the raw `n_sub` and `frac_sub` are monetary amounts with
+SD/mean above 40 and maxima in the millions, so a per-SD coefficient on them is set by
+a handful of enormous values, and a null would be uninterpretable. Transformed
+(SD 98,143 → 2.18 for `n_sub`), they are still null. So **the subsidy nulls are lack
+of power, not a scaling artefact** — and they say nothing about whether subsidies work.
+
+### `share_n_sub` without `IPxUS`: a warning, not a result
+
+The single significant entry in the without-column, −0.0220 (p=0.028), is a
+collinearity artefact:
+
+- its SE *falls* 3.36× when `IPxUS` is dropped, against ~1.3× for well-populated measures
+- the estimate reproduces the implied level γ₁+β₁ = −0.0221 to four decimals
+
+With 847 treated observations and a subsidy share that barely moves within
+country-sector, `dec × IP × US × dev` and `IP × US × dev` are nearly the same column:
+the two coefficients are separately unidentified but their sum is pinned down tightly.
+Dropping one does not add information — it reports the sum with a small standard error
+and labels it the treatment effect.
+
+**This is an argument for including `IPxUS` that is independent of Olden & Møen
+(2022).** Beyond the saturation requirement, omitting it lets a near-collinear
+treatment manufacture significance with the wrong sign.
+
+### γ₁ replicates everywhere
+
+`IPxUS_dev` is negative in all four well-populated measures (−0.0591, −0.0213, −0.0589,
+−0.0376). The negative baseline tilt — developing IP users being *less* US-oriented to
+begin with, so that `DDD_dev` measures catch-up rather than net advantage — is not an
+artefact of the headline measure. It is a property of the data visible in every
+adequately-powered policy variable.
+
+---
+
 ## 4. FE ladder — where the raw association lives
 
 US-bound only, developing ex-China, per 1 SD, lag 3, clustered by exporter.

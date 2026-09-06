@@ -30,3 +30,4 @@ data/swapfile
 !data/extensive_*.csv
 !data/binary_anchor.csv
 !data/pretrend*.csv
+!data/measures_results.csv
