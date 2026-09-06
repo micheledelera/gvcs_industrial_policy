@@ -24,3 +24,6 @@ data/swapfile
 !data/leverage_by_exporter.csv
 !data/clus_exporter_*.csv
 !data/loo_results.csv
+!data/pretrend_results.csv
+!data/pretrend2_*.csv
+!data/binary_anchor.csv
