@@ -444,6 +444,111 @@ Two things follow that matter beyond the pre-trend question:
 
 ---
 
+## 3i. Extensive margin, and the headline with zeros restored
+
+The delivered data holds only positive flows, so a country that stops selling a
+sector to the US simply vanishes from the sample. That makes entry and exit
+unobservable and — more seriously — means every estimate above is on a sample
+**selected on the outcome**, which is exactly the selection PPML with zeros exists to
+avoid.
+
+**Frame.** Keep (i, s, t) cells where exporter i ships sector s to *someone* (any of
+the 229 destinations), then rectangularise those over the 22 advanced destinations.
+Filling every (i, j, s, t) cell instead would manufacture structural zeros — a country
+that never makes a product is not "failing to serve the US". A zero here means
+*produces it, does not sell it in this market*, which is the object of interest.
+
+| | |
+|---|---:|
+| active (i,s,t) cells | 451,339 |
+| rectangularised over 22 destinations | 9,929,458 |
+| after the lag-3 IP merge | 7,914,060 (54.7% zeros) |
+| after dropping all-zero (i,s,t) cells | 7,168,238 (50.0% zeros) |
+| observed positives, all matched | 4,233,360 |
+
+Zeros are not rare in this frame. The intuition that ISIC 4-digit is too aggregated to
+have zeros holds for the *observed* data, not for the destination dimension: a country
+can make a product and simply not sell it in Germany.
+
+### Descriptively, US participation peaked before the trade war
+
+| year | developing (ex-China) active cells | serving US | % |
+|---|---:|---:|---:|
+| 2007 | 18,050 | 8,387 | 46.5% |
+| 2012 | 20,123 | 10,130 | 50.3% |
+| 2017 | 20,725 | 11,257 | **54.3%** |
+| 2021 | 20,762 | 11,104 | 53.5% |
+| 2024 | 20,406 | 10,599 | 51.9% |
+
+| transition | entry | exit |
+|---|---:|---:|
+| 2015→2017 | 10.0% | 6.8% |
+| 2017→2021 | 8.9% | 9.6% |
+| 2017→2024 | 8.7% | 11.7% |
+
+Net entry was **+3.2pp in the two years before the cutoff and −3.0pp over the seven
+years after**. At the aggregate level, decoupling did not pull developing exporters
+into the US market. (2024 may be incomplete in BACI; do not lean on the last year.)
+
+### E2. Extensive margin: a tight null
+
+LPM on 1[imports>0], same specification and clustering, N = 7,914,060.
+
+| | coef | se | p |
+|---|---:|---:|---:|
+| **DDD_dev** | **+0.00023** | 0.00162 | **0.887** |
+| DDD_adv | −0.00035 | 0.00110 | 0.754 |
+| IPxUS_dev | −0.00343 | 0.00107 | 0.001 |
+| IPxUS_adv | −0.00210 | 0.00081 | 0.010 |
+
+This is a **precisely estimated zero, not an underpowered one**: the 95% interval is
+[−0.29, +0.34] percentage points against a base participation rate of 45.3%. Even the
+top of that interval is a 0.7% relative change, against an intensive-margin effect of
+roughly 3.4% in flow value. The extensive margin can account for at most a small
+fraction of the total, and most likely none of it.
+
+`IPxUS_dev` = −0.0034 (p=0.001) reproduces on a binary outcome the same negative
+baseline tilt that γ₁ shows on the intensive margin — high-IP developing exporters are
+*less* likely to serve the US to begin with.
+
+### E1. The headline with zeros restored
+
+| | N | `DDD_dev` | se | p |
+|---|---:|---:|---:|---:|
+| positives only, tol 1e-8 (headline) | 3,543,453 | +0.0335 | 0.0138 | 0.016 |
+| positives only, tol 1e-6 (control) | 3,582,183 | +0.0335 | 0.0138 | 0.016 |
+| **zeros restored, tol 1e-6** | 7,092,582 | **+0.0271** | **0.0108** | **0.012** |
+
+E1 would not converge at the default 1e-8 tolerance — restoring zeros makes the
+weighted least squares inside PPML's IRLS badly conditioned, since zero observations
+get tiny IRLS weights and many groups are near-separated — so it ran at 1e-6. The
+middle row exists to stop that confounding the comparison: refitting positives-only at
+1e-6 reproduces the headline **to four decimals**, so the solver tolerance changes
+nothing and the whole +0.0335 → +0.0271 gap is attributable to the zeros.
+
+**The headline survives, with better precision.** The point estimate falls 19% — well
+inside one standard error — while the standard error tightens 22% and significance
+improves. That is exactly what E2 predicts: with no extensive-margin effect, adding
+zeros mainly adds information about the intensive margin and mildly dilutes the
+estimate. E1 and E2 corroborate each other rather than each standing alone.
+
+### What this settles, and what it does not
+
+**Settles:** the result is not an artefact of selecting on positive flows, which was a
+genuine vulnerability given that handling zeros is the main reason to use PPML at all.
+And the story is now specific: industrial policy helps developing exporters **sell more
+of what they already ship** to the US in decoupling-targeted sectors, not break into
+US market segments they were not already in.
+
+**Does not settle:** at ISIC 4-digit, "entry" means beginning to export an *entire
+industry* to the US — rare and lumpy. The benchmark (IMF WP 2024/041) finds its
+emerging-market extensive-margin effects at product level, where entry means adding a
+product line. Aggregation is plausibly the binding constraint here rather than the
+economics, so the null is "no extensive margin at this level of aggregation", and a
+BACI HS6 rebuild is the test that could overturn it.
+
+---
+
 ## 4. FE ladder — where the raw association lives
 
 US-bound only, developing ex-China, per 1 SD, lag 3, clustered by exporter.
@@ -536,10 +641,11 @@ in decoupling sectors, with a multi-year lag."
    10 exporters the coefficient stays in [+0.0244, +0.0384] with a median equal
    to the baseline, and 9 of 10 remain significant. Mexico is the one influential
    case, and mainly through the standard error.
-3. **Extensive margin.** Zero flows are absent from the data; 12.6% of US-bound
-   (exporter × sector) pairs churn between 2017 and 2024, and entry is invisible.
-   The benchmark (IMF WP 2024/041) finds extensive-margin effects concentrated in
-   emerging markets — possibly where more of this story lives.
+3. ~~**Extensive margin.**~~ Done in §3i on a rectangularised panel (50% zeros).
+   The extensive margin is a tight null (+0.0002, 95% CI ±0.3pp on a 45.3% base),
+   and the headline survives restoring zeros with better precision (+0.0271,
+   p=0.012). Open only at finer aggregation: at ISIC4 "entry" means starting to
+   export a whole industry, so a BACI HS6 rebuild could still overturn the null.
 4. **GTA intervention types.** The benchmark finds tax breaks strongly positive and
    direct transfers negative — they cancel in any pooled measure. Splitting by
    intervention type would identify *which kinds* of targeting work. Not testable
