@@ -41,3 +41,4 @@ data/swapfile
 !data/cs_ddd_event_results.csv
 !data/rot_results.csv
 !data/rot_share_results.csv
+!data/rot_*.csv
