@@ -38,9 +38,18 @@ d['tt']     = (d['t'] - 2007).astype('float64')
 log(f"{d.shape} | fe_ik {d['fe_ik'].nunique():,}  fe_kt {d['fe_kt'].nunique():,}  "
     f"fe_ict {d['fe_ict'].nunique():,}")
 
+# NOTE: country-product linear trends are NOT included. pyfixest 0.60's varying
+# slope syntax fe[x] does not absorb the group level, and does not correctly absorb
+# the slope either -- verified on synthetic data where the true effect is +0.20:
+# "| g" recovers +0.2000 exactly under level-only confounding while "| g[t]" returns
+# +0.2389, and under slope-only confounding "| g[t]" returns +0.3471. An earlier run
+# using fe_ik[tt] therefore had NO pair fixed effect and produced a spurious IP main
+# effect of +2.22; those results were discarded. Rotunno's trends are their robustness
+# column, not their baseline. The trends column needs Stata:
+#   ppmlhdfe x_us IPxDec IP, absorb(i.pair##c.year fe_kt fe_ict) cluster(i k)
 SPECS = [
-    ("B. between  (no delta_ict)", "fe_ik[tt] + fe_kt"),
-    ("W. within   (+ delta_ict)",  "fe_ik[tt] + fe_kt + fe_ict"),
+    ("B. between  (no delta_ict)", "fe_ik + fe_kt"),
+    ("W. within   (+ delta_ict)",  "fe_ik + fe_kt + fe_ict"),
 ]
 for name, fes in SPECS:
     for tol in [1e-6, 1e-5]:
