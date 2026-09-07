@@ -26,6 +26,12 @@ def log(m): print(f"[{time.time()-t0:.0f}s] {m}", flush=True)
 
 CHINA, MEASURE, LAG, OUT = 156, 'n_policies', 0, "note_base_results.csv"
 
+ALL = {
+    "A": ("A. bare quadruple",   "DDD_dev + DDD_adv"),
+    "B": ("B. + China controls", "DDD_dev + DDD_adv + Dec_US_chn + IPxUS_chn"),
+    "C": ("C. + IPxUS (dev,adv)", "DDD_dev + DDD_adv + IPxUS_dev + IPxUS_adv"),
+}
+
 raw = pd.read_pickle("agg_for_estimation.pkl")
 raw['i_int'] = raw['i'].astype('int32'); raw['t_int'] = raw['t'].astype('int32')
 raw[MEASURE] = pd.to_numeric(raw[MEASURE], errors='coerce').fillna(0).astype('float32')
@@ -70,11 +76,6 @@ log(f"lag {LAG}: {m.shape} | treated {int((m['DDD_dev']>0).sum()):,} | "
 
 # One variant per invocation: pass the key as argv[1]. Each step of the note is
 # discussed before the next is run, so nothing is queued behind anything else.
-ALL = {
-    "A": ("A. bare quadruple",   "DDD_dev + DDD_adv"),
-    "B": ("B. + China controls", "DDD_dev + DDD_adv + Dec_US_chn + IPxUS_chn"),
-    "C": ("C. + IPxUS (dev,adv)", "DDD_dev + DDD_adv + IPxUS_dev + IPxUS_adv"),
-}
 VARIANTS = [(NAME, RHS)]
 
 for name, rhs in VARIANTS:
