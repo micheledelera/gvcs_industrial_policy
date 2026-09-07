@@ -32,3 +32,4 @@ data/swapfile
 !data/pretrend*.csv
 !data/measures_results.csv
 !data/lag_dec_results.csv
+!data/note_base_results.csv
