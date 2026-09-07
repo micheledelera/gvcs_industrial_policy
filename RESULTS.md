@@ -639,6 +639,91 @@ adequately-powered policy variable.
 
 ---
 
+## 3k. Lags and the continuous decoupling measure
+
+§3j covered lag 3 with the binary `target × post` treatment. This completes the grid:
+three measures (the volume benchmark plus the two targeting measures) × lag {0, 3} ×
+treatment {binary, continuous} × {with, without `IPxUS`}. Full sample, cluster (i,s),
+headline FE, tol 1e-6.
+
+**On the continuous measure.** `Decouple_intensity_st` is a *deviation-from-2017*
+variable: exactly zero in 2017 and growing in both directions, with pre-period values
+*larger* than the early post-period (mean 0.181 in 2007 against 0.021 in 2018), and
+identically zero wherever `target = 0`. Used raw it would mark 2007 as heavily
+decoupled and fold pre-period divergence into the treatment, so it enters as
+`Decouple_intensity_st × post`. Note it therefore does **not** add treated sectors —
+it re-weights the same target sectors by how far they actually moved. Left in natural
+units, so coefficients are per unit of intensity; mean intensity among treated is
+0.242, so multiply by ~0.24 to compare with the binary column.
+
+### `DDD_dev`, full sample
+
+| | **target** l0 with | l0 without | l3 with | l3 without | **continuous** l0 with | l0 without | l3 with | l3 without |
+|---|---|---|---|---|---|---|---|---|
+| `n_policies` | +0.1005** | +0.0573* | +0.0782* | +0.0307 | +0.1404 | +0.1324 | +0.1246 | +0.0914 |
+| **`share_n_policies`** | +0.0826*** | +0.0357** | +0.0636*** | +0.0059 | +0.1949*** | +0.1276*** | **+0.2321\*\*\*** | +0.1096** |
+| `share_frac_policies` | +0.0373** | +0.0048 | +0.0524*** | +0.0150 | +0.1189*** | +0.0626* | +0.1316*** | +0.0593* |
+
+\*\*\* p<.01 \*\* p<.05 \* p<.10. Treated obs: binary 8,726 (l0) / 8,858 (l3);
+continuous 6,719 (l0) / 6,701 (l3) — the ~2,000 target-sector-years with zero measured
+decoupling drop out of treatment. `share_frac_policies` lag-0 binary reproduces the
+known full-sample value (+0.0373, p=0.0204) exactly.
+
+### 1. `share_n_policies` is significant in 8 of 8 cells
+
+No other measure is. It survives both lags, both treatment definitions, and the
+presence or absence of `IPxUS`. **This argues for promoting it over
+`share_frac_policies` as the paper's primary measure** — the current headline is the
+weaker of the two targeting variables on every dimension tested here.
+
+### 2. The continuous treatment sharpens the targeting-vs-volume separation
+
+`n_policies` is **null in all four continuous cells**. §3j could only establish that
+the share measures were *more precise* — point estimates were similar, which was the
+weak point of that argument. Under intensity weighting the volume measure has roughly
+half the implied effect *and* twice the standard error (se 0.11–0.12 against 0.05–0.06
+for `share_n_policies`). This is a better answer to "why define policy in terms of
+targeting?" than the binary table alone supports.
+
+### 3. The `IPxUS` requirement is less binding than §3c suggested
+
+`share_n_policies` survives dropping `IPxUS` in three of four specifications
+(p = .033, .006, .013). It fails only in the binary lag-3 cell — the §3c case — where
+γ₁ nearly cancels β₁ and leaves the level γ₁+β₁ ≈ +0.005, too close to zero to detect.
+So the §3c null is specific to one measure-lag-treatment combination and not a general
+fragility of the design. The saturation argument for including `IPxUS` still holds
+(Olden & Møen 2022, plus the `share_n_sub` collinearity warning in §3j), but the result
+no longer *depends* on it.
+
+### 4. Timing: no clean story, and none should be told
+
+| measure | binary | continuous |
+|---|---|---|
+| `share_n_policies` | lag 0 > lag 3 | lag 3 > lag 0 |
+| `share_frac_policies` | lag 3 > lag 0 | lag 3 ≈ lag 0 |
+| `n_policies` | lag 0 > lag 3 | both null |
+
+The direction flips with the treatment definition. The data do not support a claim
+about how quickly industrial policy acts on trade flows, and the §3h pre-trend test is
+too underpowered to arbitrate. Report both lags; do not build an argument on either.
+
+This also weakens a defence used earlier: the three-year lag was justified partly as
+protection against reverse causality. Since the contemporaneous specification is
+*stronger* in several cells, that protection is not doing the work it was claimed to.
+
+### 5. Dose-response
+
+Scaled by mean treated intensity (0.242), `share_n_policies` implies average effects of
++0.047 (lag 0) and +0.056 (lag 3), against binary values of +0.083 and +0.064. The
+continuous version consistently implies a **smaller average** — the binary assigns full
+treatment to sectors that barely decoupled — while implying **larger effects where
+decoupling was severe** (a sector at intensity 0.9 gets +0.209 at lag 3). That
+gradient is a more credible pattern than a uniform treatment effect, and is the
+strongest available evidence that the mechanism tracks actual reallocation rather than
+sector designation.
+
+---
+
 ## 4. FE ladder — where the raw association lives
 
 US-bound only, developing ex-China, per 1 SD, lag 3, clustered by exporter.

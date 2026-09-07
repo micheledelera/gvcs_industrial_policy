@@ -31,3 +31,4 @@ data/swapfile
 !data/binary_anchor.csv
 !data/pretrend*.csv
 !data/measures_results.csv
+!data/lag_dec_results.csv
