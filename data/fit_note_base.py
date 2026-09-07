@@ -45,14 +45,19 @@ us    = d['US_trade'].astype('float32').values
 dec   = (d['target'].astype('float32') * (d['t_int'] >= 2018)).astype('float32').values
 ip    = (d['IP_lag'] / d['IP_lag'].std()).astype('float32').values
 
-m = pd.DataFrame({
+NAME, RHS = ALL[sys.argv[1]]
+NEEDED = {t.strip() for t in RHS.split('+')}
+cols = {
     'imports': d['imports'].astype('float32').values,
     'DDD_dev': dec * ip * us * dev,
     'DDD_adv': dec * ip * us * adv,
-    'Dec_US_chn': dec * us * china,
-    'IPxUS_chn':  ip * us * china,
-    'IPxUS_dev':  ip * us * dev,
-    'IPxUS_adv':  ip * us * adv,
+}
+if 'Dec_US_chn' in NEEDED: cols['Dec_US_chn'] = dec * us * china
+if 'IPxUS_chn'  in NEEDED: cols['IPxUS_chn']  = ip * us * china
+if 'IPxUS_dev'  in NEEDED: cols['IPxUS_dev']  = ip * us * dev
+if 'IPxUS_adv'  in NEEDED: cols['IPxUS_adv']  = ip * us * adv
+m = pd.DataFrame({
+    **cols,
     'fe_ist': d.groupby(['i','ISIC4c','t'], observed=True).ngroup().astype('int32').values,
     'fe_jst': d.groupby(['j','ISIC4c','t'], observed=True).ngroup().astype('int32').values,
     'fe_ij':  d.groupby(['i','j'],          observed=True).ngroup().astype('int32').values,
@@ -70,7 +75,7 @@ ALL = {
     "B": ("B. + China controls", "DDD_dev + DDD_adv + Dec_US_chn + IPxUS_chn"),
     "C": ("C. + IPxUS (dev,adv)", "DDD_dev + DDD_adv + IPxUS_dev + IPxUS_adv"),
 }
-VARIANTS = [ALL[sys.argv[1]]]
+VARIANTS = [(NAME, RHS)]
 
 for name, rhs in VARIANTS:
     for tol in [1e-6, 1e-5]:
