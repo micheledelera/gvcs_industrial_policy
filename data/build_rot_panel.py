@@ -24,14 +24,16 @@ def log(m): print(f"[{time.time()-t0:.0f}s] {m}", flush=True)
 USA, CHINA = 842, 156
 raw = pd.read_pickle("agg_for_estimation.pkl")
 raw['i']=raw['i'].astype('int32'); raw['j']=raw['j'].astype('int32'); raw['t']=raw['t'].astype('int32')
-raw['n_policies']=pd.to_numeric(raw['n_policies'],errors='coerce').fillna(0).astype('float32')
+MEAS=['n_policies','share_n_policies','share_frac_policies']
+for c in MEAS:
+    raw[c]=pd.to_numeric(raw[c],errors='coerce').fillna(0).astype('float32')
 log(f"loaded {raw.shape}")
 
 tot = raw.groupby(['i','ISIC4c','t'], observed=True)['imports'].sum().rename('x_tot')
 us  = (raw[raw['j']==USA].groupby(['i','ISIC4c','t'], observed=True)['imports']
        .sum().rename('x_us'))
-pol = (raw[['i','ISIC4c','t','n_policies']].drop_duplicates(subset=['i','ISIC4c','t'])
-       .set_index(['i','ISIC4c','t'])['n_policies'])
+pol = (raw[['i','ISIC4c','t']+MEAS].drop_duplicates(subset=['i','ISIC4c','t'])
+       .set_index(['i','ISIC4c','t']))
 meta = raw[['i','Advanced_i']].drop_duplicates()
 tgt  = raw[['ISIC4c','target']].drop_duplicates(subset=['ISIC4c'])
 years = sorted(raw['t'].unique())
@@ -43,14 +45,18 @@ log(f"(i,k) pairs ever exporting: {len(pairs):,}  x {len(years)} years")
 p = pairs.loc[pairs.index.repeat(len(years))].copy()
 p['t'] = np.tile(years, len(pairs))
 p = p.merge(tot, on=['i','ISIC4c','t'], how='left').merge(us, on=['i','ISIC4c','t'], how='left')
-p = p.merge(pol.rename('n_pol'), on=['i','ISIC4c','t'], how='left')
-p[['x_tot','x_us','n_pol']] = p[['x_tot','x_us','n_pol']].fillna(0.0)
+p = p.merge(pol, on=['i','ISIC4c','t'], how='left')
+p[['x_tot','x_us']+MEAS] = p[['x_tot','x_us']+MEAS].fillna(0.0)
 p['x_nonus'] = (p['x_tot'] - p['x_us']).clip(lower=0)
 p = p.merge(meta, on='i', how='left').merge(tgt, on='ISIC4c', how='left')
-p['IP']      = (p['n_pol'] > 0).astype('float64')
+p['IP']      = (p['n_policies'] > 0).astype('float64')          # dummy, baseline
+for c in ['share_n_policies','share_frac_policies']:              # share extension
+    p['IP_'+c] = (p[c] / p[c].std()).astype('float64')
 p['isic2']   = p['ISIC4c'].astype(str).str[:2]
 p['Decoup']  = (p['target'].astype('float64') * (p['t']>=2018)).astype('float64')
 p['IPxDec']  = p['IP'] * p['Decoup']
+for c in ['share_n_policies','share_frac_policies']:
+    p['IPxDec_'+c] = p['IP_'+c] * p['Decoup']
 log(f"panel {p.shape} | zeros: total {100*(p['x_tot']==0).mean():.1f}%  "
     f"US {100*(p['x_us']==0).mean():.1f}%")
 log(f"IP on in {100*p['IP'].mean():.1f}% of cell-years; "
