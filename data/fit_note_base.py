@@ -30,6 +30,8 @@ ALL = {
     "A": ("A. bare quadruple",   "DDD_dev + DDD_adv"),
     "B": ("B. + China controls", "DDD_dev + DDD_adv + Dec_US_chn + IPxUS_chn"),
     "C": ("C. + IPxUS (dev,adv)", "DDD_dev + DDD_adv + IPxUS_dev + IPxUS_adv"),
+    "D": ("D. + Dec_US_chn",
+          "DDD_dev + DDD_adv + IPxUS_dev + IPxUS_adv + Dec_US_chn"),
 }
 
 raw = pd.read_pickle("agg_for_estimation.pkl")
