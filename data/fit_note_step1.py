@@ -1,22 +1,24 @@
-"""Note, step 1: the bare quadruple interaction.
+"""Note, step 1: the bare quadruple interaction with pair-sector fixed effects.
 
   X_ijst = exp{ b1 Decoupling_st x IP_ist x TradeUS_j x Developing_i
               + b2 Decoupling_st x IP_ist x TradeUS_j x Advanced_i
-              + a_ist + a_ijt + a_ij }
+              + a_ist + a_ijs + a_ij }
 
 target x post as Decoupling_st, n_policies as IP, full sample, cluster (i,s),
-both lags. Deliberately unsaturated -- lower-order terms get added one at a time
-in later steps.
+lag 0 then lag 3. Deliberately unsaturated -- lower-order terms are added one at
+a time in later steps.
 
-Two notes on the FE as written:
-  * a_ij is nested inside a_ijt (every (i,j) group is a union of (i,j,t) groups),
-    so it is collinear and contributes nothing. Kept here to match the equation.
-  * there is no a_jst, so the US sector-year shock is NOT absorbed: a_ijt takes
-    importer-YEAR, not importer-sector-year. Decoupling_st x TradeUS_j varies at
-    (j,s,t) and is therefore in the residual at this step.
+a_ij is omitted because it is SPANNED by a_ijs: every (i,j) group is a union of
+(i,j,s) groups, so the two fixed effects together have the same column space as
+a_ijs alone. Estimates, standard errors and residuals are numerically identical
+to including both; dropping it only avoids 42,684 redundant parameters.
 
-Identification still works: the interaction varies across s within (i,j,t) and
-across j within (i,s,t), so neither FE spans it.
+There is no a_jst at this step, so the US sector-year shock -- including the
+Section 301 tariffs themselves -- is not absorbed: Decoupling_st x TradeUS_j
+varies at (j,s,t) and sits in the residual. That is what step 2 adds.
+
+Identification: the interaction varies across j within (i,s,t) and across t
+within (i,j,s), so neither fixed effect spans it.
 """
 import pandas as pd, numpy as np, pyfixest as pf, gc, os, time
 
@@ -52,18 +54,16 @@ for LAG in [0, 3]:
         'DDD_dev': dec * ip * us * dev,
         'DDD_adv': dec * ip * us * adv,
         'fe_ist': d.groupby(['i','ISIC4c','t'], observed=True).ngroup().astype('int32').values,
-        'fe_ijt': d.groupby(['i','j','t'],      observed=True).ngroup().astype('int32').values,
-        'fe_ij':  d.groupby(['i','j'],          observed=True).ngroup().astype('int32').values,
+        'fe_ijs': d.groupby(['i','j','ISIC4c'], observed=True).ngroup().astype('int32').values,
         'cl_is':  d.groupby(['i','ISIC4c'],     observed=True).ngroup().astype('int32').values,
     })
     del d; gc.collect()
     log(f"lag {LAG}: {m.shape} | fe_ist {m['fe_ist'].nunique():,} | "
-        f"fe_ijt {m['fe_ijt'].nunique():,} | fe_ij {m['fe_ij'].nunique():,} | "
-        f"treated {int((m['DDD_dev']>0).sum()):,}")
+        f"fe_ijs {m['fe_ijs'].nunique():,} | treated {int((m['DDD_dev']>0).sum()):,}")
 
     for tol in [1e-6, 1e-5]:
         try:
-            fit = pf.fepois("imports ~ DDD_dev + DDD_adv | fe_ist + fe_ijt + fe_ij",
+            fit = pf.fepois("imports ~ DDD_dev + DDD_adv | fe_ist + fe_ijs",
                             data=m, vcov={"CRV1": "cl_is"},
                             demeaner=pf.LsmrDemeaner(fixef_maxiter=8000,
                                                      fixef_atol=tol, fixef_btol=tol),
