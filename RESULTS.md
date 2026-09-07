@@ -646,15 +646,43 @@ three measures (the volume benchmark plus the two targeting measures) × lag {0,
 treatment {binary, continuous} × {with, without `IPxUS`}. Full sample, cluster (i,s),
 headline FE, tol 1e-6.
 
-**On the continuous measure.** `Decouple_intensity_st` is a *deviation-from-2017*
-variable: exactly zero in 2017 and growing in both directions, with pre-period values
-*larger* than the early post-period (mean 0.181 in 2007 against 0.021 in 2018), and
-identically zero wherever `target = 0`. Used raw it would mark 2007 as heavily
-decoupled and fold pre-period divergence into the treatment, so it enters as
-`Decouple_intensity_st × post`. Note it therefore does **not** add treated sectors —
-it re-weights the same target sectors by how far they actually moved. Left in natural
-units, so coefficients are per unit of intensity; mean intensity among treated is
-0.242, so multiply by ~0.24 to compare with the binary column.
+**On the continuous measure.** From `build_decouple_intensity.py`:
+
+```
+baseline_s   = mean(China's US mkt_share in 2015, 2016, 2017)     # sector scalar
+trailing_st  = 3-year rolling mean of that share, ending at t
+frac_lost_st = clip((baseline_s − trailing_st) / baseline_s, min=0)
+Decouple_intensity_st = frac_lost_st × target_s
+```
+
+It is the fractional loss of China's US market share against its 2015–17 baseline,
+both ends smoothed over three years — the smoothing was the answer to the concern that
+a year-on-year decoupling variable would capture noise rather than trend.
+
+**It is only interpretable as decoupling for t ≥ 2018.** China's mean share of US
+imports rose from 0.189 (2007) to 0.219 (2015) before falling to 0.149 (2024). In the
+early years the trailing average therefore sits *below* the 2015–17 baseline — not
+because China was losing ground but because it had not yet finished gaining it — so
+`baseline − trailing > 0`, the clip does not bite, and the formula reports a positive
+"fractional loss". Hence pre-period values *larger* than the early post-period (mean
+0.181 in 2007 against 0.021 in 2018), and an identical zero at 2017, where the trailing
+window and the baseline window coincide. Used raw, the largest treatment values in the
+sample would sit in the pre-period. It therefore enters as
+`Decouple_intensity_st × post`.
+
+Two further properties. It is **clipped at zero**, so a sector where China gained share
+is indistinguishable from one that never decoupled. And it is **multiplied by
+`target_s`**, so it adds no treated sectors — it re-weights the same ones by how far
+they actually moved. Left in natural units; mean intensity among treated is 0.242, so
+multiply by ~0.24 to compare with the binary column.
+
+**A note for the paper.** Both `target` and `Decouple_intensity_st` are functions of
+China's US market share, and in the US column China losing share means non-China
+exporters gain by construction. `α_jst` absorbs the sector-year total, so `DDD_dev`
+asks which non-China exporters capture more of the available reallocation — which is
+interpretable. But the treatment intensity *is* the size of the pot being
+redistributed, and that should be stated rather than left for a referee. It is also
+the precise reason `Dec_US_chn` is mechanical rather than informative.
 
 ### `DDD_dev`, full sample
 
