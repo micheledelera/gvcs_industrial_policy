@@ -36,3 +36,6 @@ data/swapfile
 !data/note_base_results.csv
 !data/country_panel.csv
 !data/did_country_results.csv
+!data/cs_event_results.csv
+!data/cs_ddd_results.csv
+!data/cs_ddd_event_results.csv
