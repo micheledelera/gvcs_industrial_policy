@@ -1020,3 +1020,78 @@ but it has not been run.
 1. Wild cluster bootstrap on the joint pre-trend tests above.
 2. 2021 carries most of the panel's post-period movement. Section 301 tariff coverage
    by sector would help separate decoupling from post-COVID reconfiguration.
+
+---
+
+## §3n. Does differencing actually remove capability?
+
+The §3l write-up claimed that working in differences removes time-invariant
+country-sector effects "which is capability in that sector". That is right about a
+narrow object and wrong as a defence of the design.
+
+Write s_ikt = mu_ik + lambda_kt + u_ikt. Then delta-s_ik = (lambda_post - lambda_pre)
++ delta-u_ik and mu_ik is gone exactly. True -- but only if capability enters as an
+**additive, time-invariant level shifter**. The plausible alternative is a loading:
+
+    s_ikt = mu_ik + phi_ik * lambda_kt + u_ikt
+    =>  delta-s_ik = phi_ik (lambda_post - lambda_pre) + delta-u_ik
+
+Differencing kills mu_ik and leaves phi_ik **interacted with the shock** -- and the
+shock is the object of study. Differencing sweeps out the level, where capability was
+harmless, and isolates the part where it is not. Two further gaps it does not close:
+forward-looking targeting (Cov(IP, delta-u) != 0 regardless of differencing), and the
+fact that mu_ik additive *in shares* is not obviously "capability" at all, since
+capability plausibly scales exports multiplicatively.
+
+### Direct test
+
+Regress the PRE-period change delta-s^pre_ik = s(2015-17) - s(2010-12) on the five
+capability controls, within sector, weighted, clustered by country. If capability were
+a pure level effect it should not predict the change. Code:
+`data/diag_capability_trend.py`. N = 12,117, 149 countries, 125 sectors.
+
+| | (A) capability | (B) + initial share | (C) + capability x Dec |
+|---|---|---|---|
+| log_mva_pc | −0.040 (0.392) | −0.068 (0.379) | +0.932 (0.491)* |
+| mva_gdp | −0.249 (0.510) | +0.025 (0.460) | −1.138 (0.708) |
+| mfg_emp | +0.370 (0.479) | +0.508 (0.316) | −0.132 (0.835) |
+| log_exp | +1.043 (0.497)** | +0.688 (0.458) | +0.743 (0.507) |
+| ECI | −0.129 (0.419) | −0.630 (0.363)* | +0.123 (0.601) |
+| s0_pp | | **+0.0958 (0.0136)\*\*\*** | |
+| **log_mva_pc x Dec** | | | **−5.206 (2.497)\*\*** |
+| **mva_gdp x Dec** | | | **+3.619 (1.407)\*\*** |
+| mfg_emp x Dec | | | +2.474 (2.048) |
+| log_exp x Dec | | | +0.519 (2.419) |
+| ECI x Dec | | | +0.260 (1.210) |
+| **joint capability = 0** | F(5,148)=1.14, **p=0.34** | F=1.39, p=0.23 | F=2.26, **p=0.051** |
+
+**The level version of the worry is not supported.** Capability alone does not predict
+the pre-period trend within a sector (p = 0.34). Differencing plus alpha_k does leave
+measured capability roughly orthogonal to the change.
+
+**The loading version is supported and is the one that bites.** log_mva_pc x Dec is
+−5.21** and mva_gdp x Dec is +3.62**, joint p = 0.051: in the sectors China dominated,
+more-capable countries were already on different trajectories before anything happened.
+Dec_k is the treatment intensity, so the contaminated object is the **IP x Dec
+interaction** -- the term carrying the story -- not the IP main effect.
+
+This makes rung 3 of §3l (capability x Dec) a necessary control rather than a
+robustness flourish, and it is where share_frac_policies in Panel B loses significance
+(+0.0084** -> +0.0038 ns). That attenuation now reads as informative rather than as an
+overzealous specification.
+
+**Sign note.** s0_pp is **+0.0958*** -- positive. Countries with a higher initial share
+gained more over 2010-17. The process is DIVERGING, not mean-reverting, so s^pre in the
+specification controls for persistence and the Galton regression-to-the-mean intuition
+has the wrong sign here.
+
+### Corrected wording for the note
+
+> Selection on prior performance is handled in part by working in differences: a
+> time-invariant country-sector effect drops out, and we verify that measured
+> capability does not predict the pre-2018 change within a sector (F(5,148) = 1.14,
+> p = 0.34). Differencing does not, however, remove capability that acts as a loading
+> on sector-level shocks rather than as a level, and we find evidence that it does:
+> capability interacted with China's pre-period share predicts differential pre-trends
+> (joint p = 0.051). We therefore include capability x decoupling-intensity
+> interactions throughout, and report a country fixed effect as the limiting case.
