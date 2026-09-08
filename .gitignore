@@ -46,3 +46,4 @@ data/swapfile
 !data/longdiff_results.csv
 !data/longdiff*.csv
 !data/base2020_*.csv
+!data/ctrl_headline.csv

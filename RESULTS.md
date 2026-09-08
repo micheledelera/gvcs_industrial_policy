@@ -856,3 +856,81 @@ in decoupling sectors, with a multi-year lag."
    ex-China US-bound observations).
 5. **`frac_sub` / `share_*` definitions** were reconstructed from the raw file
    mid-session; worth confirming they mean what we assume.
+
+---
+
+## §3l. Country-level capability controls in the between-country designs
+
+**Why.** The sector fixed effect α_k holds *exposure* to Chinese withdrawal fixed —
+every country in the regression faces the same vacated share in sector k. It does
+nothing about two other threats: selection into treatment (governments target sectors
+where they already hold RCA — Juhász et al. 2022) and differential capacity to respond
+(two equally exposed, equally targeted countries absorb a vacated order book at
+different speeds). "Mexico and Vietnam both supply product X" answers the first threat
+and neither of the other two.
+
+What the design already does about them: differencing (Δs, and α_ik in the panel)
+removes any *time-invariant* (i,k) component, which is capability in that sector — so
+the RCA half of the selection problem is handled, because the RCA sits in the level and
+the level is differenced away. Δs^pre conditions on the pre-2018 trajectory. Neither
+touches country-level heterogeneity in the *response* to a common shock. Prior evidence
+that this matters: in the country-level DiD (§ earlier), `HasPolicy` collapsed from
++0.314 (p=.048) to +0.041 (p=.86) once ECI, log MVA per capita and size entered.
+
+**Controls**, all 2015–17 means so none is a function of the outcome, all standardised:
+log MVA per capita (UNIDO `NV_IND_MANFPC`), MVA/GDP (`NV_IND_MANF`), manufacturing
+employment share (`SL_TLF_MANF`), log exports to world (BACI), ECI (BACI, 125 ISIC-4
+sectors). Complete-control sample: 149–150 countries, **99.94% of pre-period US import
+value** — the ~30 dropped countries are rounding.
+
+**Four rungs.** (1) α_k baseline; (2) + capability levels; (3) + capability × Dec_k;
+(4) + country FE α_i. Rung 4 is the direct answer to the comparability objection: under
+α_i two countries are never compared, and the estimate rests only on whether a country
+gained more share in the sectors it targeted than in those it did not. The price is that
+the *volume* question dies with it — total policy effort is collinear with α_i — so only
+*targeting* is identified there. α_i does **not** solve *within*-country selection.
+
+Code: `data/fit_longdiff_ctrl.py` (full grid, 2020 base), `data/fit_ctrl_headline.py`
+(the two specifications that carry signal). Results: `data/ctrl_headline.csv`,
+`data/longdiff_ctrl_flow.csv`.
+
+### Panel A — 2017-base long difference
+Dep. var: pp change in country's share of US imports in sector k. WLS, weighted by
+pre-period US imports, clustered by country. N = 12,117.
+
+| measure | (1) α_k baseline | (2) + capability levels | (3) + capability × Dec | (4) + country FE |
+|---|---|---|---|---|
+| n_policies | −0.0637 (0.0440) | −0.2748 (0.1119)** | −0.1740 (0.0672)** | +0.0625 (0.0611) |
+| frac_policies | +0.0275 (0.0196) | −0.0495 (0.0530) | +0.0127 (0.0307) | +0.0701 (0.0311)** |
+| share_n_policies | −0.0004 (0.0960) | −0.1036 (0.1135) | −0.0677 (0.1043) | +0.1413 (0.1396) |
+| **share_frac_policies** | **+0.2362 (0.0895)\*\*\*** | **+0.1685 (0.0875)\*** | **+0.1688 (0.0853)\*\*** | **+0.1427 (0.0940)** |
+
+### Panel B — 2020-base difference, stock timing, with IP × Dec
+Dec in raw pp (mean 24.9, sd 20.1), so multiply by ~20 to compare with the
+standardised-Dec coefficients in `base2020_diff_results.csv`. N = 12,276.
+
+| measure | (1) α_k | (2) + levels | (3) + × Dec | (4) + country FE |
+|---|---|---|---|---|
+| n_policies | +0.0021 (0.0024) | −0.0012 (0.0026) | −0.0091 (0.0053)* | +0.0010 (0.0043) |
+| frac_policies | +0.0019 (0.0037) | −0.0001 (0.0040) | −0.0045 (0.0052) | +0.0016 (0.0038) |
+| **share_n_policies** | **+0.0183 (0.0076)\*\*** | **+0.0172 (0.0073)\*\*** | **+0.0098 (0.0053)\*** | **+0.0063 (0.0034)\*** |
+| share_frac_policies | +0.0084 (0.0037)** | +0.0066 (0.0035)* | +0.0038 (0.0032) | +0.0014 (0.0018) |
+
+### Reading
+
+The controls bite, which vindicates the objection rather than dismissing it.
+`n_policies` in Panel A goes from insignificant to −0.27** once capability enters, and
+the auxiliary coefficients say why: `log_exp` is +1.18 (se 0.51), so the raw policy
+*count* was carrying country size.
+
+The measures that survive are the two `share_*` ones — the ones already normalised by
+the country's own total policy effort. That is what one would expect if the country-level
+confound operates mainly through *volume*: dividing by the country total removes it
+internally, which is why those measures move least when the controls arrive.
+
+`share_frac_policies` in Panel A attenuates ~40% (0.236 → 0.143) and loses significance
+only at rung 4, where the SE widens rather than the point estimate collapsing.
+`share_n_policies` in Panel B survives all four rungs including α_i.
+
+**Not yet done.** The panel event study carries α_ik, which absorbs these controls in
+levels, so testing it there requires controls × year. Separate run.
