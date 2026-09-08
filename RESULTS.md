@@ -1294,3 +1294,68 @@ adjustment, so this does not equal beta1 = +0.378 -- it is the transparent versi
 the estimate. The negative in low-exposure sectors may be partly mechanical: shares sum
 to 100 within a sector, so a country gaining in its targeted high-exposure sectors can
 lose share elsewhere without anything real happening to it.
+
+---
+
+## §3s. Is the gravity result expansion or reallocation?
+
+The gravity specification carries alpha_ist, which absorbs country i's TOTAL exports in
+sector s in year t. beta1 is therefore a pure DESTINATION margin -- US-bound relative to
+i's own other markets -- and three different worlds produce the same +0.0524:
+
+  1. total exports rose and the increment went disproportionately to the US
+  2. total exports were flat and shipments were redirected from other markets to the US
+  3. total exports fell everywhere but fell least in the US
+
+If policy built capacity it should raise exports to ALL destinations, with the US
+component being the extra tilt from vacated demand. This drops the destination
+dimension and runs the same triple difference on a country-sector-year panel:
+
+    X_ist = exp[ a_it + a_st + a_is + b (IP_ist x target_s x post_t) + eta IP_ist ]
+
+a_it takes out i's overall export growth, a_st world demand for s, a_is the pair level.
+Same treatment as the gravity headline: share_frac_policies lagged 3, standardised,
+developing ex-China. 190 countries, 125 sectors, 2010-2024, clustered (i,s). The US
+takes 18.3% of these exports. Code: `data/fit_reallocation.py`, `data/fit_realloc_us.py`
+(the US cell needed a demeaning tolerance ladder; converged at maxiter 10,000, atol 1e-8).
+
+| outcome | DDD | p | N |
+|---|---|---|---|
+| **(1) Total exports to world** | **−0.0059 (0.0032)\*** | 0.062 | 286,534 |
+| **(2) US-bound only** | **+0.0175 (0.0039)\*\*\*** | <0.0001 | 241,134 |
+| **(3) Non-US only** | **−0.0081 (0.0036)\*\*** | 0.024 | 286,523 |
+
+### This is reallocation, not expansion
+
+In the sectors a country targeted and China was leaving, exports to the US rose,
+exports everywhere else fell by a comparable amount, and total exports did not rise.
+The rough accounting holds: 0.183 x (+0.0175) + 0.817 x (−0.0081) = −0.0034, against an
+estimated total of −0.0059.
+
+**The gravity result is destination composition, not capacity.** Industrial policy in
+decoupling sectors is associated with reorienting existing exports toward the vacated
+US market, not with producing more.
+
+### Caveats
+
+1. The US cell is estimated on 241,134 observations against 286,534 for the other two,
+   because PPML drops all-zero fixed-effect groups and 44.8% of country-sector-years
+   have no US exports. That cell is on a selected sample of pairs that ever ship to the US.
+2. The negative on total exports is marginal (p = 0.062) and small. The defensible
+   statement is "no increase in total exports", not "a decrease".
+3. This FE structure (a_it + a_st + a_is) is not the gravity headline's
+   (a_ist + a_jst + a_ij), so these magnitudes are not comparable to +0.0524. The
+   contrast ACROSS the three outcomes is the finding, not the levels.
+
+### Wording for the note
+
+> We find that a one-standard-deviation increase in policy targeting is associated with
+> 5.2% higher exports to the US in decoupling sectors than in non-decoupling ones. This
+> is a *destination* margin: the exporter x sector x year effects absorb a country's
+> total exports in that sector, so the coefficient identifies where output was sold, not
+> how much was produced. Estimating the same triple difference on a country-sector-year
+> panel confirms the distinction. Exports to the US rise (+0.018, p<0.001), exports to
+> all other destinations fall by a comparable amount (−0.008, p=0.024), and total
+> exports do not increase (−0.006, p=0.062). Industrial policy in decoupling sectors is
+> therefore associated with reorienting exports toward the vacated US market rather than
+> with expanding export capacity.

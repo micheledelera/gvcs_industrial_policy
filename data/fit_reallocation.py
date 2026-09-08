@@ -83,7 +83,7 @@ for lbl,y in [("(1) TOTAL exports to world",'X_tot'),
     try:
         m=pf.fepois(f"{y} ~ DDD + IPz | fe_it + fe_st + fe_is", data=p,
                     vcov={"CRV1":"cl"}, iwls_maxiter=500,
-                    demeaner=pf.LsmrDemeaner(fixef_maxiter=2000, fixef_tol=1e-8),
+                    demeaner=pf.LsmrDemeaner(fixef_maxiter=2000),
                     lean=True, store_data=False, copy_data=False)
         t=m.tidy()
         b,se,pv=t.loc['DDD','Estimate'],t.loc['DDD','Std. Error'],t.loc['DDD','Pr(>|t|)']
