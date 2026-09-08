@@ -54,3 +54,4 @@ data/swapfile
 !data/longdiff_final_*.csv
 !data/longdiff_iso.csv
 !data/did_vs_ldv.csv
+!data/reallocation.csv
