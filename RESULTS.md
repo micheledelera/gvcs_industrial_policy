@@ -1095,3 +1095,65 @@ has the wrong sign here.
 > capability interacted with China's pre-period share predicts differential pre-trends
 > (joint p = 0.051). We therefore include capability x decoupling-intensity
 > interactions throughout, and report a country fixed effect as the limiting case.
+
+---
+
+## §3o. Recommended long difference — with the decoupling interaction restored
+
+The §3m/§3n recommendation omitted IP x Dec_k. That was an error. Two reasons it must
+be in:
+
+1. **Without it there is no decoupling result.** With only a_k, the coefficient says
+   "countries that targeted sector k gained share in sector k" -- in every sector,
+   vacated by China or not. That is a generic industrial-policy finding. The decoupling
+   content is whether the payoff RISES with how much China withdrew, i.e. IP x Dec.
+2. **The asymmetry is indefensible.** Keeping X_i x Dec_k while dropping IP_ik x Dec_k
+   is the worst combination: policy-active countries are more capable, so the capability
+   interactions absorb variation belonging to the policy interaction.
+
+a_k absorbs Dec_k's main effect only; IP x Dec varies across i within k, so the sector
+FE is no substitute for it.
+
+    d_s_ik = b1 (IP_ik x Dec_k) + b2 IP_ik + g d_s^pre_ik + dl s^pre_ik
+             + X_i'th + (X_i x Dec_k)'ps + a_k [+ a_i] + e_ik
+
+Dec_k standardised (mean 24.68pp, sd 20.07), so b1 is per sd of Chinese share and b2 is
+the effect at the average sector. WLS weighted by pre-period US imports, clustered by
+country. N = 12,117 | 149 countries | 125 sectors | 99.94% of pre-period US value.
+Code: `data/fit_longdiff_final.py`. Results: `data/longdiff_final.csv`.
+
+### share_frac_policies
+
+| spec | IP x Dec | IP |
+|---|---|---|
+| 1. a_k only | +0.392 (0.190)** | +0.541 (0.152)*** |
+| 2. + capability levels | +0.299 (0.156)* | +0.403 (0.114)*** |
+| **3. + capability x Dec [recommended]** | **+0.109 (0.151)** | **+0.255 (0.125)\*\*** |
+| 4. + country FE | +0.277 (0.173) | +0.384 (0.139)*** |
+
+### All measures, rungs 3 and 4
+
+| measure | IP x Dec (3) | IP (3) | IP x Dec (4) | IP (4) |
+|---|---|---|---|---|
+| n_policies | −0.442 (0.173)** | −0.455 (0.157)*** | −0.106 (0.098) | −0.019 (0.075) |
+| frac_policies | −0.227 (0.156) | −0.171 (0.136) | −0.007 (0.128) | +0.064 (0.107) |
+| share_n_policies | −0.035 (0.097) | −0.085 (0.119) | +0.308 (0.074)*** | +0.326 (0.093)*** |
+| share_frac_policies | +0.109 (0.151) | +0.255 (0.125)** | +0.277 (0.173) | +0.384 (0.139)*** |
+
+### Reading
+
+The decoupling interaction **is** significant before the capability controls (+0.392**,
++0.299*) and **is not** after capability x Dec enters (+0.109). This is precisely what
+§3n predicted: capability x Dec independently predicts pre-trends, and policy-active
+countries are more capable, so the two interactions compete for the same variation.
+
+The main effect survives throughout: +0.255** at rung 3, +0.384*** under country FE.
+
+So the currently defensible statement concerns the **level of targeting**, not the claim
+that the payoff is **larger where China withdrew more**. That is weaker than the
+decoupling framing wants.
+
+**Caveat, not yet checked.** Five capability x Dec terms against one IP x Dec is a lot
+of collinear controls; the drop from +0.299* to +0.109 could be over-control rather than
+confound removal. The tests are (a) a joint test of psi = 0, and (b) a version carrying
+only log_mva_pc x Dec, the one term that was significant in §3n.
