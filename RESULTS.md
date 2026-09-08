@@ -934,3 +934,89 @@ only at rung 4, where the SE widens rather than the point estimate collapsing.
 
 **Not yet done.** The panel event study carries α_ik, which absorbs these controls in
 levels, so testing it there requires controls × year. Separate run.
+
+---
+
+## §3m. Capability controls in the panel event study, and a joint pre-trend test
+
+The pair fixed effect a_ik absorbs every country control **in levels**, so the
+comparability objection has to be answered here with something that varies over time.
+Three rungs, ref year 2020, N = 218,106 (12,117 pairs, 149 countries, 99.94% of
+pre-period US import value):
+
+  (1) a_ik + a_kt                       baseline
+  (2) + capability_i x year dummies     parametric; countries with a deeper industrial
+                                        base get their own path through the sample
+  (3) a_ik + a_kt + a_it                nonparametric; country-year FE absorb ALL
+                                        country-level time-varying heterogeneity,
+                                        observed or not. Two countries are never
+                                        compared; identification is within a
+                                        country-year across sectors, i.e. TARGETING only
+
+Rung 3 is the panel analogue of the country FE in §3l and strictly stronger than rung 2:
+(2) removes what we measured, (3) removes what we did not. IP_ik x 1[t=tau] still varies
+across k within (i,t), so nothing is collinear.
+
+Code: `data/fit_panel_es_ctrl.py`, `data/fit_panel_es_wald.py`.
+Results: `data/panel_es_ctrl_2020.csv`, `data/panel_es_wald_2020.csv`.
+
+### share_frac_policies, coefficients by year (IP x Dec / IP)
+
+| year | (1) a_ik + a_kt | (2) + capability x year | (3) + a_it |
+|---|---|---|---|
+| 2017 | −0.008 / −0.114 | +0.042 / −0.021 | +0.160 / +0.083 |
+| 2018 | −0.008 / −0.076 | +0.056 / +0.019 | +0.137 / +0.078 |
+| 2019 | +0.095* / +0.027 | +0.155* / +0.085 | +0.221* / +0.133 |
+| **2020** | — ref — | — ref — | — ref — |
+| 2021 | +0.270* / +0.340* | +0.211 / +0.292* | +0.324 / +0.391* |
+| 2022 | +0.450* / +0.571* | +0.379* / +0.507* | +0.590* / +0.712* |
+| 2023 | +0.437* / +0.453* | +0.460* / +0.462* | +0.805* / +0.774* |
+| 2024 | +0.332* / +0.247* | +0.332* / +0.229* | +0.494 / +0.372 |
+
+The post-2020 rise survives both rungs. Under a_it it is *larger*.
+
+### Joint pre-trend test — and a correction
+
+The 2020-reference event study was previously reported as passing with "0/11
+pre-period coefficients significant". **That was too weak a test**: counting years one
+at a time ignores the covariance across them. Testing the 13 pre-2020 coefficients
+jointly, using the finite-sample F form (13, 148) rather than the chi2 asymptotic:
+
+| measure | spec | path | F(13,148) | p | slope/yr | t |
+|---|---|---|---|---|---|---|
+| share_frac_policies | (1) | IP x Dec | 7.21 | <.0001 | −0.0100 | −1.49 |
+| share_frac_policies | (1) | IP | 24.46 | <.0001 | **+0.0189** | **3.93** |
+| share_frac_policies | (2) | IP x Dec | 13.92 | <.0001 | **−0.0259** | **−5.15** |
+| share_frac_policies | (2) | IP | 13.51 | <.0001 | +0.0005 | 0.11 |
+| share_frac_policies | (3) | IP x Dec | 12.88 | <.0001 | −0.0261 | −4.14 |
+| share_frac_policies | (3) | IP | 40.67 | <.0001 | +0.0319 | 5.42 |
+| share_n_policies | (1) | IP x Dec | 10.61 | <.0001 | −0.0194 | −2.51 |
+| share_n_policies | (3) | IP x Dec | 25.69 | <.0001 | −0.0895 | −17.13 |
+
+**All 24 joint tests (4 measures x 3 rungs x 2 paths) reject at p < .0001.**
+
+The slope column is the informative one. At the baseline the *interaction* path has no
+linear drift (−0.0100, t = −1.49) while the *main* path does (+0.0189, t = 3.93).
+Adding capability x year flips this exactly: main-path drift goes to zero (+0.0005,
+t = 0.11) and the drift moves into the interaction (−0.0259, t = −5.15). Under a_it the
+path is a shallow V — 2007 at +0.69, declining monotonically to +0.08 by 2018, rising
+after 2020 — so 2020 sits near the bottom of a long decline and part of the post-2020
+rise is measured against that trough.
+
+**The capability controls redistribute the pre-trend between the two paths rather than
+removing it.** The panel event study has no clean pre-period under any specification
+tried so far. This was true before the controls; the controls only exposed that the
+year-by-year check was inadequate.
+
+This is why the long difference is the more defensible of the two designs: it does not
+claim flat pre-trends, it conditions on delta-s^pre rather than assuming it away.
+
+**Caveat.** CRV1 Wald over 13 restrictions is known to over-reject (Cameron-Miller).
+A wild cluster bootstrap is the proper check. With F of 7-41 it is unlikely to flip,
+but it has not been run.
+
+### Open
+
+1. Wild cluster bootstrap on the joint pre-trend tests above.
+2. 2021 carries most of the panel's post-period movement. Section 301 tariff coverage
+   by sector would help separate decoupling from post-COVID reconfiguration.
