@@ -51,3 +51,5 @@ data/swapfile
 !data/panel_es_wald_*.csv
 !data/capability_trend*.csv
 !data/longdiff_final.csv
+!data/longdiff_final_*.csv
+!data/longdiff_iso.csv

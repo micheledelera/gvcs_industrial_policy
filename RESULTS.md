@@ -1157,3 +1157,51 @@ decoupling framing wants.
 of collinear controls; the drop from +0.299* to +0.109 could be over-control rather than
 confound removal. The tests are (a) a joint test of psi = 0, and (b) a version carrying
 only log_mva_pc x Dec, the one term that was significant in §3n.
+
+---
+
+## §3p. One control instead of five: X = {mva_gdp}
+
+The five-control X of §3o was overloaded. Restricting to a single capability control,
+MVA as a share of GDP:
+
+    d_s_ik = b1 (IP_ik x Dec_k) + b2 IP_ik + g d_s^pre_ik + dl s^pre_ik
+             + th mva_gdp_i + ps (mva_gdp_i x Dec_k) + a_k [+ a_i] + e_ik
+
+N = 13,208 cells | 167 countries | 125 sectors | 99.99% of pre-period US value.
+Code: `data/fit_longdiff_one.py` (regressor set as argv[1]),
+`data/fit_longdiff_iso.py` (argv[1] = regressors, argv[2] = sample-defining set, so the
+sample can be held fixed while the control set varies).
+Results: `data/longdiff_final_mva_gdp.csv`, `data/longdiff_iso.csv`.
+
+### share_frac_policies
+
+| spec | IP x Dec | IP |
+|---|---|---|
+| 1. a_k only | +0.376 (0.182)** | +0.522 (0.148)*** |
+| 2. + mva_gdp | +0.379 (0.192)** | +0.512 (0.150)*** |
+| **3. + mva_gdp x Dec [recommended]** | **+0.378 (0.198)\*** | **+0.518 (0.156)\*\*\*** |
+| 4. + country FE | +0.394 (0.183)** | +0.488 (0.147)*** |
+
+Both terms are stable across all four rungs, interaction included. Other measures:
+share_n_policies is null except under country FE (+0.353***, +0.344***); n_policies and
+frac_policies are null throughout.
+
+### What killed the interaction in §3o
+
+Two candidates: the extra controls, or the larger sample (167 vs 149 countries).
+Holding the 149-country sample fixed:
+
+| X = | IP x Dec, rung 3 | rung 4 |
+|---|---|---|
+| mva_gdp only | +0.394 (0.207)* | +0.411 (0.191)** |
+| mva_gdp + log_mva_pc | +0.213 (0.160) | +0.328 (0.171)* |
+| all five | +0.109 (0.151) | +0.277 (0.173) |
+
+Not the sample. **`log_mva_pc` is the variable that does the work** -- the same one that
+was −5.21** in §3n. mva_gdp (structure: how manufacturing-intensive the economy is) and
+log_mva_pc (level: industrial development per head) are different objects, and only the
+second competes with IP x Dec. That is the variable to think about if a second control
+is wanted; the other three were noise.
+
+This supersedes the §3o recommendation.
