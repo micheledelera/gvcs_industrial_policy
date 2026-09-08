@@ -1205,3 +1205,43 @@ second competes with IP x Dec. That is the variable to think about if a second c
 is wanted; the other three were noise.
 
 This supersedes the §3o recommendation.
+
+---
+
+## §3q. Pure DiD versus lagged dependent variable
+
+A two-period DiD on the change assumes parallel trends and does not control for the
+lagged outcome. An LDV model controls for the lagged outcome and does not assume
+parallel trends. They rest on opposite assumptions and tend to BRACKET the truth
+(Angrist & Pischke, MHE ch. 5). The §3p specification does both at once, so it is
+neither cleanly. This runs the ladder between them.
+
+    (a) pure DiD      d_s ~ IPxDec + IP                    + a_k
+    (b) + pre-trend   d_s ~ IPxDec + IP + d_s^pre          + a_k
+    (c) LDV           d_s ~ IPxDec + IP          + s^pre   + a_k
+    (d) both  [§3p]   d_s ~ IPxDec + IP + d_s^pre + s^pre  + a_k
+
+All carry mva_gdp + mva_gdp x Dec; each repeated with a country FE.
+Code: `data/fit_did_vs_ldv.py`. Results: `data/did_vs_ldv.csv`.
+N = 13,208 | 167 countries | 125 sectors.
+
+### share_frac_policies
+
+| | a_k only: IP x Dec | IP | + country FE: IP x Dec | IP |
+|---|---|---|---|---|
+| **a. pure DiD** | +0.345 (0.218) | +0.495 (0.178)*** | +0.361 (0.193)* | +0.459 (0.159)*** |
+| b. + pre-trend | +0.368 (0.215)* | +0.508 (0.176)*** | +0.403 (0.179)** | +0.497 (0.148)*** |
+| **c. LDV** | +0.404 (0.227)* | +0.549 (0.189)*** | +0.423 (0.188)** | +0.526 (0.157)*** |
+| d. both [§3p] | +0.378 (0.198)* | +0.518 (0.156)*** | +0.394 (0.183)** | +0.488 (0.147)*** |
+
+**Bracket: [+0.345, +0.404] on the interaction, [+0.495, +0.549] on the main effect** --
+about 15% and 10% wide. DiD and LDV rest on opposite assumptions and give nearly the
+same answer, so the parallel-trends-versus-lagged-outcome choice is not driving the
+result. This addresses the concern that the §3p hybrid is neither design cleanly.
+
+**Qualifications.** The interaction in the *pure* DiD with only sector FE is not
+significant (se 0.218, p = .11); it crosses the threshold once any lagged term or the
+country FE enters. Its significance is specification-dependent in a way the main
+effect's is not. Other measures: share_n_policies null under a_k, strongly positive
+under country FE across all four rungs (+0.31*** to +0.37***); n_policies and
+frac_policies null throughout.
