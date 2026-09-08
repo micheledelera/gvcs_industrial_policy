@@ -43,3 +43,4 @@ data/swapfile
 !data/rot_share_results.csv
 !data/rot_*.csv
 !data/stagger_results.csv
+!data/longdiff_results.csv
