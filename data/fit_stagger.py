@@ -85,12 +85,19 @@ for tau in range(LO,HI+1):
 log(f"{len(names)} event-time interactions, ref tau=-1 | treated rows "
     f"{int((d['et'].notna()).sum()):,}")
 
-fit = pf.fepois(f"x_us ~ {' + '.join(names)} | fe_ik + fe_kt", data=d,
+d['fe_it']  = d.groupby(['i','t'], observed=True).ngroup().astype('int32')
+d['fe_ict'] = d.groupby(['i','isic2','t'], observed=True).ngroup().astype('int32')
+import sys
+FES = {"between": "fe_ik + fe_kt",
+       "within_it":  "fe_ik + fe_kt + fe_it",     # country-year: the direct remedy
+       "within_ict": "fe_ik + fe_kt + fe_ict"}[sys.argv[1]]
+fit = pf.fepois(f"x_us ~ {' + '.join(names)} | {FES}", data=d,
                 vcov={"CRV1":"cl_i + cl_k"},
                 demeaner=pf.LsmrDemeaner(fixef_maxiter=8000, fixef_atol=1e-6,
                 fixef_btol=1e-6), store_data=False, copy_data=False)
-t = fit.tidy(); t.to_csv(OUT)
-print(f"\n### STAGGERED EVENT STUDY x IP  N={fit._N:,}  ref tau=-1  cluster country+sector\n")
+t = fit.tidy(); t.to_csv(f"stagger_{sys.argv[1]}.csv")
+print(f"\n### STAGGERED EVENT STUDY x IP [{sys.argv[1]}]  N={fit._N:,}  "
+      f"ref tau=-1  FE: {FES}\n")
 for nm in names:
     if nm not in t.index: continue
     tau = (-1 if nm.startswith('Em') else 1)*int(nm[2:])
