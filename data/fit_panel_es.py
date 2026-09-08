@@ -44,6 +44,11 @@ p=p.merge(xp,on=['i','ISIC4c'],how='left').merge(ip,on=['i','ISIC4c'],how='left'
    .merge(dec,on='ISIC4c',how='left')
 for c in ['s','w','Dec']+MEAS: p[c]=p[c].fillna(0.0)
 p['Advanced_i']=p['i'].map(adv); p=p[(p['Advanced_i']==0)&(p['i']!=CHINA)].copy()
+# pyfixest rejects zero weights; under WLS those rows contribute nothing anyway, so
+# dropping pairs with no pre-period US imports is exactly what the weighting does.
+n0=len(p); p=p[p['w']>0].copy()
+print(f"dropped {n0-len(p):,} rows ({(n0-len(p))//len(years):,} pairs) with zero "
+      f"pre-period US imports -- zero weight under WLS regardless")
 p['Dz']=(p['Dec']-p['Dec'].mean())/p['Dec'].std()
 p['fe_ik']=p.groupby(['i','ISIC4c'],observed=True).ngroup().astype('int32')
 p['fe_kt']=p.groupby(['ISIC4c','t'],observed=True).ngroup().astype('int32')
