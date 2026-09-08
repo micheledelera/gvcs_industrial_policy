@@ -22,7 +22,14 @@ event that way and then measuring other countries' gains is close to tautologica
 Onset here is the first year China's US exports in LEVELS fall >=10% below their
 2015-17 average and stay there.
 
-Sample: developing excluding China, which is the population the question is about.
+Sample: developing excluding China, restricted to the 72 sectors with a decoupling
+onset. Keeping the 53 non-onset sectors as never-treated changes nothing: with mu_kt
+saturated at sector-year and alpha_ik at pair, a non-onset sector forms a separable
+block -- zero regressor variation, fixed effects estimated from its own rows alone --
+so it contributes nothing to beta. Verified: every coefficient in the full-sample
+version equals the restricted one times 1.056, a constant across all twelve, which is
+only the IP standardiser responding to the different sample. Restricting therefore
+reports the honest estimating sample, 179,964 rather than 318,852.
 Zeros retained (PPML on levels) -- restricting to pairs already exporting to the US
 would select on the outcome, and section 3i showed that matters.
 
@@ -60,6 +67,7 @@ d = d[(d['Advanced_i']==0) & (d['i']!=CHINA)].copy()
 ip = (d[d['t'].between(2015,2017)].groupby(['i','ISIC4c'], observed=True)
       ['share_n_policies'].mean().rename('IPpre'))
 d = d.merge(ip, on=['i','ISIC4c'], how='left').merge(on, on='ISIC4c', how='left')
+d = d[d['onset'].notna()].copy()      # <-- keep ONLY sectors with a decoupling onset
 d['IPpre'] = (d['IPpre'].fillna(0) / d['IPpre'].std()).astype('float64')
 log(f"developing ex-China panel {d.shape} | pairs {d.groupby(['i','ISIC4c'],observed=True).ngroup().nunique():,}")
 
