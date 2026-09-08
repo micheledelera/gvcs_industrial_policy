@@ -1,5 +1,12 @@
 """Panel event study in levels -- the panel form of the long difference.
 
+Reference year is an argument. Run with 2017 (the trade-war cutoff) and with 2020:
+under the 2017 reference the share_frac_policies main effect is flat through 2020
+and only rises from 2021, which fits post-pandemic supply-chain reconfiguration as
+well as it fits a lagged response to the 2018-19 tariffs. Re-referencing to 2020
+asks whether the 2007-2019 period is flat against that later base -- if it is, the
+movement is a 2021 event rather than a slow response to 2018.
+
   s_ikt = sum_tau b1_tau (IP_ik x Dec_k x 1[t=tau])
         + sum_tau b2_tau (IP_ik x 1[t=tau])
         + a_ik + a_kt + e_ikt                          ref tau = 2017
@@ -13,10 +20,11 @@ a_kt    absorbs sector-year (the sector dummies of the long difference)
 Sample: developing ex-China, as in the long difference. Weighted by pre-period US
 imports. Clustered by country. Run for all four policy measures in sequence.
 """
-import pandas as pd, numpy as np, pyfixest as pf, gc, time
+import pandas as pd, numpy as np, pyfixest as pf, gc, sys, time
 t0=time.time()
 def log(m): print(f"[{time.time()-t0:.0f}s] {m}", flush=True)
-USA, CHINA, REF = 842, 156, 2017
+USA, CHINA = 842, 156
+REF = int(sys.argv[1]) if len(sys.argv)>1 else 2017
 PRE=[2015,2016,2017]
 MEAS=['n_policies','frac_policies','share_n_policies','share_frac_policies']
 
