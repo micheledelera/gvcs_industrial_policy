@@ -45,3 +45,4 @@ data/swapfile
 !data/stagger_results.csv
 !data/longdiff_results.csv
 !data/longdiff*.csv
+!data/base2020_*.csv
