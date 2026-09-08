@@ -1245,3 +1245,52 @@ country FE enters. Its significance is specification-dependent in a way the main
 effect's is not. Other measures: share_n_policies null under a_k, strongly positive
 under country FE across all four rungs (+0.31*** to +0.37***); n_policies and
 frac_policies null throughout.
+
+---
+
+## §3r. The DiD as raw cell means
+
+What the regression is a smoothed version of. Treatment: share_frac_policies > 0 in
+2015-17. Exposure: Dec_k above the sector median (15.7pp). Outcome: change in share of
+total US imports, 2015-17 to 2022-24, pp. All means weighted by pre-period US imports.
+Code: `data/diag_did_cells.py`. N = 13,208 | 167 countries | 125 sectors.
+
+### Raw
+
+| | IP = 0 | IP > 0 | difference |
+|---|---|---|---|
+| High exposure | +1.802 (5,820 cells / 21.9% wt) | +2.226 (1,273 / 25.1%) | **+0.423** |
+| Low exposure | +1.927 (4,856 / 18.2%) | +1.858 (1,259 / 34.9%) | **−0.069** |
+| | | | **DDD = +0.492** |
+
+Pooled DiD ignoring exposure: **+0.153**
+
+### After removing the sector mean change (what alpha_k does)
+
+| | IP = 0 | IP > 0 | difference |
+|---|---|---|---|
+| High exposure | −0.290 | +0.253 | **+0.543** |
+| Low exposure | +0.304 | −0.158 | **−0.463** |
+| | | | **DDD = +1.005** |
+
+Pooled DiD ignoring exposure: **+0.034**
+
+### Reading
+
+The naive contrast -- (high IP, high exposure) minus (low IP, low exposure), the two
+diagonal cells -- gives +0.299 raw and −0.052 demeaned. It discards the off-diagonal
+cells and the two readings disagree in sign, which is the confounding problem: it cannot
+separate gains from policy from gains from being in a sector China vacated.
+
+The DDD uses all four cells. Within high-exposure sectors, policy-active pairs gained
++0.54pp more than non-policy ones; within low-exposure sectors they gained 0.46pp LESS.
+The sign flip is why the **pooled** DiD is near zero (+0.034 demeaned): averaged over
+all sectors industrial policy looks like nothing, and only looks like something once
+conditioned on where China was withdrawing. That is the decoupling result, visible in
+raw cell means before any regression.
+
+**Caveats.** Binary dichotomisation, no controls, no pre-trend, no capability
+adjustment, so this does not equal beta1 = +0.378 -- it is the transparent version, not
+the estimate. The negative in low-exposure sectors may be partly mechanical: shares sum
+to 100 within a sector, so a country gaining in its targeted high-exposure sectors can
+lose share elsewhere without anything real happening to it.
