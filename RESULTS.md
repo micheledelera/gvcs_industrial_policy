@@ -2445,3 +2445,62 @@ work.
 
 **Recommendation: A first**, since it is the only route that keeps the method honest. If it
 fails, augmented SC, which reports how much extrapolation it uses.
+
+---
+
+## §4b. Route C — do country-sector units solve the hull problem?
+
+Treatment at the COUNTRY level (policy user vs not, applied to all a country's sectors,
+since that is the research question), units = country-sector, outcome = log US exports
+2007-2017. Code: `data/sc02_hull_by_sector.py`.
+
+5,524 pairs with a complete series: 3,196 from policy-using countries, 2,328 from
+non-policy countries. 106 of 125 sectors have >=1 treated and >=5 donors.
+
+**51.5% of treated pairs are inside their sector's donor hull -- but only 5.0% of treated
+TRADE VALUE.**
+
+| country | sectors inside hull | % of its US trade inside |
+|---|---|---:|
+| Mexico | 3 / 106 (3%) | **0.2%** |
+| Vietnam | 23 / 99 (23%) | **1.6%** |
+| India | 17 / 106 (16%) | 1.7% |
+| Brazil | 22 / 106 (21%) | 1.9% |
+| Malaysia | 26 / 97 (27%) | 5.4% |
+| Thailand | 22 / 105 (21%) | 6.5% |
+| Indonesia | 27 / 101 (27%) | 9.5% |
+| Philippines | 33 / 100 (33%) | 13.8% |
+| Turkiye | 46 / 105 (44%) | 20.1% |
+| Bangladesh | 37 / 54 (69%) | 9.8% |
+
+Disaggregating puts the SMALL CORNERS of each country's basket inside the hull, not the
+sectors that make it a big exporter. Vietnam is studiable in 23 sectors representing 1.6%
+of what it sells to America.
+
+**A conjecture of mine, refuted.** I expected feasibility to be worst in high-decoupling
+sectors. It is not: corr(share inside hull, China's pre-period US share) = **−0.011**, and
+the top China-share quartile has 57.5% of pairs inside against 57.0% in the bottom. The
+selection is by SIZE WITHIN COUNTRY, not by exposure. Mildly good news -- the feasible set
+is not systematically low-decoupling.
+
+### Implications for the research question
+
+1. **It changes the estimand.** The question is about countries; C answers it as an average
+   over country-sectors, and §3v showed weighted and unweighted versions of that average
+   disagree in sign. Unweighted tells you about the typical (small) sector; weighted puts
+   Mexico back at ~46% of the estimate.
+2. **It does not buy the common support it appears to.** 5% of treated trade value. Any
+   aggregate over hull-feasible units describes the periphery of these countries' baskets.
+3. **Effective sample size is 39, not 3,196.** A country's sectors move together, so the
+   information is 39 treated countries. The t-statistics of 10-11 in §3ah are largely
+   illusory.
+4. **SUTVA bites harder.** Treated and donors compete for the same US demand within a
+   sector; §3x found treated pairs hold a median 50.1% of developing supply in their own
+   sector. Much weaker at country level on total exports.
+5. **C collapses into B.** Route C only works if an intercept is allowed, which is exactly
+   what makes the hull irrelevant -- Doudchenko-Imbens, not Abadie. That is what §3z-§3ah
+   were doing without saying so, and why their pre-fit looked good. **C is not a third
+   route: choosing it means choosing B under another name.**
+
+Real options remain A (scale-free outcome, keeps Abadie intact) and B (augmented SC, which
+reports how much extrapolation it uses). Recommendation unchanged: A first.
