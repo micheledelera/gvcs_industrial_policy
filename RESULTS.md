@@ -1858,3 +1858,60 @@ Adjusting for unequal windows (placebo spans 5 years of midpoint separation, tre
 Measure the residual MVA gap A's weights leave between treated and synthetic, and sweep
 MVA_W. If +0.29 survives a much heavier MVA weight and a near-zero residual gap, it is
 worth taking seriously. If it decays toward B's number, it was capability all along.
+
+---
+
+## §3aa. Does §3z's estimate survive forcing an MVA match?
+
+§3z left MVA_W = 2.0 arbitrary. If too low, omega builds a synthetic control from
+countries at a different level of industrialisation and the estimate is capability, not
+policy — the §3n confound. Sweep MVA_W at zeta -> 0, where the path match is tightest.
+Verdict rule set in advance: if tau holds while the MVA gap goes to zero, not capability;
+if it decays toward §3z variant B (+0.157, ns), it was.
+
+Code: `data/fit_sc_mvasweep.py` (first pass), `data/fit_sc_mvasweep2.py` (corrected).
+
+**A solver bug found and fixed.** In the first pass the free intercept was fitted over
+ALL rows including the MVA target row, so a level shift in log exports could offset an
+MVA gap. That made the MVA-gap column non-monotonic (0.114 -> −0.012 -> 0.065 -> 0.227
+-> 0.226 -> 0.121 -> 0.048 -> 0.013) and inflated tau at intermediate weights. Corrected
+so the intercept absorbs only the log-export level; the MVA row must be matched on its
+own terms. **The §3z headline of +0.288 was partly this bug; the corrected value is
++0.208.**
+
+Benchmark: raw unweighted treated-minus-donor MVA gap within sector = **+0.178 sd**.
+
+| MVA_W | eff. don | MVA gap | pre RMSE | TRUE tau | PLACEBO tau |
+|---|---|---|---|---|---|
+| 0.0 | 13.4 | +0.1138 | 0.097 | +0.205 (0.058) t=3.51 | +0.036 (0.022) t=1.65 |
+| 0.5 | 13.5 | +0.0196 | 0.099 | +0.199 (0.059) t=3.38 | +0.037 (0.023) t=1.63 |
+| 1.0 | 13.4 | −0.0080 | 0.098 | +0.203 (0.061) t=3.36 | +0.040 (0.024) t=1.68 |
+| **2.0** | 13.4 | **−0.0030** | 0.100 | **+0.208 (0.062) t=3.36** | +0.043 (0.025) t=1.73 |
+| 5.0 | 13.4 | −0.0005 | 0.100 | +0.209 (0.062) t=3.36 | +0.045 (0.025) t=1.78 |
+| 10.0 | 13.5 | −0.0002 | 0.102 | +0.209 (0.062) t=3.35 | +0.046 (0.025) t=1.80 |
+| 25.0 | 14.7 | +0.0012 | 0.126 | +0.211 (0.059) t=3.59 | +0.049 (0.027) t=1.80 |
+| 100.0 | 20.1 | +0.0013 | 0.245 | +0.233 (0.054) t=4.32 | +0.088 (0.051) t=1.72 |
+
+### Reading
+
+1. **The capability confound is ruled out.** Forcing the synthetic to match treated MVA
+   to within 0.003 sd moves tau by less than 0.01 log points — +0.205 with no MVA
+   matching, +0.208 with an exact match. About as clean an answer to the §3n objection
+   as this data allows.
+2. **The placebo is no longer significant** anywhere in the usable range: +0.036 to
+   +0.049, t 1.63-1.80. Per year, +0.008 placebo against +0.030 true, a ratio near four.
+   Not zero, but not rejecting.
+3. **At MVA_W = 100 the path match degrades** (RMSE 0.245) and the placebo climbs to
+   +0.088 — over-weighting MVA buys the MVA match at the cost of the path match, and
+   drift returns. MVA_W in [1, 25] is the sensible range and tau is flat across it.
+
+**Remaining worry: magnitude.** +0.21 log points is ~23% higher US exports, against
+gravity's 5.2%. These are not the same object — gravity's is a DIFFERENTIAL between
+decoupling and non-decoupling sectors with total exports absorbed by alpha_ist, while
+this is a level change in US exports spanning both margins.
+
+### Open
+
+Run this SC estimator on TOTAL exports and NON-US exports, mirroring §3s. If SC
+independently reproduces US up / non-US down / total flat, the reallocation finding is
+confirmed by a wholly different method and the magnitude gap is explained.

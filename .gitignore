@@ -64,3 +64,4 @@ data/swapfile
 !data/decile_all_summary.csv
 !data/sdid_*.csv
 !data/sc_longdiff.csv
+!data/sc_mvasweep*.csv
