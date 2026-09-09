@@ -2247,3 +2247,67 @@ placebo genuinely vanishes. But **the note must not lean on the "only a truly si
 could track this closely" argument**, because the tracking here comes from the law of
 large numbers, not from similarity. The apparel donor list — Turkmenistan, Suriname,
 Eswatini, Zimbabwe against Vietnam, Turkiye and Mexico — makes that concrete.
+
+---
+
+## §3ag. Synthetic control done properly — and the result does not survive it
+
+§3af showed the §3aa-§3ae estimator is not really a synthetic control: near-uniform
+weights, because it matches a GROUP MEAN with a FREE INTERCEPT. Three mechanical fixes
+plus one that changes the question. Code: `data/fit_sc_v2.py`.
+
+  1. PER-UNIT matching, one SC per treated pair rather than per sector group
+  2. NO FREE INTERCEPT, so donors must match the LEVEL as well as the shape
+  3. RICHER COVARIATES: log MVA per capita, MVA/GDP, ECI, log total exports, and the
+     sector's share of the country's own exports (the specialisation margin Juhasz et al.
+     say governments select on)
+  4. POLICY-ACTIVE DONORS ONLY -- donors restricted to countries that DO run industrial
+     policy but did not target this sector. §3ac found 69.5% of donors were countries
+     doing no policy at all, making the contrast country-level rather than targeting.
+
+| spec | n | pre-RMSE | eff/donors | tau | placebo |
+|---|---|---|---|---|---|
+| 0. Group, intercept, MVA only (§3aa) | 58 | 0.098 | 13.4/21 | +0.203 (0.061) t=3.36 | +0.040 (0.024) t=1.68 |
+| 1. + richer covariates | 58 | 0.122 | 10.5/21 | +0.133 (0.060) t=2.21 | +0.044 (0.025) t=1.74 |
+| 2. + no intercept | 58 | 0.114 | 9.0/21 | +0.145 (0.064) t=2.27 | +0.049 (0.028) t=1.73 |
+| **3. + per-unit** | 954 | 0.329 | **4.7/24** | +0.154 (0.042) t=3.69 | **+0.052 (0.022) t=2.36** |
+| 3b. per-unit, intercept kept | 954 | 0.251 | 6.2/24 | +0.135 (0.042) t=3.19 | +0.039 (0.020) t=1.96 |
+| **4. per-unit, POLICY-ACTIVE donors** | 922 | 0.482 | 2.7/8 | **+0.025 (0.045) t=0.56** | **−0.004 (0.032) t=−0.13** |
+
+### Reading
+
+**The mechanical fixes work.** Per-unit matching drops effective donors 13.4 -> 4.7: a
+real synthetic control rather than a weighted average. Pre-RMSE rises 0.098 -> 0.329, as
+expected when matching one noisy pair instead of a smooth 16-unit mean. The richer
+covariates cost the most (+0.203 -> +0.133); dropping the intercept costs little.
+
+**The honest version fails its own placebo.** At spec 3 the placebo is +0.052, t = 2.36,
+significant at 5%. The +0.154 estimate sits on a pre-period gap of +0.052 -- a third of it
+is drift.
+
+**Spec 4 removes the effect entirely.** Restricting donors to policy-active countries
+that chose different sectors gives tau = **+0.025 (se 0.045)**, a PRECISE null: the SE is
+essentially unchanged from spec 3 (0.045 vs 0.042), so the 95% interval [−0.06, +0.11]
+comfortably excludes +0.15. And the placebo is exactly zero (−0.004, t = −0.13).
+
+That combination matters. In §3ad poor pre-fit predicted LARGE placebos (corr +0.708).
+Spec 4 has the worst fit in the table and the cleanest placebo -- the opposite pattern. So
+this is not a matching failure producing noise; it is a genuine null.
+
+### What it means
+
+**The synthetic-control result was a country-level contrast**, exactly as §3ac suspected.
+Compare a policy-using country's targeted sector against countries running no industrial
+policy at all: +0.15 to +0.20. Compare it against OTHER POLICY-USING COUNTRIES THAT CHOSE
+DIFFERENT SECTORS: nothing.
+
+So the finding is "countries that do industrial policy grew faster in decoupling sectors
+than countries that don't" -- a statement about country types, about which this design has
+nothing credible to say, since policy-using and non-policy-using countries differ in every
+way MVA and ECI do not capture. **It is not evidence that targeting a sector helped that
+sector.**
+
+This also puts the gravity estimate in a different light. Gravity's alpha_ist absorbs the
+country entirely, so its +5.2% CANNOT be a country-type effect. The two designs now tell a
+coherent story: targeting shows up where the country is differenced out, and disappears
+where the comparison is between country types.
