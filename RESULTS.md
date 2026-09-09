@@ -2126,3 +2126,43 @@ country. A valid counterfactual for a badly-defined treatment gives a precise es
 the wrong thing.
 
 **The remaining problem has moved from identification to measurement.**
+
+---
+
+## §3ae. The synthetic-control figure
+
+Code: `data/plot_sc_paths.py`. Output: `data/sc_paths.png`.
+
+For each sector, omega is the §3aa/§3ad estimator (MVA_W = 2, zeta -> 0, matching the
+2010-2017 log US export path plus MVA). Treated path = mean log X over treated pairs;
+synthetic path = omega-weighted donor mean plus the intercept fitted over the path years.
+Both expressed relative to the TREATED group's own 2015-17 mean — so the pre-period gap
+stays visible rather than being normalised to zero by construction — then averaged across
+sectors. Bands are +/-1 jackknife se.
+
+### The gap, year by year (log points)
+
+| | 2010 | 2015-17 | 2021 | 2022-24 |
+|---|---|---|---|---|
+| All 58 sectors | −0.025 | +0.030 | +0.327 | **+0.238** |
+| Best-fitting third (n=20) | −0.001 | −0.002 | +0.272 | **+0.205** |
+
+### What the figure shows that the tables did not
+
+1. **The lines genuinely track before 2018.** In the best-fitting third the gap is −0.001
+   in 2010 and −0.002 over 2015-17: visually indistinguishable for eight years.
+   Cunningham's condition satisfied about as well as it can be.
+
+2. **Divergence starts around 2018-19, not 2021.** §3m's panel event study put the
+   movement in 2021, which is confounded with post-COVID reconfiguration. Here the
+   treated line separates from 2018 and the gap is already substantial by 2019, before
+   COVID. **This is evidence for the tariff story over the pandemic story, and the first
+   design in this project to distinguish them.**
+
+3. **Both series spike in 2022 and fall back.** The gap peaks at +0.33 in 2021 and
+   settles at +0.24 by 2022-24, so the headline is measured after a partial reversion,
+   not at the peak. The common hump in both lines is the global trade surge and
+   correction, which the synthetic control absorbs — the design working as intended.
+
+The left panel's positive pre-period gap (+0.030 over 2015-17) is the badly-fitting
+sectors, and it is exactly the +0.043 placebo of §3aa. In the right panel it is gone.

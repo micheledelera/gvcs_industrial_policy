@@ -69,3 +69,4 @@ data/swapfile
 !data/realloc_restricted.csv
 !data/form_test.csv
 !data/sc_validity.csv
+!data/sc_paths.png
