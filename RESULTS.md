@@ -1693,3 +1693,84 @@ running the tau in [−5,−2] version before reading anything into the shape.
 1. tau in [−5,−2] pre-trend test, dropping the endpoint bin.
 2. Whether the share measures' pre-trend pass is mechanical (less between-country
    variation) rather than substantive.
+
+---
+
+## §3x. Synthetic difference-in-differences
+
+**Why try it.** Every design so far has TESTED parallel trends and mostly failed. SDiD
+(Arkhangelsky, Athey, Hirshberg, Imbens & Wager 2021) does not assume them: unit weights
+omega are chosen so the donor pool's pre-treatment path matches the treated units', time
+weights lambda downweight pre-periods unlike the post, and it is doubly robust. Its unit
+weights are also a principled answer to the weighted-vs-unweighted tension of §3v, which
+turned on trade size rather than on fit.
+
+**The share outcome disqualifies SC.** `data/diag_sdid_feasible.py`: treated pairs hold
+a **median 50.1%** of developing-ex-China US imports in their own sector, more than half
+in 31 of 62 sectors. With shares summing to 100, anything the treated gain is
+mechanically taken from the donors used to build their counterfactual. A second-order
+annoyance for regression; disqualifying for SC. Switched the outcome to **log US
+exports**, which needs a complete positive series: 2,567 of 8,833 pairs qualify (29.1%)
+but hold **99.5% of pre-period US import value**.
+
+**Design.** Donors restricted to the SAME sector, so exposure stays fixed as elsewhere.
+Treated = IP>0. E_k from the 25% threshold. One SDiD per sector, then aggregated;
+jackknife over sectors for inference. Implemented from scratch (no package installed):
+projected gradient on the simplex, zeta = (N_tr x T_post)^(1/4) x sd(first differences of
+donor outcomes). Code: `data/fit_sdid.py`, `data/diag_sdid_fit.py`.
+
+### The placebo fails
+
+54 sectors, 920 treated pairs.
+
+| | simple mean ATT | trade-weighted |
+|---|---|---|
+| **SDiD, true event** | +0.129 (0.056), p = 0.021 | +0.120 (0.055), p = 0.031 |
+| **Placebo, fake event 3 years early** | **+0.220 (0.041), p < 0.0001** | **+0.165 (0.044), p = 0.0002** |
+
+The effect is LARGER in a window sitting entirely before decoupling. The cohort
+breakdown says the same thing:
+
+| event year | sectors | mean tau |
+|---|---:|---:|
+| 2017 | 2 | +0.788 |
+| 2019 | 14 | +0.234 |
+| 2020 | 10 | +0.314 |
+| 2021 | 7 | −0.027 |
+| 2022 | 8 | −0.050 |
+| 2023 | 10 | −0.023 |
+| 2024 | 3 | −0.074 |
+
+The sign tracks post-window LENGTH, not the event. That is the signature of a slow
+divergence counted as an event response.
+
+### Why it fails -- not a solver bug
+
+| | median | mean |
+|---|---|---|
+| pre-period RMSE under omega | 0.2664 | 0.2757 |
+| pre-period RMSE under uniform | 0.3315 | 0.3581 |
+
+omega beats uniform in **54/54 sectors**, median ratio 0.78, so the optimiser works.
+Two numbers explain the failure:
+
+1. **The weights are essentially uniform.** Median max weight 0.061; median EFFECTIVE
+   donors 21.6 of 22. zeta scales with the volatility of donor log exports in first
+   differences, and trade data is volatile, so the penalty swamps the fit term and
+   **SDiD degenerates to plain DiD here** -- inheriting its pre-trend problem instead of
+   fixing it.
+2. **The residual pre-trend accounts for the whole effect.** After omega the
+   treated-minus-synthetic path still drifts up at a median +0.0117 log points/year
+   (mean +0.024). Over five post years that is +0.06 to +0.12, against an ATT of +0.129.
+   The "effect" is the pre-existing divergence extrapolated.
+
+**Conclusion.** SC does not rescue the design, and fails for a substantive reason:
+policy-active country-sectors were already growing faster than comparable non-policy
+ones in the same sector before decoupling, and no reweighting of same-sector donors
+removes that.
+
+### Open
+
+Re-run with a smaller zeta -- deliberately under-regularising to force concentrated
+weights -- to see whether a genuine synthetic match exists at the cost of overfitting
+risk. The standard sensitivity, not yet run.

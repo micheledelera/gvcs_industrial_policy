@@ -62,3 +62,4 @@ data/swapfile
 !data/event_stagger_*.csv
 !data/event_decile_*.csv
 !data/decile_all_summary.csv
+!data/sdid_*.csv
