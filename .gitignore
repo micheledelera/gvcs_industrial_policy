@@ -76,3 +76,4 @@ data/swapfile
 !data/sc01_feasibility.csv
 !data/sc02_hull_by_sector.csv
 !data/sc03_scalefree.csv
+!data/sc04_routeA.csv

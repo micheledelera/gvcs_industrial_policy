@@ -2549,3 +2549,59 @@ Fit omega on 2007-2013 only, then check tracking on 2014-2017 unseen. If held-ou
 collapses, the near-perfect pre-period tracking is noise-fitting and the donor pool needs
 trimming (Abadie's remedy: restrict donors to units plausibly similar on covariates). If it
 holds, proceed to treatment date, covariates and placebo inference.
+
+---
+
+## §4d. Route A run canonically — and why it fails
+
+Canonical Abadie on log US orientation, one SC per treated country, non-negative weights
+summing to one, no intercept, matched on the eleven lagged outcomes. 39 treated, 129
+donors, pre 2007-17, post 2018-24. Abadie in-space placebo from all 129 donors.
+Code: `data/sc04_routeA.py`.
+
+**The pre-period fit is EXACT.** For 36 of 39 countries pre-RMSPE is machine zero: 129
+donors fitting 11 observations, and the simplex still admits an exact solution.
+
+| country | pre-RMSPE | post/pre ratio | p | gap pre | gap post |
+|---|---:|---:|---:|---:|---:|
+| **Mexico** | **0.1584** | **1.86** | **0.815** | +0.035 | +0.244 |
+| India | 0.0000 | 138,525,247 | 0.038 | +0.000 | +0.311 |
+| Vietnam | 0.0000 | 344,471,290 | 0.023 | +0.000 | +0.563 |
+| Thailand | 0.0000 | 139,083,383 | 0.023 | −0.000 | +0.502 |
+| **Peru** | **0.0293** | **8.57** | **0.415** | +0.002 | −0.214 |
+| Pakistan | 0.0000 | 496,177 | 0.046 | +0.000 | +0.195 |
+
+Everything downstream collapses:
+
+- **The RMSPE ratio divides by zero.** Ratios of 10^8 are not evidence of a large effect,
+  they are evidence of a vanished denominator.
+- **The placebo p-values** (median 0.046, 56% below 0.05) rank countries by how exactly
+  they were fitted, not by how much they moved.
+- **The held-out check** reports 217-million-fold degradation, which is 0.22 over zero.
+- **The aggregate looks wonderful and means nothing**: post gap +0.2056 (se 0.0435,
+  t = 4.73) against a pre gap of −0.0032. The pre-gap is zero BY CONSTRUCTION.
+
+**The decomposition also fails, instructively.** The same omega gives +4.61 from the US
+numerator and +4.41 from the RoW denominator, differing by exactly the +0.206 estimate.
+Omega was fitted to the DIFFERENCE of two logs and matches it perfectly while being 4.5 log
+points off on each component. Applying it to the parts is the §3ab mistake in new clothing:
+a decomposition needs weights that fit the components, not just their difference.
+
+**The two countries with a genuinely non-trivial fit both give nulls.** Mexico (pre-RMSPE
+0.158, ratio 1.86, p = 0.815) and Peru (0.029, 8.57, p = 0.415). Mexico only because it
+sits near the hull boundary so just five donors get weight. Two observations, but they are
+the only two in the table that mean anything.
+
+### Cause and the standard fix
+
+129 donors against 11 pre-treatment years. Abadie's own applications run 38 donors / 19
+periods (California) and 45 / 8 with 14 covariates (Texas) -- ratios of 2-5, not 12.
+Ferman and Pinto's bias bound is explicitly a function of this ratio, and Abadie's advice
+is to restrict the donor pool to plausibly comparable units rather than throw in
+everything.
+
+**Next: trim the donor pool per treated country** to the 15-25 most similar non-policy
+countries on pre-determined covariates (region, MVA/GDP, ECI, export size), and add those
+covariates as matching targets alongside the lagged outcomes. That makes the fit
+non-trivial, restores the RMSPE ratio as a statistic, and gives the decomposition weights
+that fit the components.
