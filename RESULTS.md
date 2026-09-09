@@ -2504,3 +2504,48 @@ is not systematically low-decoupling.
 
 Real options remain A (scale-free outcome, keeps Abadie intact) and B (augmented SC, which
 reports how much extrapolation it uses). Recommendation unchanged: A first.
+
+---
+
+## §4c. Step 1 — a scale-free outcome brings every treated country inside the hull
+
+Route A: find an outcome that is scale-free IN LEVELS, so canonical Abadie survives.
+(Indexing exports to a base year is NOT route A -- that is demeaning, i.e. Ferman-Pinto,
+i.e. route B in disguise.) Code: `data/sc03_scalefree.py`. 39 treated, 130 donors,
+2007-2017, non-negative weights summing to one, no intercept.
+
+| outcome | inside hull | % of treated US trade value | big 10 inside | median rel. pre-RMSPE |
+|---|---|---|---|---|
+| 1. US share of own exports | **39/39** | **100%** | 10/10 | 0.011 |
+| 2. US orientation (US share / RoW share) | **39/39** | **100%** | 10/10 | 0.055 |
+| 3. Share of US market *(the §4a benchmark)* | 24/39 | 5.4% | 0/10 | 0.256 |
+| 4. US share of own exports, decoupling sectors | **39/39** | **100%** | 10/10 | 0.014 |
+
+Outcome 2 is (i's share of US imports) / (i's share of rest-of-world imports) -- an RCA for
+the US destination, scale-free by construction since a country twice as large in both is
+unchanged. Outcome 4 restricts to the 40 sectors where China held >=25% of the US market
+pre-period.
+
+Mexico is genuinely inside on outcome 2 (level 19.05 against ~1.0-1.6 for the others):
+some small Caribbean donor is more US-oriented still.
+
+### The caveat matters more than the headline
+
+**The fit on outcomes 1 and 4 is TOO good.** Relative pre-RMSPE of 0.000-0.001 for India,
+Vietnam, Thailand, Brazil, Indonesia and the Philippines. With **130 donors fitting 11
+pre-treatment observations** the weights are essentially unconstrained. This is exactly
+what Abadie and Ferman-Pinto warn about: when the donor pool is large relative to T_0,
+synthetic control fits transitory noise rather than the factor structure, and the bias
+bound depends on that ratio.
+
+**Outcome 2 is the one to take forward.** Non-degenerate fits (median 0.055, Mexico 0.181),
+scale-free by construction rather than by being bounded, and conceptually right: is this
+country disproportionately supplying America relative to its position everywhere else? A
+country that captures decoupling flows sees this rise; one that merely grew sees it flat.
+
+### Next: step 2, held-out validation
+
+Fit omega on 2007-2013 only, then check tracking on 2014-2017 unseen. If held-out fit
+collapses, the near-perfect pre-period tracking is noise-fitting and the donor pool needs
+trimming (Abadie's remedy: restrict donors to units plausibly similar on covariates). If it
+holds, proceed to treatment date, covariates and placebo inference.
