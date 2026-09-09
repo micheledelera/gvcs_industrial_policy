@@ -68,3 +68,4 @@ data/swapfile
 !data/sc_margins*.csv
 !data/realloc_restricted.csv
 !data/form_test.csv
+!data/sc_validity.csv

@@ -2044,3 +2044,85 @@ within-sector targeting test, which would explain both its magnitude and why it 
 MVA matching (MVA is one variable; the countries differ in many).
 
 **Judgement:** treat §3s as the better-identified of the two and §3ab as suggestive.
+
+---
+
+## §3ad. Testing Cunningham's pre-fit validity argument
+
+"If the treated unit and its synthetic counterpart closely track each other over a long
+stretch of time before treatment, it suggests that both observed and unobserved factors
+are likely balanced." (Cunningham, *Causal Inference: The Mixtape*.) That has testable
+content. Four tests. Code: `data/fit_sc_validity.py`. 58 sectors, log US exports,
+MVA_W = 2, zeta -> 0.
+
+### A. Held-out pre-period — the caution
+
+Fit omega on 2010-2014 only, then track 2015-2017, which it never saw.
+
+| | median | mean |
+|---|---|---|
+| In-sample RMSE (2010-14) | 0.0411 | 0.0673 |
+| **Held-out RMSE (2015-17)** | **0.1969** | 0.2060 |
+
+**4.68x degradation**; 42 of 58 sectors exceed 2x. A large part of the close tracking is
+in-sample overfitting: omega has ~20 free weights fitting 8 annual observations.
+
+Two things keep it from being fatal. 0.197 log points is 7% of the cross-pair sd of log
+exports (2.735), so out-of-sample tracking is still decent. And RMSE mixes bias with
+noise — the MEAN out-of-sample error is the placebo, +0.043, not 0.197; across 58 sectors
+noise averages down (0.197/sqrt(58) = 0.026, comparable to the jackknife SE). A caution
+about individual sector estimates, not the aggregate.
+
+### B. Does better fit mean a smaller placebo? Yes, strongly
+
+**corr(pre-period RMSE, |placebo tau|) = +0.708**
+
+| tercile | n | pre RMSE | tau | mean abs(placebo) |
+|---|---|---|---|---|
+| Best-fitting | 20 | 0.023 | +0.207 | **0.0146** |
+| Middle | 19 | 0.100 | +0.098 | 0.0610 |
+| Worst-fitting | 19 | 0.207 | +0.319 | **0.2307** |
+
+A sixteenfold difference in placebo size across fit terciles — exactly what the argument
+predicts, and the cleanest validation of the SC logic in this data. corr(RMSE, |tau|) is
+only +0.290, so poor fit inflates the PLACEBO far more than the ESTIMATE.
+
+### C. Restricting to well-fitting sectors — the key result
+
+| sample | n | tau | placebo |
+|---|---|---|---|
+| All sectors | 58 | +0.2078 (0.0618) t=3.36 | +0.0429 (0.0247) t=**1.73** |
+| Best half | 29 | +0.1642 (0.0711) t=2.31 | −0.0070 (0.0047) t=−1.49 |
+| **Best third** | 20 | **+0.2066 (0.0883) t=2.34** | **−0.0035 (0.0050) t=−0.70** |
+
+In the best-fitting third the placebo is **essentially exactly zero** (−0.0035, se 0.0050)
+while the estimate holds at +0.207. The marginal placebo nagging at §3aa lives entirely
+in the badly-fitting sectors. First time in this project a design has delivered this
+pattern cleanly.
+
+### D. Abadie's in-space placebo / RMSPE ratio test
+
+50 placebo "treated" groups per sector, same size as the real one, each given its own
+synthetic control from the remaining donors; p = rank of the true group's post/pre RMSPE.
+
+- Usable in 30 of 58 sectors (the rest lack donors)
+- Median true ratio **5.43**
+- Median rank p = 0.255; **37% of sectors p<0.10** (null: 10%); 17% p<0.05 (null: 5%)
+- **Fisher combined: chi2(60) = 96.3, p = 0.0020**
+
+Collectively significant at 3.7x the chance rate; the typical individual sector does not
+reject. The effect is real in aggregate, not identifiable sector by sector.
+
+### What this does and does not establish
+
+It establishes the **counterfactual** is credible: where the pre-fit is tight, the
+synthetic behaves as a valid comparison and the placebo vanishes.
+
+It does not touch what §3ac found about the **treatment**. Pre-fit validation says the
+synthetic tracks the treated group's outcome path; it says nothing about whether "IP > 0"
+— median share_frac_policies 0.00007, with 69.5% of donors from countries doing no policy
+at all — measures industrial-policy TARGETING rather than simply being a policy-using
+country. A valid counterfactual for a badly-defined treatment gives a precise estimate of
+the wrong thing.
+
+**The remaining problem has moved from identification to measurement.**
