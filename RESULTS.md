@@ -2166,3 +2166,84 @@ sectors. Bands are +/-1 jackknife se.
 
 The left panel's positive pre-period gap (+0.030 over 2015-17) is the badly-fitting
 sectors, and it is exactly the +0.043 placebo of §3aa. In the right panel it is gone.
+
+---
+
+## §3af. What is actually inside the synthetic controls
+
+Code: `data/diag_sc_weights.py`. Full dump: `data/sc_weights.csv`.
+
+### Concentration — these are not sparse Abadie-style synthetic controls
+
+| | median |
+|---|---|
+| Donors available per sector | 21 |
+| **Largest single weight** | **0.115** (p90 = 0.259) |
+| **Effective donors** (1/sum w^2) | **13.4** |
+| Top-5 weight share | 0.472 |
+| Donors with w > 0.01 | 17 |
+
+In the typical sector omega is close to uniform across ~13 countries. Classic SC picks
+three or four donors at 0.3-0.5 each; this does not. **The good pre-period fit comes from
+averaging away idiosyncratic noise, not from selecting well-matched donors.**
+
+### Who carries the synthetic controls, across all 58 sectors
+
+| country | total weight | sectors | share of all donor weight |
+|---|---|---|---|
+| Peru | 3.33 | 51 | 5.7% |
+| Thailand | 3.31 | 54 | 5.7% |
+| South Africa | 3.00 | 37 | 5.2% |
+| Mexico | 2.94 | 40 | 5.1% |
+| Philippines | 2.65 | 52 | 4.6% |
+| Malaysia | 2.46 | 39 | 4.2% |
+| Dominican Rep | 2.44 | 53 | 4.2% |
+| El Salvador | 2.15 | 42 | 3.7% |
+| Costa Rica | 2.04 | 54 | 3.5% |
+| Guatemala | 1.94 | 50 | 3.3% |
+
+Top 10 hold 45.2%; 26 countries hold >1% each; 127 appear at all. Mexico, Thailand,
+Malaysia and Vietnam are heavy DONORS — control group for the sectors they did not
+target, treated in the ones they did.
+
+### Two sectors in full
+
+**2823 — most concentrated omega, 7 donors, pre-RMSE 0.168**
+
+| donor | weight |
+|---|---|
+| **South Africa** | **0.652** |
+| **Mexico** | **0.294** |
+| Thailand | 0.021 |
+| Malaysia | 0.020 |
+| Dominican Rep | 0.014 |
+
+Treated: Argentina, Brazil, Bulgaria, Croatia, Hungary, Poland, Romania, India, Turkiye.
+A real synthetic control — two countries carry 95% — and its fit is WORSE than average.
+
+**1410 apparel — most diffuse omega, 77 donors, pre-RMSE 0.047**
+
+Turkmenistan 0.034, Venezuela 0.030, Suriname 0.028, Uzbekistan 0.026, Zimbabwe 0.024,
+Cambodia 0.023, Paraguay 0.023, Malaysia 0.023, Eswatini 0.022, Lebanon 0.022, then fifty
+more at 0.008-0.020 each. Treated: Argentina, Bangladesh, Bolivia, Brazil, Bulgaria,
+Colombia, Croatia, Ecuador, Hungary, Indonesia, Mexico, Nigeria, Pakistan, Poland,
+Romania, Russia, Saudi Arabia, India, Vietnam, Thailand, UAE, Tunisia, Turkiye, Ukraine,
+Egypt. Essentially uniform, and the fit is three times better than 2823's.
+
+### What this means
+
+The relationship runs the wrong way for the classic story: **many donors and diffuse
+weights give good fit; few donors and concentrated weights give bad fit.** That is what
+one expects if omega averages out noise around a common trend rather than finding
+countries that genuinely resemble the treated group.
+
+**Calling this "synthetic control" oversells it.** It is closer to a MATCHED WEIGHTED-
+AVERAGE DIFFERENCE-IN-DIFFERENCES, where the weights buy a modest improvement over a
+simple donor mean (§3x: omega beats uniform in 54/54 sectors, median RMSE ratio 0.78) but
+do not construct a bespoke counterfactual country.
+
+This does not invalidate §3ad — the pre-fit in the best third is genuinely tight and the
+placebo genuinely vanishes. But **the note must not lean on the "only a truly similar unit
+could track this closely" argument**, because the tracking here comes from the law of
+large numbers, not from similarity. The apparel donor list — Turkmenistan, Suriname,
+Eswatini, Zimbabwe against Vietnam, Turkiye and Mexico — makes that concrete.
