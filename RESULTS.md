@@ -2370,3 +2370,78 @@ honest estimate is the ACCELERATION (~+0.26 log points over seven years), not th
 Cut on pre-period fit quality, as in §3ad, where the sector-level placebo fell from +0.043
 to −0.004 in the best-fitting third while the estimate held. If the same happens here it
 gives a clean version of this estimand.
+
+---
+
+# Rebuilding synthetic control from the top, following Abadie
+
+The §3x-§3ah sequence drifted into intercepts, group means and SDiD-style estimators
+without ever establishing whether canonical Abadie was feasible. This restarts from step
+zero. Mapping:
+
+| Abadie | Ours |
+|---|---|
+| Treated unit | a developing country that uses industrial policy |
+| Donor pool | developing countries that do not |
+| Treatment date | 2018 |
+| Outcome | exports to / share of the US market |
+| Pretreatment | 2007-2017 (11 years) |
+
+## §4a. Step 0 — the convex hull. Canonical SC is infeasible for the countries that matter
+
+Non-negative weights summing to one mean the treated unit must be reproducible as a convex
+combination of donors. Cunningham on Texas: *"If Texas had been extreme -- either the
+smallest or the largest -- then that would be impossible."* Code:
+`data/sc01_feasibility.py`.
+
+169 developing countries ex-China with a complete 2007-17 US export series: **39 policy
+users, 130 donors.** Outcome: log exports to the US across all 125 ISIC-4 manufacturing
+sectors. Weights solved with no intercept, as Abadie specifies.
+
+| country | US exports 2015-17 | % US market | inside hull | yrs above donor max | pre-RMSPE |
+|---|---:|---:|:---:|---:|---:|
+| Mexico | $271.6bn | 13.71 | **no** | 11/11 | 3.98 |
+| India | $44.3bn | 2.24 | **no** | 11/11 | 2.17 |
+| Vietnam | $42.1bn | 2.13 | **no** | 11/11 | 1.78 |
+| Malaysia | $35.2bn | 1.78 | **no** | 11/11 | 2.03 |
+| Thailand | $30.0bn | 1.52 | **no** | 11/11 | 1.88 |
+| Brazil | $20.6bn | 1.04 | **no** | 11/11 | 1.60 |
+| Indonesia | $18.2bn | 0.92 | **no** | 11/11 | 1.40 |
+| Philippines | $10.6bn | 0.54 | **no** | 11/11 | 0.90 |
+| Turkiye | $8.0bn | 0.41 | no | 5/11 | 0.52 |
+| Peru | $4.1bn | 0.21 | **YES** | 0 | 0.22 |
+| Pakistan | $3.7bn | 0.19 | **YES** | 0 | 0.15 |
+| Colombia | $2.9bn | 0.15 | **YES** | 0 | 0.11 |
+| ...21 more, all small | | | **YES** | 0 | median 0.17 |
+
+**The largest non-policy developing country by US exports is the Dominican Republic at
+$4.6bn.** Mexico is 59x bigger; Vietnam 9x.
+
+24 of 39 policy users are inside the hull and every one is small. Median pre-RMSPE inside
+0.166 log points, outside 0.898, Mexico 3.98 -- not a synthetic control, a wrong number.
+
+### What this means
+
+This is the Messi problem, and it is why the earlier SC work drifted to intercepts and
+group means. That choice was made silently and should not have been.
+
+The finding underneath is substantive: **essentially every large developing manufacturing
+exporter uses industrial policy. There is no untreated Vietnam.** Not a data limitation --
+a fact about the world -- and it means the policy-user vs non-user comparison at COUNTRY
+level has no common support where it matters.
+
+### The three routes
+
+**A. Scale-free outcome.** The US share of a country's OWN exports puts Vietnam (~20%) and
+Bangladesh (~20%) on the same scale. Keeps canonical Abadie intact; the only route that
+does.
+
+**B. Second-best estimators** that relax the hull requirement: Ferman-Pinto demeaning
+(Mixtape 11.2), augmented SC with ridge (11.3), SDiD (11.5). Cost: extrapolation and model
+dependence.
+
+**C. Country-sector units**, which is what the earlier work did and why it appeared to
+work.
+
+**Recommendation: A first**, since it is the only route that keeps the method honest. If it
+fails, augmented SC, which reports how much extrapolation it uses.
