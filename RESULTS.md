@@ -2687,3 +2687,64 @@ from placebo.
 **No detectable difference between policy-using and non-policy-using developing countries
 in how their US orientation moved after 2018.** The null is robust across every
 donor-pool size. Route B with ln(exports) is the next thing that could change it.
+
+---
+
+## §4f. Route A with magnitude (non-scale-free) outcomes
+
+Same machinery as §4e — donors ranked on pre-determined covariates, K = 20 nearest,
+matched on eleven lagged outcomes plus the four covariates, non-negative weights summing
+to one, no intercept, in-space placebo from 121 donors. Only the outcome changes, to three
+magnitude measures. Since §4a showed the big exporters lie outside the hull on levels,
+pre-RMSPE becomes the filter, following Abadie, Diamond and Hainmueller's own practice of
+discarding units whose pre-fit is poor. Code: `data/sc06_levels.py`.
+
+### Who can and cannot be studied
+
+| country | pre-RMSPE | x median placebo | credible? | gap pre | gap post |
+|---|---:|---:|:---:|---:|---:|
+| Mexico | 3.94 | 10.65 | **NO** | +3.937 | +4.090 |
+| India | 2.10 | 5.69 | **NO** | +2.095 | +2.432 |
+| Vietnam | 1.73 | 4.68 | **NO** | +1.668 | +2.804 |
+| Malaysia | 1.98 | 5.34 | **NO** | +1.967 | +2.070 |
+| Thailand | 1.82 | 4.92 | **NO** | +1.818 | +2.120 |
+| Turkiye | 0.47 | 1.28 | yes | +0.402 | +0.756 |
+| Bangladesh | 0.33 | 0.89 | yes | +0.301 | +0.275 |
+| Poland | 0.34 | 0.92 | yes | +0.125 | +0.554 |
+
+Mexico's pre-period gap is **+3.94 log points**; its "effect" of +0.15 sits on a baseline
+mismatch of 3.9. Not an estimate — arithmetic noise on a failed fit.
+
+**The credible subset is 29-30 countries holding 14-19.5% of treated US trade value** —
+the §4b 5%-of-value problem in a different guise.
+
+### Results
+
+| outcome | credible n | gap pre | gap post | median placebo p | Fisher p |
+|---|---|---|---|---|---|
+| A. log US exports | 29 | +0.124 (t=3.33) | +0.305 (t=4.15) | 0.607 | 0.806 |
+| B. log share of US market | 29 | +0.117 (t=3.31) | +0.280 (t=3.92) | 0.697 | 0.799 |
+| **C. log US exports, decoupling sectors** | 30 | +0.048 (t=2.40) | +0.212 (t=1.98) | **0.362** | **0.243** |
+
+All null on Abadie inference: three countries at p<0.10 out of 29-30, against a null of 10%.
+
+**Outcome C is the most promising.** Restricting to sectors where China held >=25% of the
+US market fits best (median treated pre-RMSPE 0.214 against a placebo median of 0.419 —
+treated units fit BETTER than placebos), has the smallest pre-period gap, and comes closest
+to a signal (Fisher p = 0.243), with Turkiye (ratio 3.82, p = 0.174), Russia (4.72, 0.156),
+Chile (4.48, 0.156) and Poland (2.52, 0.349) largest among well-fitted countries. It is the
+outcome closest to the research question. It does not reject.
+
+**Caveat on "credible".** Even the credible subsets carry a significantly positive
+PRE-period gap (+0.124, +0.117, +0.048, all t > 2.4): treated countries sit above their
+synthetics before treatment, and without an intercept canonical SC cannot remove it. That
+is exactly the imperfect-fit bias Ferman-Pinto and Ben-Michael et al. exist to correct, and
+the argument for Route B.
+
+### Where Route A leaves the question
+
+Null on the compositional outcome across all 39 countries (§4e), and null on all three
+magnitude outcomes across the 29-30 with credible fit (§4f). Consistent, pointing the same
+way: **no detectable difference between policy-using and non-policy-using developing
+countries in how they fared after 2018**, on any outcome where canonical Abadie is
+applicable.
