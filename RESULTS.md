@@ -1455,3 +1455,75 @@ paper's argument.
    driving the pre-trend rejection alone. Re-test on tau in [−5,−2] only.
 2. Re-run on `share_n_policies`, and on definition C (10% threshold, 80 sectors) for
    more power at long horizons.
+
+---
+
+## §3u. Who the §3t event study actually compares
+
+Code: `data/diag_who_compared.py`.
+
+**Structure.** Unit = country-sector pair, 6,585 of them, 167 countries x 62 event
+sectors. alpha_ik removes the pair level, so identification runs over time within a
+pair. alpha_kt confines every comparison to a single sector-year cell. IP_ik is
+time-invariant, so beta_tau traces how the CROSS-COUNTRY IP gradient inside a sector
+evolves around that sector's own event.
+
+So it is a **between-country** comparison executed inside sector-year cells. There is no
+alpha_it: a country's own trajectory is not absorbed, and psi_tau (MVA x event time)
+plus the tercile split are the only stand-ins. Weaker than the country-FE variant of the
+long difference, where two countries are never compared at all.
+
+**Comparison set.** Median event sector has 109 developing suppliers, ~20 with any
+policy targeting (min 12, max 27; no sector has zero). Each beta_tau is roughly
+"20 policy-active countries against ~89 without, inside the same sector-year." Within-
+sector sd of IPz is 0.989 against a total of 1.000, so essentially all IP variation is
+across countries within a sector -- which is what the design wants.
+
+**Weight.** Policy-active pairs are 18.8% of pairs but 52.7% of weight.
+
+| | weight | has policy in |
+|---|---|---|
+| Mexico | 37.6% | 18 of 62 sectors |
+| Vietnam | 12.1% | 29 of 62 |
+| Malaysia | 9.4% | 18 of 62 |
+| India | 7.6% | 60 of 62 |
+| Thailand | 7.3% | 4 of 62 |
+| Indonesia | 4.3% | 61 of 62 |
+| Philippines | 2.6% | **0 of 61** |
+
+Top five = 74% of weight.
+
+### The concrete version: sector 1410, wearing apparel, event 2022
+
+Largest event sector by US import value, 162 developing suppliers.
+
+| country | pre-period US imports ($k) | IP | MVA/GDP |
+|---|---:|---:|---:|
+| **Vietnam** | 9,697,227 | **0.0000** | 21.2 |
+| Bangladesh | 5,167,714 | 0.0049 | 19.1 |
+| Indonesia | 4,166,236 | 0.0014 | 20.6 |
+| India | 3,606,867 | 0.0009 | 13.9 |
+| Mexico | 3,492,706 | 0.0025 | 20.3 |
+| Cambodia | 2,225,182 | 0.0000 | 22.0 |
+| Sri Lanka | 1,944,644 | 0.0000 | 15.6 |
+| Honduras | 1,637,378 | 0.0000 | 17.6 |
+
+The estimator in one cell: Bangladesh, Indonesia, India and Mexico (some apparel
+targeting) against Vietnam, Cambodia, Sri Lanka and Honduras (none), all supplying US
+apparel, tracked from 2022.
+
+**This shows the problem directly.** In the single largest event cell the dominant
+supplier -- Vietnam, twice the size of the next -- sits in the CONTROL group with zero
+recorded apparel policy. Under WLS that pair does a great deal of work and pulls
+beta_tau toward "no policy did better". Vietnam's MVA/GDP of 21.2 is also above
+Bangladesh's 19.1, so the capability control does not separate them: this is a
+high-capability, zero-policy country outperforming.
+
+That may be a real fact about apparel, or GTA may under-record Vietnamese industrial
+policy. Either way the design's answer in its biggest cell is set by one country's
+treatment status.
+
+### Open
+
+Two checks that would distinguish these: the unweighted event study, and
+leave-Mexico-and-Vietnam-out.
