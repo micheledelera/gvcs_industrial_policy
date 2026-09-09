@@ -2605,3 +2605,85 @@ countries on pre-determined covariates (region, MVA/GDP, ECI, export size), and 
 covariates as matching targets alongside the lagged outcomes. That makes the fit
 non-trivial, restores the RMSPE ratio as a statistic, and gives the decomposition weights
 that fit the components.
+
+---
+
+## §4e. Route A properly specified — trimmed donor pool. The answer is a null.
+
+§4d failed on degeneracy (129 donors, 11 pre-periods, exact fit). Fix: rank donors by
+Euclidean distance on pre-determined covariates only (log total exports, MVA/GDP, log MVA
+per capita, ECI — no outcome information, so donor selection is separate from the outcome
+path), keep the K nearest, and match on the eleven lagged outcomes PLUS those four
+covariates. In-space placebo: each of the 121 donors gets its OWN K nearest donors, so
+placebo and treated units are built identically. Code: `data/sc05_trimmed.py`.
+
+**Adding the covariates as matching targets fixed the degeneracy on its own** — zero
+exact-fits at every K. The treated country no longer lies in the donor convex hull in the
+15-dimensional (11 lags + 4 covariates) space.
+
+| K donors | K / T_pre | median pre-RMSPE | zero-fits | median post/pre | median p |
+|---|---|---|---|---|---|
+| 10 | 0.9 | 0.257 | 0 | 1.20 | 0.672 |
+| 15 | 1.4 | 0.194 | 0 | 1.45 | 0.615 |
+| **20** | **1.8** | **0.194** | **0** | **1.95** | **0.508** |
+| 25 | 2.3 | 0.178 | 0 | 1.95 | 0.574 |
+| 30 | 2.7 | 0.164 | 0 | 2.14 | 0.516 |
+| 121 | 11.0 | 0.146 | 0 | 2.49 | 0.582 |
+
+At K = 20 (Abadie's own donor-to-period ratio): **6 of 20 donors carry weight, median max
+weight 0.381** — sparse, as canonical SC should be.
+
+### Per country, K = 20
+
+| country | pre-RMSPE | post/pre | p | gap pre | gap post |
+|---|---:|---:|---:|---:|---:|
+| Mexico | 0.4519 | 2.32 | 0.426 | +0.377 | +1.040 |
+| India | 0.0666 | 3.81 | 0.189 | −0.001 | +0.231 |
+| Vietnam | 0.1817 | 0.85 | 0.926 | +0.018 | +0.120 |
+| Malaysia | 0.1504 | 0.93 | 0.902 | +0.033 | −0.023 |
+| Thailand | 0.1937 | 2.51 | 0.410 | +0.005 | +0.426 |
+| Indonesia | 0.1537 | 1.25 | 0.762 | −0.002 | −0.123 |
+| Bangladesh | 0.1144 | 2.84 | 0.303 | −0.004 | −0.295 |
+| Colombia | 0.0868 | 7.05 | **0.033** | +0.001 | +0.468 |
+
+### The result
+
+**Pre-period gap +0.0115 (0.0122), t = 0.94.** Good fit, no pre-trend — what every earlier
+design in this project failed to achieve.
+
+**Post-period gap +0.1791 (0.0597), t = 3.00** by jackknife across countries.
+
+**But Abadie's own inference says nothing:**
+- median rank p-value **0.508** (null: 0.50)
+- 2 of 39 countries at p<0.10 (**5%**, null 10%); 1 of 39 at p<0.05 (**3%**, null 5%)
+- Fisher combined chi2(78) = 60.4, **p = 0.9305**
+
+Fewer treated countries reject than chance predicts. Colombia's p = 0.033 is one
+significant result in 39 tests.
+
+**Why the two disagree, and why Abadie's is right.** The jackknife asks whether the mean
+gap differs from zero treating countries as iid draws. The placebo test asks whether each
+country's post deviation is large RELATIVE TO ITS OWN PRE-PERIOD PREDICTION ERROR — median
+pre-RMSPE 0.194 against a mean post gap of 0.179. **The signal is the same size as the
+noise.** A donor handed a fake 2018 treatment shows a post deviation just as large.
+
+### Decomposition, in changes
+
+Levels are contaminated because omega fits the difference of two logs, not each component;
+the change is the valid object.
+
+| | pre gap | post gap | change |
+|---|---:|---:|---:|
+| US share | +1.7275 | +1.9412 | **+0.2137** |
+| RoW share | +1.7160 | +1.7621 | +0.0461 |
+| orientation | +0.0115 | +0.1791 | +0.1676 |
+
+Movement comes from the US numerator rising, not the RoW denominator falling — expansion
+tilted at America rather than diversion. But it describes a movement not distinguishable
+from placebo.
+
+### Bottom line
+
+**No detectable difference between policy-using and non-policy-using developing countries
+in how their US orientation moved after 2018.** The null is robust across every
+donor-pool size. Route B with ln(exports) is the next thing that could change it.
