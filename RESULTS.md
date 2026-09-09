@@ -2311,3 +2311,62 @@ This also puts the gravity estimate in a different light. Gravity's alpha_ist ab
 country entirely, so its +5.2% CANNOT be a country-type effect. The two designs now tell a
 coherent story: targeting shows up where the country is differenced out, and disappears
 where the comparison is between country types.
+
+---
+
+## §3ah. Country-level treatment — the actual research question
+
+**Correction to §3ag's framing.** §3ag treated the policy-users-vs-non-users contrast as a
+confound to be removed. It is the estimand: "are developing economies which use industrial
+policy more likely to benefit from US-China decoupling?" Spec 4 there (donors restricted
+to policy-active countries) answers a DIFFERENT question — targeting within policy-users —
+and is a secondary cut, not a correction.
+
+A second error, more consequential: throughout §3z-§3ag treatment was `IP_ik > 0`, i.e.
+"this country targeted THIS sector". For a policy-user-vs-non-user comparison every sector
+of a policy-using country should be treated, including ones it did not target. Code:
+`data/fit_sc_country.py`.
+
+**Treatment: every sector of a country with any recorded policy in 2015-17. Donors:
+countries with NO recorded industrial policy in any sector.**
+
+| spec | n | pre-RMSE | eff/donors | tau | placebo |
+|---|---|---|---|---|---|
+| C0. Group, intercept, MVA only | 52 | 0.110 | 7.8/14 | **+0.393 (0.063) t=6.19** | +0.037 (0.017) t=2.12 |
+| C1. Group, no intercept, rich covariates | 52 | 0.189 | 4.1/14 | **+0.432 (0.086) t=5.04** | +0.119 (0.048) t=2.47 |
+| C2. Per-unit, no intercept, rich covariates | 1,346 | 0.541 | 2.9/16 | **+0.394 (0.036) t=10.98** | +0.093 (0.023) t=4.03 |
+| C3. Per-unit, intercept kept | 1,346 | 0.313 | 4.2/16 | **+0.355 (0.036) t=9.93** | +0.057 (0.018) t=3.10 |
+
+### Reading
+
+**Much larger than under the sector-targeting definition**: +0.35 to +0.43 log points, i.e.
+42-54% higher US exports in decoupling sectors for policy-using developing countries
+relative to matched non-users, with t between 5 and 11.
+
+**But the placebo is significant everywhere** (t = 2.12 to 4.03). Policy-using countries
+were already pulling away before 2018 — selection into being a policy user, showing up
+exactly where it should.
+
+Windows differ in length (placebo 5 years of midpoint separation, treatment 7), so compare
+per year:
+
+| | pre-period drift | post-period | ratio |
+|---|---|---|---|
+| C2 | +0.0186/yr | +0.0563/yr | 3.0x |
+| C3 | +0.0114/yr | +0.0507/yr | 4.4x |
+
+**The divergence accelerates three- to fourfold after decoupling.** Had the pre-trend
+simply continued, the 7-year gap would be about +0.13; observed is +0.39. **The excess
+over trend is roughly +0.26 log points, about 30%.**
+
+### The defensible statement
+
+Policy-using developing countries gained substantially more from decoupling than
+comparable non-users, but part of the raw gap is a pre-existing growth differential. The
+honest estimate is the ACCELERATION (~+0.26 log points over seven years), not the level.
+
+### Open
+
+Cut on pre-period fit quality, as in §3ad, where the sector-level placebo fell from +0.043
+to −0.004 in the best-fitting third while the estimate held. If the same happens here it
+gives a clean version of this estimand.
