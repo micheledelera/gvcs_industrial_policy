@@ -2748,3 +2748,85 @@ magnitude outcomes across the 29-30 with credible fit (§4f). Consistent, pointi
 way: **no detectable difference between policy-using and non-policy-using developing
 countries in how they fared after 2018**, on any outcome where canonical Abadie is
 applicable.
+
+---
+
+## §4g. Route B — augmented synthetic control. The correction eats the estimate.
+
+Ben-Michael, Feller & Rothstein (2021) ASCM: canonical SC weights, then a ridge outcome
+model fitted on the DONORS ONLY (post-period regressed on the centred pre-period path,
+lambda by leave-one-out CV), and tau_aug = tau_scm − (X_1 − X_0 w)' eta. When the pre-fit
+is perfect the imbalance is zero and ASCM collapses to classic SC, so **the size of the
+correction is a direct readout of how much extrapolation is being bought** — reported
+alongside every estimate. Same trimmed pool (K = 20) and same in-space placebo as §4e/§4f,
+with the augmented estimator applied identically to each donor.
+Code: `data/sc07_augmented.py`.
+
+### A. log US exports — where the hull fails hardest
+
+| country | pre-RMSPE | x placebo | tau classic | correction | **tau augmented** | p classic | p aug |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Mexico | 3.94 | 10.6 | +4.090 | +4.189 | **−0.099** | **0.016\*** | 0.910 |
+| India | 2.11 | 5.7 | +2.432 | +1.877 | +0.556 | **0.025\*** | 0.500 |
+| Vietnam | 1.73 | 4.7 | +2.804 | +1.671 | +1.133 | **0.025\*** | 0.213 |
+| Malaysia | 1.98 | 5.3 | +2.070 | +2.230 | −0.161 | **0.033\*** | 0.852 |
+| Thailand | 1.82 | 4.9 | +2.120 | +1.719 | +0.401 | **0.033\*** | 0.656 |
+| Brazil | 1.52 | 4.1 | +1.450 | +2.031 | −0.582 | **0.098\*** | 0.467 |
+
+**Every apparently significant classic result is matching bias.** Mexico's +4.09 becomes
+−0.10 once the ridge prices in a pre-period imbalance of the same size. All seven countries
+with classic p<0.10 land between 0.21 and 0.91 under ASCM.
+
+### Aggregates
+
+| outcome | subset | tau classic | **tau augmented** | median placebo p | p<0.10 | Fisher p | correction as % of classic |
+|---|---|---|---|---|---|---|---|
+| A. log US exports | all 39 | +0.685 (t=4.55) | **+0.041 (t=0.45)** | 0.721 | **0/39** | 0.9994 | 45% |
+| A | credible 29 | +0.305 (t=4.15) | **+0.009 (t=0.08)** | 0.730 | **0/29** | 0.9982 | 38% |
+| C. decoupling sectors | all 39 | +0.366 (t=2.94) | +0.089 (t=0.91) | 0.615 | **0/39** | 0.9993 | 67% |
+| C | credible 30 | +0.212 (t=1.98) | +0.205 (t=2.21) | 0.651 | **0/30** | 0.9990 | 56% |
+| D. orientation | all 39 | +0.179 (t=3.00) | +0.116 (t=1.26) | 0.721 | 1/39 | 1.0000 | 105% |
+| D | credible 38 | +0.195 (t=3.29) | +0.167 (t=2.11) | 0.725 | **0/38** | 1.0000 | 92% |
+
+**Zero countries below p<0.10 in five of six specifications**, against a null expectation of
+about four. Treated countries are LESS extreme relative to their own pre-fit than placebo
+donors are. Fisher combined p >= 0.998 everywhere.
+
+**The extrapolation cost is large** — the honest price of Route B. Median correction is
+38-105% of the classic estimate; median pre-period imbalance 0.13-0.30 log points. ASCM is
+doing heavy lifting, so its point estimates carry real model dependence. That matters less
+than usual here because they are null.
+
+**One survivor, not to be oversold.** Outcome C's credible subset holds under correction
+(+0.212 classic -> +0.205 augmented, t = 2.21) — the only estimate the ridge does not eat.
+But its median placebo p is 0.651 with 0 of 30 rejecting, so jackknife and randomization
+inference disagree, and as in §4e the randomization inference is the one built for this.
+
+---
+
+## §4h. Where Routes A and B leave the research question
+
+Two estimator families, four outcomes, proper Abadie in-space inference throughout:
+
+| design | outcome | result |
+|---|---|---|
+| §4e canonical SC, trimmed pool | log US orientation, all 39 | median p 0.508, Fisher p 0.93 — **null** |
+| §4f canonical SC | log US exports, credible 29 | Fisher p 0.81 — **null** |
+| §4f canonical SC | log US market share, credible 29 | Fisher p 0.80 — **null** |
+| §4f canonical SC | log US exports, decoupling sectors, credible 30 | Fisher p 0.24 — **null** |
+| §4g augmented SC | all three, all subsets | Fisher p >= 0.998 — **null** |
+
+**There is no detectable difference between policy-using and non-policy-using developing
+countries in how they fared after 2018** — not in total US exports, not in US market share,
+not in decoupling-exposed sectors, and not in US orientation. The classic estimates that
+looked large were pre-period imbalance; the augmented estimates that survive do not clear
+Abadie's own inference.
+
+Two structural facts sit behind this and belong in the note regardless of the estimate:
+
+1. **There is no untreated Vietnam.** The largest non-policy developing exporter to the US
+   is the Dominican Republic at $4.6bn against Mexico's $272bn (§4a). Essentially every
+   large developing manufacturing exporter uses industrial policy, so the policy-user vs
+   non-user comparison has no common support where it matters.
+2. **Where canonical SC is applicable it covers 5-20% of treated trade value** (§4b, §4f).
+   The countries that can be studied cleanly are not the ones the question is about.
