@@ -1974,3 +1974,73 @@ closer to gravity's 5.2% differential than the raw +0.21.
 
 Re-run §3s's PPML on the SC's restricted sample of 2,559 pairs. If non-US turns positive
 there it is the sample; if it stays negative it is the estimator. Decisive and cheap.
+
+---
+
+## §3ac. Sample or estimator? Resolving the §3s / §3ab disagreement
+
+§3s (PPML triple difference, all pairs): US +0.018, non-US −0.008, total −0.006.
+§3ab (SC matched long difference, 2,559 pairs): US +0.210, non-US +0.102, total +0.106.
+
+### It is not the sample
+
+§3s's exact specification on three nested samples. Code: `data/fit_realloc_restricted.py`.
+
+| sample | rows | pairs | TOTAL | US-bound | NON-US |
+|---|---|---|---|---|---|
+| a. Full (§3s) | 287,261 | 22,344 | −0.0059* | **+0.0175\*\*\*** | −0.0081** |
+| b. Event sectors only | 142,590 | 11,107 | −0.0124 | +0.0146 | −0.0155* |
+| c. SC's own 2,852 pairs | 42,780 | 2,852 | **−0.0155\*** | +0.0134 | **−0.0190\*\*** |
+
+On the identical pairs the SC uses, PPML still gives non-US negative and significant. The
+reallocation pattern survives intact and strengthens on non-US (−0.008 -> −0.019).
+
+### It is the functional form
+
+Same 42,780 rows, same triple-difference spec, only the estimator varies. Code:
+`data/fit_form_test.py`.
+
+| outcome | P. PPML levels | L. OLS logs | W. OLS logs, weighted |
+|---|---|---|---|
+| TOTAL | **−0.0155 (0.0082)\*** | +0.0031 (0.0054) | −0.0052 (0.0075) |
+| US-bound | +0.0134 (0.0123) | −0.0032 (0.0147) | +0.0024 (0.0163) |
+| NON-US | **−0.0190 (0.0085)\*\*** | +0.0034 (0.0061) | −0.0050 (0.0084) |
+
+Every sign flips between PPML-in-levels and OLS-in-logs, and re-weighting the log
+regression by pre-period US exports **restores PPML's sign pattern on all three margins**
+(though not significance). The culprit is size weighting, not the log transform -- the
+§3v tension reappearing as a functional-form choice.
+
+### What this resolves, and what it does not
+
+**Resolved.** §3s and §3ab are not contradictory claims about the world but statements
+about different aggregates. PPML-in-levels asks WHERE THE TRADE VALUE WENT: large flows
+moved from non-US markets toward the US -- reallocation. Logs ask what happened to THE
+TYPICAL COUNTRY-SECTOR: nothing detectable on any margin.
+
+**Not resolved.** The OLS-log triple difference is a NULL (+0.0034, t = 0.6), not a
+positive. So it explains why SC's non-US is not negative, but NOT why SC gets +0.102 with
+t = 3.7. Something in the SC design produces a large significant effect the same-sample,
+same-weighting triple difference does not find. Candidates: binary treatment at a
+threshold whose median is 0.00007; no targeted-vs-untargeted comparison; synthetic
+weights instead of fixed effects; decoupling sectors only.
+
+### Who §3ab actually compares (checked)
+
+| | |
+|---|---|
+| Treated | IP>0: 979 pairs, **33 countries**, median 16/sector |
+| Donors | IP=0 same sector: 1,586 pairs, **127 countries**, median 20/sector |
+| Overlap | 24 countries are treated in some sectors, donors in others |
+
+**69.5% of donor pairs come from countries with ZERO recorded policy in any sector**;
+only 30.5% are the clean comparison (policy-active country that did not target this
+sector). And among treated pairs, share_frac_policies has median **0.00007**, 25th
+percentile 0.00001, minimum rounding to zero at five decimals -- "treated" means a tiny
+fraction of policy effort, not a priority sector.
+
+So §3ab is closer to a POLICY-USERS-VS-NON-USERS COUNTRY comparison than to a
+within-sector targeting test, which would explain both its magnitude and why it survives
+MVA matching (MVA is one variable; the countries differ in many).
+
+**Judgement:** treat §3s as the better-identified of the two and §3ab as suggestive.

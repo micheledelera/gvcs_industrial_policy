@@ -66,3 +66,5 @@ data/swapfile
 !data/sc_longdiff.csv
 !data/sc_mvasweep*.csv
 !data/sc_margins*.csv
+!data/realloc_restricted.csv
+!data/form_test.csv
