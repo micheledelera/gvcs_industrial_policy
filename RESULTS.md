@@ -1915,3 +1915,62 @@ this is a level change in US exports spanning both margins.
 Run this SC estimator on TOTAL exports and NON-US exports, mirroring §3s. If SC
 independently reproduces US up / non-US down / total flat, the reallocation finding is
 confirmed by a wholly different method and the magnitude gap is explained.
+
+---
+
+## §3ab. The synthetic control on all three trade margins
+
+§3s (PPML triple difference) found exports to the US rise, exports elsewhere fall, and
+total exports do not increase — reallocation, not capacity. This runs the §3aa SC
+estimator (MVA_W = 2, zeta -> 0, intercept over path rows only) on the same three
+outcomes, on an identical sample of pairs, as an independent check.
+Code: `data/fit_sc_margins.py` (first pass), `data/fit_sc_margins_own.py` (corrected).
+
+Sample: 2,559 pairs, 979 treated, 58 sectors. US share of their exports, pre-period: 0.233.
+
+**A flaw worth recording.** The first pass matched omega on the US export path and then
+applied those weights to TOTAL and NON-US. Those outcomes' own pre-periods were never
+matched, and the placebos came back significantly NEGATIVE (−0.065, t = −2.08; −0.080,
+t = −2.14) — uninterpretable. Corrected by rebuilding omega against each outcome's own
+2010-2017 path.
+
+| outcome | TRUE tau | PLACEBO tau |
+|---|---|---|
+| **US** | **+0.2095 (0.0622) t=+3.37** | +0.0420 (0.0249) t=+1.69 |
+| **TOTAL** | **+0.1062 (0.0276) t=+3.85** | −0.0146 (0.0178) t=−0.82 |
+| **NON-US** | **+0.1020 (0.0277) t=+3.68** | −0.0151 (0.0171) t=−0.88 |
+
+All three placebos insignificant. Additivity roughly holds: 0.233 x +0.2095 + 0.767 x
++0.1020 = +0.127 against an estimated total of +0.106.
+
+### It contradicts §3s
+
+| | US | non-US | total |
+|---|---|---|---|
+| §3s (PPML triple difference) | +0.018*** | **−0.008\*\*** | −0.006* |
+| §3ab (SC, matched long difference) | +0.210*** | **+0.102\*\*\*** | +0.106*** |
+
+SC says **expansion tilted toward the US**. §3s said **reallocation**. They agree the US
+rises and disagree on everything else. This is unresolved and both cannot stand.
+
+**What it does resolve:** the §3aa magnitude puzzle. If total exports rise +0.106 and US
+exports +0.210, the US-SPECIFIC component is about +0.10 log points — roughly 10%, much
+closer to gravity's 5.2% differential than the raw +0.21.
+
+### Candidate reasons for the disagreement, in order of suspicion
+
+1. **The sample.** SC needs a complete positive US export series: 2,559 of 8,833 pairs
+   (29%). That excludes every pair that entered or exited US trade, and the restriction
+   is on US continuity specifically, which is endogenous to the object of study. §3s used
+   all pairs.
+2. **Different estimands.** §3s's beta is a triple difference (decoupling vs
+   non-decoupling sectors); SC's tau is a level effect within the 62 decoupling sectors
+   only. They need not agree.
+3. **Functional form.** PPML on levels weights large flows; OLS on logs weights
+   proportional changes, and 79% of these pairs are small.
+4. **Treatment definition.** Continuous standardised targeting in §3s, binary IP>0 here.
+
+### Open
+
+Re-run §3s's PPML on the SC's restricted sample of 2,559 pairs. If non-US turns positive
+there it is the sample; if it stays negative it is the estimator. Decisive and cheap.

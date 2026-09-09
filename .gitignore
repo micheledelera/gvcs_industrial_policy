@@ -65,3 +65,4 @@ data/swapfile
 !data/sdid_*.csv
 !data/sc_longdiff.csv
 !data/sc_mvasweep*.csv
+!data/sc_margins*.csv
