@@ -56,3 +56,5 @@ data/swapfile
 !data/did_vs_ldv.csv
 !data/reallocation.csv
 !data/realloc_us.csv
+!data/event_timing.csv
+!data/event_stagger_*.csv

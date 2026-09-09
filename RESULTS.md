@@ -1359,3 +1359,99 @@ US market, not with producing more.
 > exports do not increase (−0.006, p=0.062). Industrial policy in decoupling sectors is
 > therefore associated with reorienting exports toward the vacated US market rather than
 > with expanding export capacity.
+
+---
+
+## §3t. Staggered event study on sector-specific decoupling dates
+
+### Is the event staggered?
+
+Gating question for the whole design. Four definitions of sector k's event year E_k,
+computed on China's share of TOTAL US imports in k, restricted to the 99 of 125 sectors
+with a 2015-17 China share of at least 5pp. Code: `data/diag_event_timing.py`.
+
+| definition | sectors | modal year | modal share | IQR |
+|---|---|---|---|---|
+| A. peak year | 99 | 2018 | 26% | 2014-2018 |
+| B. largest one-year drop | 99 | 2019 | 44% | 2019-2022 |
+| C. first year >=10% below 2015-17 baseline, stays below | 80 | 2019 | 44% | 2019-2022 |
+| **D. same at 25%** | **62** | **2019** | **27%** | **2019-2023** |
+
+Yes, staggered. D gives real dispersion (2017-2024, no year above 27%); B and C are
+bimodal, a 2019 wave and a second in 2022-23.
+
+### Design note: alpha_kt already absorbs the timing
+
+If the specification carries alpha_kt, each sector already has a free time path, so
+calendar-time and event-time estimates identify off the same variation. Event alignment
+buys two other things: a dynamic profile in event time, and a pre-trend test aligned on
+the event rather than on calendar years -- a much better test than §3m's, where sectors
+at different event stages were pooled so the "pre-period" mixed treated and untreated.
+
+It also sidesteps the staggered-DiD problem. Forbidden comparisons arise when
+already-treated units serve as controls for later-treated ones. Here every country in
+sector k shares E_k and the contrast is high-IP vs low-IP within the same sector-year,
+so alpha_kt confines all comparisons to clean cells.
+
+    s_ikt = sum_tau beta_tau (IP_ik x 1[t-E_k=tau])
+          + sum_tau psi_tau  (mva_gdp_i x 1[t-E_k=tau])
+          + a_ik + a_kt + e_ikt                            ref tau = -1
+
+Definition D, event time binned at [-6,+5]. Developing ex-China, weighted by pre-period
+US imports, clustered by country. N = 118,530 | 167 countries | 62 sectors | 6,585
+pairs. Sectors contributing thin out with horizon: 62 at tau<=0, 56 / 45 / 37 / 30 / 19
+at tau = 1..5. Code: `data/fit_event_stagger.py`.
+
+### Panel 1 -- all countries
+
+| tau | IP x 1[tau] | MVA x 1[tau] |
+|---:|---|---|
+| −6 | −0.273 (0.148)* | −0.428 (1.146) |
+| −5 | −0.119 (0.088) | −0.165 (0.501) |
+| −4 | −0.129 (0.073)* | +0.006 (0.271) |
+| −3 | −0.118 (0.070)* | −0.058 (0.235) |
+| −2 | −0.207 (0.071)*** | +0.084 (0.110) |
+| **−1** | — ref — | — ref — |
+| 0 | −0.075 (0.075) | **+0.729 (0.106)\*\*\*** |
+| 1 | −0.203 (0.119)* | **+0.967 (0.125)\*\*\*** |
+| 2 | −0.313 (0.189) | **+0.654 (0.292)\*\*** |
+| 3 | −0.067 (0.417) | +0.353 (0.271) |
+| 4 | −0.160 (0.708) | −0.350 (0.524) |
+| 5 | +1.592 (1.277) | −0.235 (0.499) |
+
+Pre-trend joint **F(5,166) = 5.45, p = 0.0001**. Post: 0 of 6 significant.
+
+### Panel 2 -- by MVA tercile
+
+| stratum | N | pre-trend F | p | post mean | post sig |
+|---|---|---|---|---|---|
+| Low MVA | 30,402 | 8.47 | <0.0001 | −0.058 | 2/6 (both ~ −0.015) |
+| Mid MVA | 40,428 | 2.63 | 0.034 | −0.066 | 1/6 |
+| **High MVA** | 47,700 | **4.83** | **0.001** | +0.177 | **0/6** |
+
+### Reading
+
+**Pre-trends fail in every stratum**, including high-MVA. This was the better test that
+event alignment was supposed to buy, and it rejects. The IP pre-coefficients are
+consistently NEGATIVE (−0.27 to −0.12): high-IP country-sectors were losing US market
+share in the run-up to their sector's event. That is selection on *decline*, the
+opposite of the Rotunno-Ruta pattern -- a hypothesis deserving its own test, not a
+conclusion.
+
+**The high-MVA test is uninformative, not negative.** The stratified comparison gives
+0/6 post coefficients significant, but with SEs reaching 0.74 and 1.42 at tau = 4, 5
+where only 30 and 19 sectors contribute. Power problem, not evidence of no effect.
+
+**MVA does what IP was supposed to do.** Capability x event-time is +0.73***, +0.97***,
++0.65** at tau = 0, 1, 2 -- large, precise, and timed exactly to the event. Aligned on
+China's withdrawal, the manufacturing base predicts who picks up the slack and policy
+adds nothing detectable on top. Given the failed pre-trends this is not stated as a
+finding, but it is the clearest signal in the table and it is not friendly to the
+paper's argument.
+
+### Open
+
+1. The tau = −6 bin pools everything six or more years before the event and could be
+   driving the pre-trend rejection alone. Re-test on tau in [−5,−2] only.
+2. Re-run on `share_n_policies`, and on definition C (10% threshold, 80 sectors) for
+   more power at long horizons.
