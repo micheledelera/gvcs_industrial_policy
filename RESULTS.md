@@ -1774,3 +1774,87 @@ removes that.
 Re-run with a smaller zeta -- deliberately under-regularising to force concentrated
 weights -- to see whether a genuine synthetic match exists at the cost of overfitting
 risk. The standard sensitivity, not yet run.
+
+---
+
+## §3y. Common support is fine — the §3x failure was the regularisation
+
+§3x left a residual pre-trend of +0.012 log points/year after SDiD weighting. Two
+explanations: (a) the donor pool contains good matches but zeta forced near-uniform
+weights, or (b) it does not contain them. If (b), no design fixes it. Code:
+`data/diag_overlap.py`.
+
+Pre-period annualised log-export growth, 2010-12 to 2015-17:
+
+| | mean | sd | p10 | median | p90 |
+|---|---|---|---|---|---|
+| Treated | 0.0793 | 0.223 | −0.159 | 0.068 | 0.320 |
+| Donors | 0.0604 | 0.235 | −0.181 | 0.052 | 0.337 |
+
+Raw gap +0.019/yr, **Cohen's d = 0.083** — negligible. Within their own sector x
+MVA-decile cell, treated pairs sit at mean percentile **0.499**, median 0.500, with
+symmetric tails (17.6% above the donor 90th, 17.9% below the 10th); 64.4% inside the
+donor convex hull.
+
+**So the donor pool contains matches: explanation (a).** The arithmetic agrees — the raw
+gap is +0.019/yr and SDiD left +0.012/yr, so the weights closed about a third of an
+already-small gap, which is what near-uniform weights would do.
+
+---
+
+## §3z. Synthetic controls paired with the long difference
+
+Addresses both objections to §3x: MVA never entered the synthetic controls, and SC needs
+a treatment DATE rather than staggered timing, so a single common pre/post split removes
+the post-window-length artefact. Code: `data/fit_sc_longdiff.py`.
+
+    outcome   d_ik = mean log X_ik(2022-24) - mean log X_ik(2015-17)     US exports
+    treated   IP_ik > 0;  donors: same sector, IP = 0
+    weights   omega matching the 2010-2017 log-export path, plus MVA
+    tau_ik    d_treated - d_synthetic, aggregated over cells, jackknifed
+    placebo   the same on d = (2015-17) - (2010-12), entirely pre-treatment
+
+### A — donors same sector, MVA in the matching objective (MVA_W = 2.0)
+
+| zeta | cells | eff. donors | pre RMSE | TRUE tau | PLACEBO tau |
+|---|---|---|---|---|---|
+| paper | 58 | 18.9 | 0.223 | +0.293 (0.051) t=5.78 | +0.121 (0.046) t=2.60 |
+| /4 | 58 | 16.3 | 0.171 | +0.298 (0.052) t=5.70 | +0.100 (0.036) t=2.73 |
+| /16 | 58 | 14.2 | 0.138 | +0.291 (0.056) t=5.24 | +0.074 (0.030) t=2.43 |
+| **~0** | 58 | 12.5 | **0.114** | **+0.288 (0.060) t=4.77** | **+0.052 (0.028) t=1.88** |
+
+### B — donors same sector AND same MVA decile
+
+| zeta | cells | eff. donors | pre RMSE | TRUE tau | PLACEBO tau |
+|---|---|---|---|---|---|
+| paper | 61 | 5.0 | 0.369 | +0.064 (0.158) t=0.40 | +0.106 (0.090) t=1.17 |
+| ~0 | 61 | 3.5 | 0.268 | +0.157 (0.164) t=0.96 | +0.133 (0.078) t=1.71 |
+
+### Reading
+
+**A behaves the way a real effect should.** As zeta falls the weights concentrate
+(18.9 -> 12.5 effective donors) and the pre-period match improves sharply (RMSE 0.223 ->
+0.114). The placebo shrinks with it, +0.121 -> +0.052 (t 2.60 -> 1.88), while the true
+estimate sits still at +0.29. Better matching removes the spurious pre-period gap and
+leaves the post-period one. That is the diagnostic §3x failed.
+
+Adjusting for unequal windows (placebo spans 5 years of midpoint separation, treatment
+7): +0.010/yr placebo against +0.041/yr true, a fourfold gap.
+
+**Four reasons not to call it a result.**
+
+1. **Magnitude is implausible.** +0.29 log points is ~33% higher US exports. The gravity
+   estimate was 5.2%. A number six times larger from a design with weaker controls
+   should raise suspicion, not confidence.
+2. **The placebo is still marginally significant** at zeta -> 0 (p ~ 0.06).
+3. **B contradicts A** (+0.157, t = 0.96, with a LARGER placebo). The disagreement tracks
+   match quality — A reaches RMSE 0.114, B only 0.268 on 3.5 effective donors — so B is
+   plausibly underpowered rather than a refutation, but that is not demonstrated.
+4. **MVA_W = 2.0 is arbitrary.** If too low, A compares across MVA levels and +0.29 is
+   capability, not policy — precisely the §3n confound.
+
+### Open
+
+Measure the residual MVA gap A's weights leave between treated and synthetic, and sweep
+MVA_W. If +0.29 survives a much heavier MVA weight and a near-zero residual gap, it is
+worth taking seriously. If it decays toward B's number, it was capability all along.
