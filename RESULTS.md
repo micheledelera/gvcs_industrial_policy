@@ -1620,3 +1620,76 @@ different estimands that genuinely disagree.
 
 Whether the weighted result is Mexico specifically. Leave-Mexico-out on both the
 long difference and this event study would settle it.
+
+---
+
+## §3w. The bracket event study across all four policy measures
+
+24 fits: 4 measures x 3 bracket schemes x weighted/unweighted. Code:
+`data/run_decile_all.sh` over `data/fit_event_decile.py`. Summary:
+`data/decile_all_summary.csv`; full log `data/decile_all.log`.
+
+### Pre-trend joint test F(5,166), p in brackets
+
+| measure | decile W | decile U | quintile W | quintile U | tercile W | tercile U |
+|---|---|---|---|---|---|---|
+| n_policies | 5.36 (.0001) | 2.21 (.056) | 3.94 (.002) | 2.81 (.018) | 33.74 (<.0001) | 2.89 (.016) |
+| frac_policies | 14.99 (<.0001) | 3.34 (.007) | 5.09 (.0002) | 4.14 (.001) | 57.10 (<.0001) | 4.86 (.0004) |
+| **share_n_policies** | 10.30 (<.0001) | **0.87 (.50)** | 5.30 (.0002) | **0.99 (.42)** | 10.35 (<.0001) | **0.56 (.73)** |
+| **share_frac_policies** | 7.55 (<.0001) | **0.99 (.43)** | 4.31 (.001) | **0.92 (.47)** | 5.78 (.0001) | **0.93 (.46)** |
+
+### Post-period mean and significant coefficients (decile brackets)
+
+| measure | weighted | unweighted |
+|---|---|---|
+| n_policies | −0.397, **4/6 sig** | +0.010, 0/6 |
+| frac_policies | −0.141, 2/6 sig | −0.031, 0/6 |
+| share_n_policies | −0.558, 2/6 sig | +0.011, 0/6 |
+| share_frac_policies | +0.240, 0/6 | −0.004, 0/6 |
+
+### Findings
+
+**1. Targeting measures pass pre-trends; volume measures do not.** Unweighted,
+share_n_policies and share_frac_policies give F between 0.56 and 0.99 (p = 0.42-0.73)
+in every bracket scheme. n_policies and frac_policies fail in five of six cells, and
+frac_policies decisively (p = 0.0004 to 0.007).
+
+This is an INDEPENDENT argument for the share measures. §3j could only establish they
+were more precise, since the point estimates were similar; here they are the only ones
+whose pre-period is flat.
+
+*Caveat:* share measures have less between-country variation by construction, so they
+mechanically have less scope to display differential trends. Not a clean win without
+checking that.
+
+**2. Everything weighted fails, and badly.** F reaches 33.7 and 57.1 for the volume
+measures at terciles. The negative-and-significant post coefficients there (n_policies
+−0.40, 4/6 significant) are not interpretable: they sit on a rejected pre-period.
+
+### share_n_policies, decile, unweighted -- the best-behaved cell (F = 0.87, p = 0.50)
+
+| tau | IP x 1[tau] |
+|---:|---|
+| −6 | −0.0455 (0.0255)* |
+| −5 | −0.0310 (0.0167)* |
+| −4 | −0.0313 (0.0170)* |
+| −3 | −0.0242 (0.0125)* |
+| −2 | −0.0196 (0.0116)* |
+| **−1** | — ref — |
+| 0 | +0.0000 (0.0086) |
+| 1 | +0.0002 (0.0134) |
+| 2 | **+0.0280 (0.0165)\*** |
+| 3 | +0.0180 (0.0163) |
+| 4 | +0.0177 (0.0190) |
+| 5 | +0.0040 (0.0175) |
+
+Post-period positive in five of six years and marginally significant at tau = +2, but
+the post mean is +0.011 with none surviving at 5%. A hint, not a result. The
+individually significant pre-coefficients converging toward zero at tau = −1 argue for
+running the tau in [−5,−2] version before reading anything into the shape.
+
+### Open
+
+1. tau in [−5,−2] pre-trend test, dropping the endpoint bin.
+2. Whether the share measures' pre-trend pass is mechanical (less between-country
+   variation) rather than substantive.
