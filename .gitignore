@@ -58,3 +58,6 @@ data/swapfile
 !data/realloc_us.csv
 !data/event_timing.csv
 !data/event_stagger_*.csv
+!data/event_timing.csv
+!data/event_stagger_*.csv
+!data/event_decile_*.csv

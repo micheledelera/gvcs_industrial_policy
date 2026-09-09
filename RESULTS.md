@@ -1527,3 +1527,96 @@ treatment status.
 
 Two checks that would distinguish these: the unweighted event study, and
 leave-Mexico-and-Vietnam-out.
+
+---
+
+## §3v. Electronics, and the within-MVA-bracket event study
+
+### Support for bracket comparisons
+
+Replacing alpha_kt with alpha_{k,bracket,t} confines every comparison to the same
+sector, same MVA bracket, same year. Code: `data/diag_brackets_elec.py`.
+
+| brackets | cells | countries/cell (med) | cells with both treated & untreated | weight there | pairs |
+|---|---|---|---|---|---|
+| Decile | 618 | 12 | 374 (61%) | **99.7%** | 4,578 |
+| Quintile | 310 | 23 | 198 (64%) | 99.8% | 4,834 |
+| Tercile | 186 | 38 | 137 (74%) | 99.8% | 5,358 |
+
+Feasible: the unsupported cells are small ones.
+
+### Electronics (ISIC 26-27), China's share of US imports
+
+| sector | 2015-17 | 2022-24 | change | event |
+|---|---:|---:|---:|---:|
+| 2620 computers & peripherals | 60.2 | 30.0 | **−30.2** | 2020 |
+| 2630 communication equipment | 58.8 | 45.0 | −13.7 | 2024 |
+| 2740 lighting equipment | 51.4 | 32.1 | −19.3 | 2022 |
+| 2732 other electronic wire | 43.1 | 23.5 | −19.6 | 2020 |
+| 2790 other electrical equipment | 41.7 | 21.1 | −20.6 | 2021 |
+| 2640 consumer electronics | 44.4 | 31.0 | −13.4 | 2023 |
+| **2720 batteries** | 29.8 | **49.1** | **+19.4** | — |
+| 2610 electronic components | 14.3 | 7.3 | −7.0 | 2019 |
+
+Computers is the sharpest decoupling episode in the dataset. Batteries went the other
+way: China GAINED 19pp.
+
+**Top developing suppliers in 2620, event 2020**
+
+| country | share 15-17 | share 22-24 | change | IP | MVA/GDP |
+|---|---:|---:|---:|---:|---:|
+| Mexico | 16.12 | 22.56 | **+6.44** | **0.0000** | 20.3 |
+| Vietnam | 1.57 | 8.43 | **+6.86** | 0.0016 | 21.2 |
+| Malaysia | 1.92 | 3.09 | +1.17 | 0.0003 | 21.7 |
+| Thailand | 4.79 | 5.49 | +0.70 | 0.0000 | 26.6 |
+| Philippines | 1.42 | 1.65 | +0.22 | 0.0000 | 18.2 |
+| Indonesia | 0.26 | 0.29 | +0.03 | 0.0029 | 20.6 |
+
+Mexico, Vietnam and Malaysia are in the same MVA bracket (20.3, 21.2, 21.7). Vietnam has
+the most policy and gained most, but Mexico has ZERO recorded computer policy and gained
+nearly as much, while Malaysia has intermediate policy and gained a sixth as much.
+Indonesia has the highest IP of the six and gained 0.03pp.
+
+### The bracket event study
+
+    s_ikt = sum_tau beta_tau (IP_ik x 1[t-E_k=tau]) + a_ik + a_{k,br,t} + e_ikt
+
+MVA x event-time terms dropped: MVA is near-constant inside a bracket, so a_{k,br,t}
+does that job non-parametrically. Code: `data/fit_event_decile.py`.
+
+| brackets | weighting | pre-trend F(5,166) | p | post mean | post sig |
+|---|---|---:|---:|---:|---|
+| Decile | weighted | 7.55 | <0.0001 | +0.240 | 0/6 |
+| **Decile** | **unweighted** | **0.99** | **0.428** | **−0.004** | **0/6** |
+| Quintile | weighted | 4.31 | 0.0010 | +0.207 | 0/6 |
+| Quintile | unweighted | 0.92 | 0.468 | −0.006 | 0/6 |
+| Tercile | weighted | 5.78 | 0.0001 | +0.145 | 0/6 |
+| Tercile | unweighted | 0.93 | 0.461 | −0.005 | 0/6 |
+
+**Decile, unweighted** (the specification that passes): tau = −6..−2 run
+−0.045*, −0.028*, −0.033*, −0.026*, −0.022; tau = 0..+5 run −0.002, −0.016, +0.001,
++0.000, −0.005, −0.003, with SEs 0.007-0.022.
+
+### Reading
+
+1. **The MVA brackets barely matter.** Deciles, quintiles and terciles give almost
+   identical numbers. Confining comparisons to similar countries is not what changes the
+   answer, which suggests MVA was not the missing control in earlier specifications.
+2. **The §3t pre-trend failure was a WEIGHTING artefact.** Weighted F = 7.55
+   (p<0.0001); unweighted F = 0.99 (p = 0.43), flat. Mexico and a handful of large pairs
+   drove the rejection.
+3. **But the specification that passes gives a precise zero.** Post coefficients −0.016
+   to +0.001, SEs 0.007-0.022, so 95% intervals of roughly ±0.03pp. Not an underpowered
+   null -- a bounded one.
+
+**The tension to resolve.** Unweighted answers "did the typical COUNTRY-SECTOR with
+policy do better" -- flat pre-trends, tight zero. Weighted answers "did the typical
+DOLLAR of trade flow toward policy-active suppliers" -- the economically relevant
+question for who captured the decoupling flows, and where §3q found +0.38 to +0.52 --
+but it fails pre-trends here and its event-time SEs are too wide to say anything. Two
+different estimands that genuinely disagree.
+
+### Open
+
+Whether the weighted result is Mexico specifically. Leave-Mexico-out on both the
+long difference and this event study would settle it.
