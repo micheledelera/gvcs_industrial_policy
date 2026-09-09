@@ -2830,3 +2830,61 @@ Two structural facts sit behind this and belong in the note regardless of the es
    non-user comparison has no common support where it matters.
 2. **Where canonical SC is applicable it covers 5-20% of treated trade value** (§4b, §4f).
    The countries that can be studied cleanly are not the ones the question is about.
+
+---
+
+## §4i. Does the null survive an INTENSITY-based treatment?
+
+Routes A and B defined treated as "any recorded GTA intervention", which puts India
+(targeting 60 of 62 sectors) in the same box as a country with one measure, and §3ac found
+the median treated share_frac_policies is 0.00007. A null against that definition says
+little. Canonical SC needs a binary split, so treatment is thresholded on intensity and the
+middle tercile dropped. Code: `data/sc08_intensity.py`.
+
+### Intensity among the 36 users, 2015-17
+
+| measure | min | p33 | median | p67 | max |
+|---|---:|---:|---:|---:|---:|
+| total interventions | 6 | 66 | 135 | 411 | 2,072 |
+| sectors targeted | 4 | 40 | 95 | 118 | 125 |
+| interventions per $bn exports | 0.10 | 1.74 | 6.54 | 13.35 | 70.85 |
+
+345x dispersion on the count, so the binary definition genuinely discarded information.
+
+### Results, treated = top tercile (12 countries)
+
+| outcome | comparison | classic tau | AUG tau | median p | Fisher p | p<0.10 |
+|---|---|---|---|---|---|---|
+| decoupling sectors | HIGH count vs ZERO | +0.339 (t=3.28) | +0.089 (t=0.90) | 0.794 | 0.999 | 0/12 |
+| decoupling sectors | HIGH count vs LOW users | −0.151 (t=−1.59) | +0.121 (t=1.63) | 0.923 | 1.000 | 0/12 |
+| decoupling sectors | HIGH per-$bn vs ZERO | +0.059 (t=0.38) | −0.062 (t=−0.29) | 0.665 | 0.949 | 0/12 |
+| decoupling sectors | HIGH per-$bn vs LOW users | −0.504 (t=−3.78) | −0.218 (t=−1.05) | 0.692 | 0.899 | 0/12 |
+| orientation | HIGH count vs ZERO | +0.172 (t=4.00) | +0.166 (t=2.13) | 0.861 | 1.000 | 0/12 |
+| orientation | HIGH count vs LOW users | −0.038 (t=−0.38) | −0.459 (t=−2.07) | 0.885 | 0.998 | 0/12 |
+| orientation | HIGH per-$bn vs ZERO | +0.083 (t=0.71) | +0.023 (t=0.18) | 0.734 | 0.999 | 0/12 |
+| **orientation** | **HIGH per-$bn vs LOW users** | −0.090 | **−0.194** | **0.154** | **0.009** | **5/12** |
+
+Seven of eight null. The one rejection carries a NEGATIVE sign and rests on a placebo
+distribution of 12 donors, so the smallest achievable p is 1/13 = 0.077 and Fisher-combining
+twelve such coarse values is fragile. Not something to build on.
+
+### Why intensity does not help — the substantive finding
+
+**Top 13 by total interventions:** India, Brazil, Russia, Poland, Hungary, Argentina,
+Indonesia, Romania, Bulgaria, Croatia, Ecuador, Pakistan, Colombia.
+
+**Top 13 by interventions per $bn:** Croatia, Nepal, Ecuador, Bulgaria, Colombia,
+Argentina, Tunisia, Pakistan, Nigeria, Bolivia, Romania, Kenya, Brazil.
+
+**Vietnam, Mexico, Thailand, Malaysia and Bangladesh appear on neither list.** The countries
+that actually captured decoupling flows are not the ones GTA records as policy-intensive.
+The per-$bn measure is worse: it ranks Nepal and Croatia top, mechanically, being a handful
+of interventions divided by tiny exports.
+
+**The treatment variable does not rank countries the way the outcome does.** No design can
+recover an effect from that. It is not a limitation of synthetic control but a property of
+the measure: either GTA under-records the interventions that mattered in East Asian
+manufacturing, or industrial-policy intensity as GTA measures it is not what separated the
+winners.
+
+That is a sharper statement than "we found a null", and belongs in the note as a finding.
