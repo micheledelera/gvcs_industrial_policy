@@ -3323,3 +3323,76 @@ small number of very large flows.
 
 **For the note: these are two different questions with two different answers, and both are
 true. Among the dollars, policy-targeted sectors gained. Among the sectors, they did not.**
+
+---
+
+## §6b. Holding the dollars fixed: HIGH vs LOW within size strata
+
+§6 showed the gravity-vs-SC disagreement is size weighting: unweighted rows null, weighted
+rows significant. Those answer "did the typical targeted SECTOR benefit" and "did the
+typical targeted DOLLAR benefit". Rather than choosing, stratify by pre-period US export
+value and run the identical specification within each stratum.
+Code: `data/sc16_sizestrata.py`.
+
+    log X_ist = beta (HIGH_is x post_t) + alpha_is + alpha_it + alpha_st + e
+    HIGH + LOW units with a complete positive 2007-2024 US series
+
+| quintile | units | HIGH | median $k | % of value | OLS unweighted | OLS weighted | PPML levels |
+|---|---|---|---|---|---|---|---|
+| 1 | 831 | 25 | 47 | 0.0% | −0.152 (0.313) | −0.222 (0.333) | −0.045 (0.372) |
+| 2 | 830 | 46 | 257 | 0.1% | +0.319 (0.232) | +0.284 (0.241) | +0.568 (0.288)** |
+| 3 | 831 | 69 | 1,263 | 0.3% | +0.038 (0.183) | +0.029 (0.184) | +0.197 (0.170) |
+| 4 | 830 | 141 | 6,726 | 1.5% | −0.068 (0.142) | −0.075 (0.133) | +0.085 (0.128) |
+| **5** | 831 | 251 | 88,351 | **98.2%** | **+0.065 (0.100)** | **+0.412 (0.184)\*\*** | +0.214 (0.123)* |
+| ALL | 4,153 | 532 | 1,263 | 100% | −0.084 (0.061) | +0.382 (0.162)** | +0.192 (0.106)* |
+
+**Within quintiles 1-4 weighting stops mattering** — the unweighted and weighted
+coefficients are nearly identical. That confirms §6: the weighting effect is a BETWEEN
+size-class composition effect. **But quintile 5 still diverges** (+0.065 vs +0.412**) and
+holds 98.2% of the value, being internally as skewed as the whole sample.
+
+---
+
+## §6c. Inside the top quintile — the weighted result is a handful of country-sectors
+
+Code: `data/sc17_topsplit.py`. Top quintile split into five bands of 4% each.
+
+| band | units | HIGH | median $k | % of ALL value | OLS unweighted | OLS weighted |
+|---|---|---|---|---|---|---|
+| 80-84th pct | 167 | 39 | 24,945 | 1.0% | −0.210 (0.418) | −0.246 (0.413) |
+| 84-88th | 166 | 45 | 44,945 | 1.7% | −0.187 (0.620) | −0.211 (0.646) |
+| 88-92nd | 166 | 47 | 88,507 | 3.4% | +0.325 (0.556) | +0.182 (0.546) |
+| 92-96th | 166 | 56 | 213,692 | 8.6% | +0.011 (0.275) | +0.057 (0.276) |
+| **top 4%** | 166 | 64 | 980,704 | **83.5%** | **+0.039 (0.212)** | **+0.551 (0.297)\*** |
+| top quintile | 831 | 251 | 88,351 | 98.2% | +0.065 (0.100) | +0.412 (0.184)** |
+
+**Weighting stops mattering in four of the five bands.** But in the top 4% it still
+matters, and that band holds **83.5% of all the trade value**. So even after stratifying
+twice the divergence survives inside the largest group.
+
+**The weighted result is therefore not a "large flows" phenomenon.** If it were, it would
+appear within the top band on both weightings. It is driven by a handful of individual
+country-sectors within those 166 units. The high-policy members of that group:
+
+> **Mexico**-motor vehicles, India-jewellery, **Mexico**-2819, India-pharmaceuticals,
+> **Mexico**-2813, Bangladesh-apparel, Vietnam-communication equipment, Indonesia-apparel,
+> India-apparel, **Mexico**-apparel, Brazil-iron & steel, **Mexico**-2599
+
+Mexico appears five times in the top twelve — consistent with Mexico at 37.6% of the §3u
+estimating weight and as the single influential case in the §3g leave-one-out.
+
+### The answer to "can we hold the dollars fixed?"
+
+**No, not in this data.** 83.5% of the value sits in 4% of the units, and within those the
+weighting still flips the answer. There is no size band simultaneously wide enough to have
+power and narrow enough to be homogeneous.
+
+**Consequence for the note:** the "among the dollars" result must not be written as
+"targeting paid off among large flows". It is driven by a small, nameable set of
+country-sectors, Mexican manufacturing above all. Either report those as cases and discuss
+them, or lead with the unweighted null. **+0.38 cannot be presented as a general effect.**
+
+**Caveat on these nulls.** The stratified unweighted estimates have SEs of 0.21-0.62 — each
+band has 166 units with 39-64 treated. The top-4% unweighted +0.039 has a 95% interval of
+roughly [−0.38, +0.46] and cannot rule out +0.4. These stratified nulls are IMPRECISE,
+unlike the pooled unweighted null (−0.084, se 0.061), which is tight.

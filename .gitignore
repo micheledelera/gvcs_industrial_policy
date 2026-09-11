@@ -88,3 +88,5 @@ data/swapfile
 !data/sc13_vnplacebo.csv
 !data/sc14_demean.csv
 !data/sc15_bridge.csv
+!data/sc16_sizestrata.csv
+!data/sc17_topsplit.csv
