@@ -1,0 +1,138 @@
+name: Mirror Zenodo dataset
+
+# Mirrors a Zenodo record's files into a GitHub Release, since the raw data
+# is too large to commit into the repository itself. GitHub-hosted runners
+# have unrestricted internet access, so this workflow (not the interactive
+# Claude session) is what actually talks to zenodo.org.
+
+on:
+  push:
+    branches:
+      - claude/zenodo-dataset-mirror-7trnei
+    paths:
+      - .github/workflows/zenodo-mirror.yml
+  workflow_dispatch:
+    inputs:
+      record_id:
+        description: "Zenodo record ID (numeric part of the DOI, e.g. 22282107 for 10.5281/zenodo.22282107)"
+        required: false
+        default: "22282107"
+      release_tag:
+        description: "Tag/name of the GitHub Release to publish the mirrored files under"
+        required: false
+        default: "zenodo-22282107"
+
+permissions:
+  contents: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch Zenodo record metadata
+        id: meta
+        env:
+          RECORD_ID: ${{ github.event.inputs.record_id || '22282107' }}
+        run: |
+          set -euo pipefail
+          curl -sSL -f "https://zenodo.org/api/records/${RECORD_ID}" -o record.json
+          echo "Record metadata:"
+          jq '.' record.json | head -c 2000
+          echo
+          {
+            echo "record_id=${RECORD_ID}"
+            echo "title=$(jq -r '.metadata.title // .title // "unknown"' record.json)"
+            echo "doi=$(jq -r '.pids.doi.identifier // .doi // "unknown"' record.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Normalize file list (handles both legacy list and InvenioRDM 'entries' map formats)
+        run: |
+          set -euo pipefail
+          jq '
+            if (.files | type) == "array" then
+              [.files[] | {key: .key, size: .size, checksum: .checksum, url: .links.self}]
+            elif (.files.entries | type) == "object" then
+              [.files.entries[] | {key: .key, size: .size, checksum: .checksum, url: (.links.content // .links.self)}]
+            else
+              error("Unrecognized Zenodo files schema")
+            end
+          ' record.json > files.json
+          echo "Files to mirror:"
+          jq '.' files.json
+
+      - name: Download, verify, and split oversized files
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          MAX_ASSET_SIZE=2147483648   # GitHub's per-file release asset limit
+          SPLIT_CHUNK_SIZE=1900M      # keeps each part safely under the limit (split's M = MiB)
+          : > dist/MANIFEST.txt
+          jq -c '.[]' files.json | while read -r f; do
+            key=$(echo "$f" | jq -r '.key')
+            url=$(echo "$f" | jq -r '.url')
+            checksum=$(echo "$f" | jq -r '.checksum')
+            algo="${checksum%%:*}"
+            expected="${checksum#*:}"
+            echo "Downloading ${key} from ${url} ..."
+            curl -sSL -f "$url" -o "dist/${key}"
+            actual=$("${algo}sum" "dist/${key}" | awk '{print $1}')
+            if [ "$actual" != "$expected" ]; then
+              echo "::error::Checksum mismatch for ${key}: expected ${expected}, got ${actual}"
+              exit 1
+            fi
+            size=$(stat -c%s "dist/${key}")
+            echo "OK: ${key} (${algo} verified, ${size} bytes)"
+            if [ "$size" -gt "$MAX_ASSET_SIZE" ]; then
+              echo "${key} exceeds GitHub's 2GB release asset limit; splitting into ${SPLIT_CHUNK_SIZE} chunks."
+              split -b "$SPLIT_CHUNK_SIZE" -d -a 3 "dist/${key}" "dist/${key}.part"
+              rm "dist/${key}"
+              parts=$(cd dist && ls "${key}".part* | sort | paste -sd, -)
+              echo "${key}: split into [${parts}] -- reassemble with: cat ${key}.part* > ${key} -- original ${algo}:${expected}, original_size_bytes:${size}" >> dist/MANIFEST.txt
+            else
+              echo "${key}: single file -- ${algo}:${expected}, size_bytes:${size}" >> dist/MANIFEST.txt
+            fi
+          done
+          cp record.json dist/zenodo_record_metadata.json
+          echo "---- MANIFEST ----"
+          cat dist/MANIFEST.txt
+          ls -lh dist/
+
+      - name: Build release notes
+        run: |
+          {
+            echo "Mirror of Zenodo record [${{ steps.meta.outputs.doi }}](https://doi.org/${{ steps.meta.outputs.doi }})."
+            echo
+            echo "**Title:** ${{ steps.meta.outputs.title }}"
+            echo
+            echo "Files below are byte-for-byte copies of the Zenodo record's files, verified against"
+            echo "the checksums Zenodo reports. \`zenodo_record_metadata.json\` is the full upstream"
+            echo "record metadata as returned by the Zenodo API at mirror time."
+            echo
+            echo "**Files split into parts:** GitHub release assets are capped at 2GB each. Any source"
+            echo "file over that limit was split into \`<filename>.part000\`, \`.part001\`, etc. Reassemble with:"
+            echo '```'
+            echo "cat <filename>.part* > <filename>"
+            echo '```'
+            echo "then verify against the checksum in \`MANIFEST.txt\` (same algorithm Zenodo publishes, e.g. \`md5sum <filename>\`)."
+            echo
+            echo "Source: https://doi.org/${{ steps.meta.outputs.doi }}"
+          } > release_notes.md
+
+      - name: Create or update GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.inputs.release_tag || 'zenodo-22282107' }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists, uploading/updating assets."
+            gh release upload "$TAG" dist/* --clobber
+          else
+            echo "Creating release $TAG."
+            gh release create "$TAG" dist/* \
+              --title "Zenodo mirror: ${{ steps.meta.outputs.title }}" \
+              --notes-file release_notes.md
+          fi
