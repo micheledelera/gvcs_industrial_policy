@@ -3134,3 +3134,62 @@ also beat their synthetic controls by ~+1, this design is measuring Vietnam, not
 The within-country comparison was rightly dropped for the main design, but here it is the
 natural placebo, and it separates "targeting worked in Vietnam" from "Vietnam did well".
 Not yet run.
+
+---
+
+## §5e. The decisive check — Vietnam's LOW-policy sectors do it too
+
+§5d found Vietnam's ten high-targeting sectors average tau_aug +1.058 against synthetic
+controls built from low-policy sectors in other countries. Vietnam grew faster than almost
+everything in this period, so that is only about TARGETING if Vietnam's UNTARGETED sectors
+do not show the same thing. Code: `data/sc13_vnplacebo.py`.
+
+| Vietnam | n | median pre-RMSPE | mean gap pre | **mean tau_aug** | median tau_aug | p<0.10 |
+|---|---|---|---|---|---|---|
+| **HIGH targeting** | 10 | 0.364 | +0.017 | **+1.058** | +1.212 | 2/10 (20%) |
+| **LOW targeting** | 56 | 0.302 | −0.041 | **+0.859** | +0.754 | 7/56 (13%) |
+
+**Difference +0.199. Within-Vietnam permutation test p = 0.604** (5,000 draws, labels
+shuffled across Vietnam's own sectors so any country-wide shock cancels; permutation
+sd 0.384).
+
+**Vietnam's untargeted sectors beat their synthetic controls by +0.86, almost as much as the
+targeted ones.** The §5d result is a VIETNAM effect, not a targeting effect.
+
+### The high-minus-low difference has no consistent sign
+
+| country | n HIGH | n LOW | tau HIGH | tau LOW | difference |
+|---|---|---|---|---|---|
+| Indonesia | 27 | 15 | +0.548 | −0.096 | **+0.644** |
+| Vietnam | 10 | 56 | +1.058 | +0.859 | +0.199 |
+| Malaysia | 19 | 70 | +0.102 | −0.065 | +0.167 |
+| Bangladesh | 4 | 44 | +0.241 | +0.115 | +0.126 |
+| Turkiye | 26 | 48 | +0.344 | +0.326 | +0.018 |
+| India | 18 | 42 | +0.311 | +0.301 | +0.010 |
+| Brazil | 25 | 43 | −0.269 | −0.053 | −0.216 |
+| Mexico | 13 | 80 | −0.118 | +0.127 | **−0.245** |
+| Thailand | 5 | 108 | −0.038 | +0.242 | **−0.279** |
+
+Five positive, four negative, averaging about **+0.05**. Note the LOW columns: Vietnam
++0.86, Turkiye +0.33, India +0.30 — large country-level outperformance that the
+between-country design attributes to whichever unit happens to be labelled treated.
+
+### Consequences for §5c and §5d
+
+**§5d's Vietnam case study does not survive.** Computers still shows tau_aug +2.23 at
+p = 0.070 with a clean pre-period fit, but it sits ~1.4 log points above Vietnam's OWN
+untargeted baseline rather than +2.23 above a neutral one, and 7 of Vietnam's 56 untargeted
+sectors individually reject as well. A striking single case, not evidence about policy.
+
+**§5c's cross-country pattern does not survive either.** The "targeting rejections positive,
+volume rejections negative" split compared treated units to OTHER countries' donors, never
+to the country's own baseline. Differencing out the country removes the pattern — Indonesia,
+in §5c's volume-negative group, has the largest positive high-minus-low difference here.
+
+### The methodological lesson worth keeping
+
+Dropping the within-country comparison was right for the ESTIMAND — the research question
+is between countries. But the within-country contrast turns out to be the only thing that
+separates a targeting effect from a country effect, so **it belongs as the placebo, not as
+the design.** That applies equally to the long difference and to the between-country SC,
+neither of which has been subjected to it.
