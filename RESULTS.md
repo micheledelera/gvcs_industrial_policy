@@ -3193,3 +3193,70 @@ is between countries. But the within-country contrast turns out to be the only t
 separates a targeting effect from a country effect, so **it belongs as the placebo, not as
 the design.** That applies equally to the long difference and to the between-country SC,
 neither of which has been subjected to it.
+
+---
+
+## §5f. Country-demeaned synthetic control — reintroducing within-country, and the close
+
+§5e showed the §5b-§5d estimates were country effects. Fix: demean the outcome by the
+country's own cross-sector average each year,
+
+    y~_ikt = y_ikt - mean_k y_ikt
+
+so a country-year shock is removed BEFORE matching. The treated unit becomes "Vietnam's
+computers relative to Vietnam"; donors become "Cambodia's footwear relative to Cambodia".
+The donor pool stays between-country — which is the estimand — while the confound is
+differenced out. Ferman-Pinto demeaning at country level, and the synthetic-control
+analogue of gravity's alpha_it. Everything else identical to §5b.
+Code: `data/sc14_demean.py`.
+
+| | VOLUME | TARGETING |
+|---|---|---|
+| treated units | 541 (20 countries) | 500 (35 countries) |
+| median pre-RMSPE (treated / placebo) | 0.358 / 0.532 | 0.365 / 0.513 |
+| **gap pre** | **−0.117 (t=−0.95)** | **−0.030 (t=−1.01)** |
+| tau classic | −0.239 (t=−1.19) | **+0.037 (t=0.58)** |
+| tau augmented | −0.042 (t=−0.86) | **+0.058 (t=0.89)** |
+| p<0.10 rate | 8% (null 10%) | **10% (null 10%)** |
+| Fisher p | 0.9923 | 0.5021 |
+
+Vietnam on the demeaned outcome: HIGH n=10 mean −0.047, LOW n=56 mean +0.121, difference
+−0.167, permutation p = 0.656.
+
+### What this settles
+
+**The §5b estimate was the country effect, essentially in full.** Targeting goes from
++0.245 classic / +0.179 augmented to **+0.037 / +0.058** once each country's own average
+path is removed.
+
+**Demeaning fixed the fit problem at the same time, which is the tell.** In §5b the
+pre-period gap was significantly POSITIVE — +0.047 (t=2.63) volume, +0.048 (t=3.80)
+targeting: treated units sat above their synthetics BEFORE 2018. On the demeaned outcome
+those gaps go flat (t = −0.95, −1.01). **The pre-treatment gap WAS the country effect
+showing up early**, and removing the country removed both it and the estimate together —
+exactly the internal consistency a correct diagnosis should produce.
+
+The p<0.10 rate is 10% against a 10% null for targeting, 8% for volume. A clean null, not
+an underpowered one.
+
+### The one thing this null does not say
+
+Demeaning removes the country effect but also erases any genuine AGGREGATE effect of
+industrial policy on a country's total exports. If policy lifted all a country's sectors
+together, this design cannot see it.
+
+Correct reading, narrow and specific: **industrial policy did not produce differential
+SECTORAL reallocation within a country's export basket after 2018.** It does not rule out
+country-level effects — the same limitation gravity's alpha_ist carries, which matters since
+gravity is the design that survived. Both are within-country-relative estimands. Neither
+speaks to whether industrial policy made Vietnam as a whole grow faster, and §4a established
+that question has no usable control group.
+
+### Donor counts, for the record
+
+Every SC from §5b onward used **K = 20 donors** per treated unit, trimmed from a median of
+~330 eligible by covariate nearest-neighbour — 20 donors against 15 matching targets (11
+lagged outcomes + 4 covariates), chosen after §4d where 129 donors fitting 11 observations
+gave an exact fit and broke Abadie's statistic. Unlike §3af's near-uniform weights (median
+effective donors 13.4 of 21), these are concentrated: top-three donor weights carry 43-96%
+of the total in Vietnam's case study.
