@@ -83,3 +83,5 @@ data/swapfile
 !data/sc08_intensity.csv
 !data/sc10_estimate.csv
 !data/sc11_adhfilter.csv
+!data/sc12_vietnam.csv
+!data/vietnam_sc.png

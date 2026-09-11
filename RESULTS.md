@@ -3075,3 +3075,62 @@ synthetics.
 Consistent with the project's targeting-not-volume finding throughout, but it is a pattern
 across countries in a design whose aggregate inference does not clear at the cutoff ADH
 actually recommend. **A lead, not a result.**
+
+---
+
+## §5d. Vietnam case study — the design synthetic control was built for
+
+§5c found Vietnam has the highest share of high-targeting sectors beating their synthetic
+counterparts. With ~500 treated units the aggregate is uninformative; Abadie's method is
+for a handful of aggregate cases examined one at a time with paths plotted and weights
+shown. Code: `data/sc12_vietnam.py`. Figure: `data/vietnam_sc.png`.
+
+Ten of eleven high-targeting sectors have usable pools. Mean tau_aug **+1.058**, median
+pre-RMSPE 0.364, **2 of 10 clear p<0.10**.
+
+| sector | China % US mkt | pre-RMSPE | gap pre | tau classic | tau aug | p | top donors |
+|---|---:|---:|---:|---:|---:|---:|---|
+| Electronic components | 14 | **1.614** | −0.276 | +2.55 | **−1.43** | 0.235 | Morocco-2012 (0.96) |
+| **Computers & peripherals** | **60** | 0.348 | +0.051 | +0.99 | **+2.23** | **0.070** | Cambodia-footwear 0.26, Mexico-lighting 0.17 |
+| Basic iron & steel | 5 | 0.955 | +0.114 | +1.05 | +1.84 | 0.157 | Philippines-soft drinks 0.37 |
+| Electric motors | 22 | 0.434 | +0.074 | +1.33 | +1.22 | 0.207 | Philippines-machinery 0.19 |
+| Plastics products | 41 | **0.143** | +0.025 | +1.40 | +1.31 | 0.114 | Philippines-apparel 0.17 |
+| Other metal products | 41 | 0.247 | +0.058 | +0.51 | +0.37 | 0.634 | Philippines-apparel 0.28 |
+| Other electrical equip. | 42 | 0.603 | +0.099 | +1.37 | +0.29 | 0.758 | Cambodia-furniture 0.41 |
+| Measuring instruments | 14 | 0.380 | +0.012 | +1.80 | +1.20 | 0.209 | Philippines-food mach. 0.28 |
+| Basic chemicals | 13 | 0.279 | +0.002 | +0.50 | +0.42 | 0.586 | Indonesia 0.22 |
+| **ISIC 2910 (motor vehicles)** | **1** | 0.208 | +0.013 | +3.20 | **+3.13** | **0.017** | Philippines-jewellery 0.21 |
+
+### Reading
+
+**Eight of ten tau are positive with genuinely tight pre-period tracking** (pre-period gaps
++0.002 to +0.11 for the well-fitted sectors). Vietnam sits above its synthetic after 2018
+almost everywhere — a consistent pattern, not noise.
+
+**But the two individual rejections are the wrong two.** ISIC 2910 is MOTOR VEHICLES, where
+China held 1% of the US market — it cannot be a decoupling story. The panel shows a step
+from 8.3 to 12 log points between 2019 and 2021, a fifty-fold jump, which is a plant coming
+online. Strip it out and the only decoupling-relevant rejection is computers.
+
+**Computers is the good case.** China 60% of the US market pre-period falling to 30%;
+pre-RMSPE 0.348 with a near-zero pre-period gap; Vietnam tracks its synthetic until 2016-17
+then pulls away sharply; tau_aug +2.23, p = 0.070. **The cleanest single piece of evidence
+in the project.**
+
+**Three sectors should be dropped outright** on Abadie's own advice not to use the method
+when pre-fit is poor: electronic components (pre-RMSPE 1.61, 96% of weight on one Moroccan
+sector, and the ridge correction flips its sign from +2.55 to −1.43), basic iron & steel
+(0.955, matched to Philippine soft drinks), other electrical equipment (0.603).
+
+**The donor lists will draw fire.** Vietnam's computer sector is matched by Cambodian
+footwear and Mexican lighting. Defensible — donors are selected on decoupling exposure,
+size, country characteristics and a matched 2007-17 path, not on industry similarity — but
+it is the Idaho-is-30%-of-California objection and must be pre-empted.
+
+### The check that decides whether this means anything
+
+Vietnam grew faster than almost everything in this period. **If Vietnam's LOW-policy sectors
+also beat their synthetic controls by ~+1, this design is measuring Vietnam, not targeting.**
+The within-country comparison was rightly dropped for the main design, but here it is the
+natural placebo, and it separates "targeting worked in Vietnam" from "Vietnam did well".
+Not yet run.
