@@ -2953,3 +2953,64 @@ LARGEST targeted sectors remain outside, but 9 of 11 are in.
 2. **Too many donors is a problem.** Median 332 donors against 11 pre-treatment years is
    the §4d degeneracy: 129 donors already produced an exact fit and broke the RMSPE ratio.
    Step 1 must trim each pool to ~20-25 nearest on covariates, as §4e did.
+
+---
+
+## §5b. Country-sector SC, HIGH vs LOW policy, between countries — estimation
+
+Design from §5a with own-country donors excluded by construction. Donors: LOW policy,
+different country, |Dec − Dec_t| <= 10pp, |log size − log size_t| <= 2.0, trimmed to the
+K = 20 nearest on MVA/GDP, log MVA per capita, ECI and the sector's share of the country's
+exports. Matched on eleven lagged log US exports plus those four. Canonical Abadie and
+ridge-augmented. Treatment 2018. In-space placebo over ~495 randomly drawn LOW units, each
+given a pool by the identical rule. Aggregate SEs jackknifed over COUNTRIES.
+Code: `data/sc10_estimate.py`.
+
+### A bug in the first run, and its direction
+
+The first pass required a complete positive series over the PRE window only. 356 of 5,524
+units (6.4%) then carried a missing or zero POST year, giving NaN tau and NaN post/pre
+ratio. In the placebo comparison `ratio_placebo >= ratio_treated` a NaN returns False, so
+those placebos never counted as exceedances and **every p-value was biased downward** —
+the entire source of the first run's spurious "33-37% of units below p<0.10". Corrected by
+requiring a complete positive series over PRE and POST. This selects on survival: a
+country-sector that stopped exporting to the US is dropped, and that is informative.
+
+### Results
+
+| | VOLUME (n_policies) | TARGETING (share_frac_policies) |
+|---|---|---|
+| treated units | 541 (20 countries) | 500 (35 countries) |
+| median donors available -> trimmed | 313 -> 20 | 332 -> 20 |
+| median pre-RMSPE | 0.286 | 0.329 |
+| **gap pre** | **+0.047 (t=2.63)** | **+0.048 (t=3.80)** |
+| tau classic | +0.070 (t=0.45) | **+0.245 (t=3.23)** |
+| tau augmented | −0.033 (t=−0.27) | **+0.179 (t=2.23)** |
+| median placebo p (classic / aug) | 0.415 / 0.591 | 0.549 / 0.597 |
+| p<0.10 rate (classic / aug) | 17% / 6% | 11% / 7% |
+| Fisher p (aug) | 1.0000 | 1.0000 |
+
+Credible-fit subsets: volume n=513, tau_aug +0.007 (t=0.06); targeting n=433, classic
++0.245 (t=3.57), **tau_aug +0.159 (t=2.33)**, median p 0.653, 4% at p<0.10.
+
+### Reading
+
+1. **Targeting survives the ridge correction — the first time in this project.** §4g's
+   correction ate every estimate; here +0.245 -> +0.159, holding at t = 2.33. Volume is
+   null on both estimators. Consistent with every other design: targeting carries the
+   signal, volume does not.
+2. **The randomization inference still does not clear**, the same split as §4e:
+   jackknife-over-countries t = 2.3, Abadie placebo median p = 0.65 with 4% of units
+   rejecting against a 10% null.
+3. **The pre-period gap is significantly positive throughout** (+0.047 to +0.049,
+   t = 2.6-4.0). Treated units sit above their synthetics before 2018 — about a fifth of
+   the targeting estimate and most of the volume one.
+
+### The placebo test needs the ADH fit filter before it is read
+
+Median pre-RMSPE is **0.45-0.53 for placebos** against **0.27-0.33 for treated units**.
+Placebos fit ~1.6x worse, so their deviations are mechanically larger, the placebo
+distribution is too wide, and the test is under-powered against its own comparison set.
+Abadie, Diamond and Hainmueller handle exactly this by dropping placebos whose pre-treatment
+RMSPE is much worse than the treated unit's — a 2x cutoff is what turns California's
+p-value from hard-to-see into 0.026. **Not yet applied here.** It is the next step.
