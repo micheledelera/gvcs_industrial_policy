@@ -3014,3 +3014,64 @@ distribution is too wide, and the test is under-powered against its own comparis
 Abadie, Diamond and Hainmueller handle exactly this by dropping placebos whose pre-treatment
 RMSPE is much worse than the treated unit's — a 2x cutoff is what turns California's
 p-value from hard-to-see into 0.026. **Not yet applied here.** It is the next step.
+
+---
+
+## §5c. The ADH placebo fit filter — and the ratio statistic behaves backwards
+
+§5b flagged that placebo units fit ~1.6x worse than treated ones, so the placebo
+distribution is too wide. Abadie, Diamond & Hainmueller's remedy is to drop placebos whose
+pre-treatment RMSPE exceeds twice the treated unit's. Applied here PER TREATED UNIT, with
+the cutoff SWEPT rather than chosen (a single cutoff is the specification search Ferman,
+Pinto & Possebom warn about). Code: `data/sc11_adhfilter.py`.
+
+### TARGETING (share_frac_policies), 500 treated, 35 countries, 495 placebos
+
+| ADH cutoff | median admissible placebos | CLASSIC ratio: median p | rej | Fisher | AUGMENTED \|tau\|: median p | rej | Fisher |
+|---|---|---|---|---|---|---|---|
+| 1x | 190 | 0.802 | 2% | 1.0000 | **0.436** | **17%** | **0.0000** |
+| **2x (ADH)** | 324 | 0.707 | 4% | 1.0000 | 0.513 | 11% | 0.3079 |
+| 3x | 416 | 0.664 | 6% | 1.0000 | 0.550 | 8% | 0.9167 |
+| 5x | 474 | 0.618 | 8% | 0.9999 | 0.573 | 7% | 0.9987 |
+| none | 495 | 0.549 | 11% | 0.8761 | 0.597 | 7% | 1.0000 |
+
+VOLUME shows the identical pattern: 1x gives 17% rejection on |tau| (Fisher 0.0000); 2x
+gives 10%, exactly the null rate.
+
+### Two corrections and one informative result
+
+**1. Abadie's ratio statistic behaves backwards in this setting.** Tightening the filter
+makes the CLASSIC p-values LARGER — median 0.549 -> 0.802, rejection 11% -> 2%. Mechanism:
+the filter keeps only well-fitting placebos, and a well-fitting placebo has a tiny
+pre-RMSPE, so its post/pre RATIO blows up. The surviving placebos hold the largest ratios,
+making treated units less extreme. In ADH's California case the BADLY-fitting placebos had
+the extreme ratios; here it is the reverse. **The post/pre ratio is dominated by its
+denominator here and should not be the headline statistic.**
+
+**2. On |tau_aug| the filter works as expected, but only at 1x.** Restricting to placebos
+fitting at least as well as the treated unit gives 17% rejection against a 10% null
+(Fisher p = 0.0000, though Fisher over 500 tests is hypersensitive). At ADH's own 2x it is
+11% — the null rate. Any claim rests entirely on the tightest cutoff, so **1x should not be
+reported as a headline.**
+
+**3. The by-country split is the substantive result.** Share of a country's treated sectors
+rejecting at p<0.10 under ADH 2x, with mean tau_aug:
+
+| TARGETING | n | rej | tau_aug | | VOLUME | n | rej | tau_aug |
+|---|---|---|---|---|---|---|---|---|
+| **Vietnam** | 10 | **30%** | **+1.06** | | Romania | 42 | 19% | −0.35 |
+| Tunisia | 25 | 24% | +0.40 | | Russia | 44 | 16% | −0.91 |
+| UAE | 13 | 23% | +0.73 | | Bulgaria | 31 | 13% | +0.16 |
+| Nigeria | 10 | 20% | +1.16 | | Hungary | 47 | 13% | −0.03 |
+| Saudi Arabia | 15 | 20% | +0.85 | | Indonesia | 59 | 10% | −0.34 |
+| Pakistan | 22 | 14% | +0.52 | | Brazil | 53 | 8% | −0.12 |
+
+**Targeting rejections are positive; volume rejections are negative.** Vietnam has the
+highest rejection rate on targeting, mean +1.06 log points across its ten high-targeting
+sectors — the case the research question was built around. The countries whose VOLUME
+stands out (Romania, Russia, Indonesia, Brazil) did systematically WORSE than their
+synthetics.
+
+Consistent with the project's targeting-not-volume finding throughout, but it is a pattern
+across countries in a design whose aggregate inference does not clear at the cutoff ADH
+actually recommend. **A lead, not a result.**
