@@ -2888,3 +2888,68 @@ manufacturing, or industrial-policy intensity as GTA measures it is not what sep
 winners.
 
 That is a sharper statement than "we found a null", and belongs in the note as a finding.
+
+---
+
+## §5a. A better design — country-SECTOR synthetic control, HIGH vs LOW policy
+
+**The design.** Unit = country-sector. Treated = HIGH industrial policy (top quartile of
+the positive distribution). Donors = LOW policy (bottom quartile or zero), restricted to
+similar decoupling exposure and similar pre-period size, drawn from the SAME country or any
+other. The question becomes: does Vietnam's policy-targeted sector do better than
+comparable sectors in both Vietnam and Bangladesh once decoupling hits?
+
+**Why this dissolves the problem that killed Routes A and B.** There is no untreated
+Vietnam (§4a), but there are plenty of untargeted VIETNAMESE SECTORS. Making the unit a
+country-sector puts them in the donor pool, so the convex hull no longer requires an
+untreated economy of Vietnam's size. It compares HIGH vs LOW rather than ANY vs NONE, which
+§4i showed is where the variation is. And because donors are selected on similar decoupling
+exposure rather than same sector, the treated unit is not competing against its own
+counterfactual, which weakens §3x's SUTVA problem.
+
+It does NOT solve selection into which sectors a government targets. Pre-period matching
+and the placebo test are the defence there, not the design.
+
+Code: `data/sc09_feas.py`.
+
+### Step 0: feasibility
+
+| | VOLUME (n_policies) | TARGETING (share_frac_policies) |
+|---|---|---|
+| Units with complete 2007-17 series | 5,524 | 5,524 |
+| HIGH (top quartile of positives) | 556 | 519 |
+| LOW (bottom quartile or zero) | 4,055 | 3,969 |
+| Usable (>=5 donors), Dec +/-10pp, size +/-2.0 | **554 (100%)** | **517 (100%)** |
+| Median donors per treated unit | 332 | 350 |
+| **Inside the convex hull** | **98%** | **97%** |
+
+Against Route A's 0 of 10 big exporters inside the hull and 5% of treated trade value
+usable (§4a, §4b), this is a different situation entirely.
+
+### Vietnam's high-targeting sectors
+
+| sector | Dec | log size | donors | own-country | in hull |
+|---|---:|---:|---:|---:|:---:|
+| 2630 communication equip. | 59% | 15.4 | 8 | 1 | **no** |
+| 2610 electronic components | 14% | 14.8 | 48 | 2 | **no** |
+| **2620 computers** | **60%** | 14.4 | 13 | 1 | **YES** |
+| 2410 basic iron & steel | 5% | 13.0 | 162 | 6 | YES |
+| 2710 electric motors | 22% | 12.9 | 118 | 6 | YES |
+| 2220 plastics | 41% | 12.6 | 79 | 3 | YES |
+| 2599 other metal products | 41% | 12.5 | 78 | 2 | YES |
+| 2790 other electrical equip. | 42% | 12.4 | 84 | 2 | YES |
+
+Computers — the flagship decoupling sector, China 60% -> 30% — is inside the hull with
+donors from Cambodia, the Dominican Republic, Mexico, the Philippines and Thailand. The two
+LARGEST targeted sectors remain outside, but 9 of 11 are in.
+
+### Two decisions before estimating
+
+1. **The "within Vietnam" half of the question is thin.** Own-country donors are 0.3% of
+   pools under the volume measure and 1.9% under targeting (median 2-6 own sectors). As
+   specified this is still mostly a between-country comparison executed at sector level.
+   Making the Vietnam-vs-Vietnam contrast carry real weight requires forcing a minimum
+   own-country share, at the cost of donors — and it changes what the estimate means.
+2. **Too many donors is a problem.** Median 332 donors against 11 pre-treatment years is
+   the §4d degeneracy: 129 donors already produced an exact fit and broke the RMSPE ratio.
+   Step 1 must trim each pool to ~20-25 nearest on covariates, as §4e did.
