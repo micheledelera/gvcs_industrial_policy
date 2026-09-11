@@ -3260,3 +3260,66 @@ lagged outcomes + 4 covariates), chosen after §4d where 129 donors fitting 11 o
 gave an exact fit and broke Abadie's statistic. Unlike §3af's near-uniform weights (median
 effective donors 13.4 of 21), these are concentrated: top-three donor weights carry 43-96%
 of the total in Vietnam's case study.
+
+---
+
+## §6. Bridging gravity and the demeaned SC — it is the weighting, and they are not comparable
+
+Both are within-country-relative estimands, and they disagree: gravity +0.0524 (p=0.002),
+demeaned SC +0.058 (p=0.50). This walks the candidate channels one at a time on a common
+country-sector-year panel of US-bound exports, developing ex-China, with
+alpha_is + alpha_it + alpha_st throughout (alpha_it IS §5f's country-year demeaning).
+Code: `data/sc15_bridge.py`.
+
+| step | N | term | coefficient |
+|---|---|---|---|
+| 1. PPML levels, continuous IP x target x post | 184,443 | DDD | −0.047 (0.122) p=0.70 |
+| 2. PPML levels, continuous IP x post (no target) | 184,443 | IPxP | +0.021 (0.011)* p=0.062 |
+| **3. PPML levels, HIGH-quartile dummy x post** | 184,443 | HIGHxP | **+0.193 (0.073)\*\*\*** p=0.009 |
+| **4. OLS logs, HIGH dummy x post** | 184,443 | HIGHxP | **+0.003 (0.050)** p=0.96 |
+| 5. OLS logs, complete-series sample | 92,700 | HIGHxP | −0.021 (0.050) p=0.68 |
+| 6. OLS logs, HIGH+LOW only (~ §5f) | 74,430 | HIGHxP | −0.084 (0.061) p=0.17 |
+| **7. row 6, weighted by pre-period US exports** | 74,430 | HIGHxP | **+0.382 (0.162)\*\*** p=0.018 |
+
+### Correction: gravity and §5f are not comparable designs
+
+Row 1 was meant to be "gravity with one thing changed" and gives −0.047 (p=0.70), nothing
+like +0.0524. The reason is structural: gravity's DDD includes x 1[j=US], so **its
+identification IS the destination margin**. On a US-only panel there is no other
+destination to compare against, and alpha_ist cannot even be included because it would
+absorb the outcome. **Gravity's result cannot be expressed on this panel at all.**
+
+So the designs do not disagree. Gravity asks whether policy shifts a sector's exports
+TOWARD THE US RELATIVE TO OTHER DESTINATIONS. §5f asks whether policy raises a sector's US
+exports RELATIVE TO THE COUNTRY'S OTHER SECTORS. Both within-country, different margins —
+and §3s already located the answer in the destination margin, since total exports did not
+move.
+
+### The real finding: size weighting, for the third time
+
+Holding sample, specification and fixed effects identical and changing only the functional
+form, row 3 -> row 4: **+0.193\*\*\* becomes +0.003**. Row 7 revives it: weighting the log
+regression by pre-period exports gives **+0.382\*\***.
+
+Every unweighted row is null (+0.003, −0.021, −0.084). Every size-weighted row is positive
+and significant (+0.193, +0.382). §5f is unweighted, so its null is exactly what rows 4-6
+predict.
+
+**This is now the most robust pattern in the project.** §3v found it, §3ac traced the
+reallocation-versus-expansion disagreement to it, and here it is in the cleanest possible
+form: the same 74,430 observations, the same regression, only the weights differ, and the
+answer moves from −0.084 to +0.382.
+
+### What it means substantively
+
+**Large flows in policy-targeted sectors grew; the typical targeted sector did not.** The
+effect is concentrated in a handful of big country-sectors rather than being a general
+property of targeting.
+
+That joins up two things found separately: Mexico at 46% of the long difference's estimating
+weight (§3u), and the observation that in the single largest decoupling cell the dominant
+supplier — Vietnam in apparel — had zero recorded policy. The weighted estimates describe a
+small number of very large flows.
+
+**For the note: these are two different questions with two different answers, and both are
+true. Among the dollars, policy-targeted sectors gained. Among the sectors, they did not.**
