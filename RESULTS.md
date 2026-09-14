@@ -3396,3 +3396,77 @@ them, or lead with the unweighted null. **+0.38 cannot be presented as a general
 band has 166 units with 39-64 treated. The top-4% unweighted +0.039 has a 95% interval of
 roughly [−0.38, +0.46] and cannot rule out +0.4. These stratified nulls are IMPRECISE,
 unlike the pooled unweighted null (−0.084, se 0.061), which is tight.
+
+## §5g. The §5b picture — `data/plot_sc10_paths.py`, `data/sc10_paths.png`
+
+The §5b design drawn rather than tabulated. Same machinery, reused verbatim by `exec`-ing
+the setup block of `sc10_estimate.py`: same 5,166 country-sectors, same donor rule (LOW
+policy, DIFFERENT country, Chinese US share within 10pp, log size within 2.0, 20 nearest
+on MVA/GDP, log MVA per capita, ECI and export share), same solver, same 2018 date. The
+only change is that the full 2007–2024 path is kept for every treated unit and every
+placebo instead of being collapsed to τ. Fits are cached in `sc10_paths.pkl`.
+
+Three columns: TARGETING raw (the §5b headline), VOLUME raw (the §5b null), TARGETING on
+the §5f country-demeaned outcome. Row 1 plots the mean treated path against the mean
+synthetic path, both relative to the **treated group's own 2015–17 mean**, so the
+pre-treatment gap stays visible rather than being normalised to zero. Row 2 plots the gap,
+treated minus synthetic, against the pointwise percentiles of the ~497 in-space placebos.
+
+Gap paths (mean over treated units, log points):
+
+| | 2007 | 2015–17 | 2018 | 2021 | 2022–24 |
+|---|---|---|---|---|---|
+| Targeting, raw | −0.010 | **+0.048** | +0.221 | +0.275 | +0.275 |
+| Volume, raw | +0.051 | +0.047 | +0.103 | +0.129 | +0.048 |
+| Targeting, country-demeaned | −0.015 | −0.030 | +0.083 | −0.001 | +0.069 |
+
+These reproduce §5b and §5f exactly (targeting τ_classic = +0.245 is the 2018–24 mean of
+row 1; demeaned τ_classic = +0.037).
+
+**What the figure adds over the tables.**
+
+1. **The targeting divergence is a one-year level shift, not a build-up.** The gap goes
+   from +0.048 in 2015–17 to +0.221 in 2018 — 70% of the total post-period gap appears in
+   the first treated year and then simply persists. A capability-building or
+   investment-response mechanism should phase in; a reallocation of US import demand
+   should not. This is consistent with §3ae dating the divergence to 2018–19, and it is the
+   timing of the tariff schedule, not of any plausible policy response to it.
+
+2. **The pre-period gap is not a targeting phenomenon.** Volume's pre-gap is +0.047,
+   essentially identical to targeting's +0.048, even though volume's post-gap is nil. So
+   the significantly positive pre-treatment gap is a property of *being a high-policy unit
+   matched to low-policy donors* in general — a selection residual the matching does not
+   remove — not something specific to the measure that "works". That is the clearest
+   single piece of evidence that the level of the §5b estimate should not be read as an
+   effect.
+
+3. **Country-demeaning removes the pre-gap and the post-gap together.** Column 3's two
+   lines cross repeatedly, at roughly one-sixth the vertical scale, with no visible break
+   at 2018. The pre-gap goes to −0.030 and the post-gap to +0.037. Both halves of the §5b
+   result live in the country dimension, which is §5e–§5f's conclusion made visual.
+
+4. **The treated gap never leaves the placebo envelope — in any year, in any column.** Row
+   2 shows it staying inside the 10–90 band 100% of the time, and inside the 25–75 band for
+   most years. The placebo envelope fans out sharply after 2018 (roughly ±1 log point at
+   10–90 by 2024), because individual country-sector export paths are extremely volatile
+   once matched paths are allowed to drift. A single unit's post gap of +0.25 is simply not
+   unusual against that distribution. This is the visual content of "median placebo
+   p = 0.60".
+
+**The inference tension, stated plainly.** Row 1 shows a mean gap with a jackknife t of
+3.23; row 2 shows a placebo p of 0.60. These are not contradictory — they are different
+questions. The jackknife asks whether the *average* treated gap differs from zero, and
+averaging 500 noisy units over 35 countries makes that average precise (se ≈ 0.08). The
+Abadie placebo asks whether a *typical single* treated unit's gap is extreme relative to
+the same statistic computed on untreated units, and it is not. Which one is the right test
+depends on the estimand. For "did policy-using country-sectors as a group do better", the
+jackknife is the relevant one — but §5e/§5f already showed that group difference is a
+country effect, and column 3 shows what survives when the country is differenced out:
++0.058 with a placebo p of 0.48.
+
+**Caveats carried over.** The sample requires a complete positive US export series over
+2007–2024, dropping 6.4% of units and selecting on survival. Pre-fit quality is poor in
+absolute terms — median pre-RMSPE of 0.33 log points against a pre-gap of 0.048 — so by
+Cunningham's/ADH's own standard (§5c) these are not units whose synthetics track them
+"closely over a long stretch of time"; the fit filter was swept in §5c and made things
+worse, for the reason documented there.
