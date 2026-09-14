@@ -3944,3 +3944,93 @@ Seven definitions, all transformations of the same underlying object: counts of 
 interventions mapped HS→ISIC, pooled across instrument types. Unexplored: instrument type,
 subsidy value, persistence, sector-denominated coverage, ISIC-2 aggregation, and the
 country-type × sector-type 2×2.
+
+## §8. Persistent promotional policy as the treatment — infeasible — `data/sc21_subsidy.py`
+
+The §7 proposal: treatment = subsidy recorded in most pre-2018 years. It does not exist in
+this data.
+
+Subsidy years 2009-2017 on the §5b sample (5,166 country-sectors):
+
+| years | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| units | 4,777 | 206 | 93 | 41 | 15 | 14 | 14 | 4 | 1 | 1 |
+
+92.5% never, 7.5% ever, and the distribution **decays monotonically** — it is not bimodal.
+At 6+ of 9 years the treated group is **20 units, 18 of them Brazil** (plus one Poland, one
+Russia): 90% of the treated group and 84% of the identifying variance is one country. The
+DiD is negative (−0.15 to −0.35 across the FE ladder) and the joint pre-trend test rejects
+at p < 0.0001 in every specification. The estimand is "Brazil", not "promotional policy".
+
+**My §7 recommendation was wrong, and the error is worth recording.** I combined the
+bimodality of the ANY-POLICY persistence distribution with the promotional content of the
+SUBSIDY field. Those are properties of two different variables. Subsidies are recorded for
+7.5% of country-sectors and are not persistent; persistence is a property of the pooled
+intervention count. The two fixes do not compose.
+
+**The instrument split is also data-blocked.** Separating promotional from defensive
+instruments properly needs GTA's intervention-type field. The repository holds only the
+aggregated panel (`agg_for_estimation.pkl`), in which the sole instrument distinction is
+`n_sub`/`frac_sub`. Doing the split properly requires re-extracting from GTA source.
+
+## §8b. Persistence as the treatment, on its own — `data/sc22_persistence.py`
+
+Treatment = any recorded intervention in ≥ 6 of 2009-2017; controls = no intervention in any
+year; intermittent middle dropped. This is `n_policies`, so §5k's country-portfolio
+denominator is absent, and it uses nine years rather than three.
+
+Persistence on the §5b sample:
+
+| years | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| units | 2,497 | 543 | 337 | 291 | 222 | 193 | 185 | 209 | 366 | 323 |
+| share | 48.3% | 10.5% | 6.5% | 5.6% | 4.3% | 3.7% | 3.6% | 4.0% | 7.1% | 6.3% |
+
+Mildly bimodal — a bump at 8-9 years — but much less so than §7's table, which was computed
+on the full 27.9k panel rather than this developing, balanced subsample. A second reason to
+distrust the §7 read.
+
+**This is the best-balanced treated group in the whole exercise:** 1,083 units, 25 countries,
+123 sectors, largest country 11% of the treated group, top three 32%. Contrast §5k, where
+Chile alone supplied 50% of the identifying variance.
+
+| DiD, treated 1,083 vs never-targeted 2,497 | β | t |
+|---|---|---|
+| unit + year | +0.243 (0.120) | +2.03 |
+| + sector × year | +0.256 (0.126) | +2.04 |
+| + country × year | +0.145 (0.184) | +0.79 |
+| + both | +0.057 (0.235) | +0.24 |
+
+Two-way clustered on country and sector, sector × year FE: +0.256 (0.126), t = 2.03.
+
+**Event study, joint Wald test on the ten pre-2018 coefficients:**
+
+| | pre mean | post mean | joint p |
+|---|---|---|---|
+| sector × year | −0.054 | +0.208 | **0.036 — rejects** |
+| both | −0.049 | +0.013 | **0.012 — rejects** |
+
+Under sector × year FE the post-period looks like a clean ramp (+0.02, +0.09, +0.17, +0.30,
++0.37, +0.24, +0.26) with small pre-coefficients — but the joint test rejects, driven by
+2009 (−0.21) and 2010 (−0.10). Individually-small pre-coefficients are not a pre-trend test;
+this is §3m again.
+
+Concentration: Kish effective n = **88 of 3,580** units — twenty times better than §5k's 4,
+but the top 1% of units still hold 56.8% of the identifying variance (South Africa 21.2%,
+Pakistan 14.6%, Colombia 13.9%, Saudi Arabia 11.5%).
+
+### Where this leaves the treatment question
+
+Four independent treatment definitions now give the same shape: **positive and significant
+between countries, zero within country-year.** Quartiles of a 3-year share (§5h: +0.13 →
++0.03), continuous pre-determined dose (§5j: +0.042 → +0.029, voided in §5k), persistent
+subsidy (§8: negative, one country), persistent any-policy (§8b: +0.256 → +0.057). The
+country-year margin is where every version dies, and it dies there regardless of how the
+treatment is cut.
+
+§8b is nonetheless the first treatment worth carrying into a synthetic design: a real
+binary, a well-distributed treated group, 2,497 clean controls, and a documented
+parallel-trends violation — which is precisely the case synthetic DiD (Arkhangelsky et al.
+2021) is built for, since its time weights reweight pre-periods toward those that predict
+the post-period instead of assuming parallel trends. §3x/§3y failed on regularisation with a
+fuzzy treatment; a sharp binary is the condition SDiD needs.

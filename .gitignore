@@ -100,3 +100,7 @@ data/swapfile
 !data/sc20c_tail.csv
 !data/sc20_tail.png
 !data/sc20d_anatomy.csv
+!data/sc21_event.csv
+!data/sc21_concentration.csv
+!data/sc22_event.csv
+!data/sc22_concentration.csv
