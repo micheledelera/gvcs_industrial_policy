@@ -3552,6 +3552,18 @@ part of the post-2018 gain is a return to the groups' earlier relative position.
 reading of the selection: GTA-measured policy in 2015–17 lands on sectors that had been
 losing ground, which is what industrial policy is often for.
 
+> **CORRECTION (see §5i).** Point 3 below overstates the case, and the diagnosis attached
+> to it is wrong. The U is a property of the comparison group used in that event study —
+> the 1,484 LOW units carrying positive synthetic-control weight — not of policy users.
+> Donors earn SC weight by fitting the treated units' pre-2018 paths, so conditioning on
+> positive weight selects the control group on the outcome's own pre-period. Run on all
+> 3,658 LOW units the same event study has a flat pre-period (mean +0.028, max |t| 1.09)
+> and the same post-2018 gap (+0.158). The continuous dose does not predict pre-2018
+> growth at all (t = 0.08), and raw growth 2007→2015-17 is +0.64 for the top targeting
+> quartile against +0.56 for zero-policy units — the opposite sign to "policy lands on
+> decliners". §5i has the decomposition and the replacement figure; the reading of point 3
+> that survives is only that a flat SC pre-gap is not a parallel-trends test.
+
 **4. The linear-trend correction is not the right fix.** Specs 6–7 survive it (+0.139,
 t=2.19; +0.160, t=2.41) and the fitted trend is a precise zero (−0.0004, se 0.0120) — but
 that is because the pre-period is U-shaped, not linear, so a linear term has nothing to
@@ -3560,3 +3572,96 @@ remove. Do not read specs 6–7 as clearing the pre-trend problem; read the even
 **Caveat.** Everything here is unweighted OLS on logs — the §6 "among the sectors"
 estimand, one country-sector one vote. The gravity result lives in the size-weighted
 estimand and is not comparable; see §6.
+
+## §5i. Continuous treatment instead of quartiles and a window — `data/sc19_continuous.py`, `sc19b_dose.py`, `sc19c_bydose.py`, `sc19d_locate.py`, `data/sc19d_prepanel.png`
+
+§5h found a U in the HIGH−LOW differential with its trough in the window the treatment is
+measured in. Two candidate causes: the **discretisation** (top vs bottom quartile of a
+2015-17 average) or **selection** (policy landing on sectors that were losing ground).
+Going continuous separates them. Sample held to §5b's 5,166 balanced country-sectors
+throughout; dose standardised; SEs clustered on country.
+
+### A. Selection — policy does NOT land on decliners
+
+Δln X from 2007 to 2015-17 regressed on the pre-determined continuous dose:
+
+| | targeting | volume |
+|---|---|---|
+| no controls | +0.003 (0.033) t=0.08 | −0.017 (0.047) t=−0.36 |
+| + sector FE | +0.006 (0.036) t=0.18 | −0.052 (0.055) t=−0.95 |
+| + country + sector FE | −0.004 (0.022) t=−0.17 | −0.020 (0.024) t=−0.86 |
+| same, 2015-17 → 2022-24 | +0.022 (0.019) t=1.15 | −0.023 (0.033) t=−0.70 |
+
+Raw growth 2007→2015-17 by bin (targeting): zero policy +0.564, Q1 +0.555, Q2 +0.627,
+Q3 +0.601, **Q4 +0.644**. The top quartile grew *more* than zero-policy units before 2018,
+not less. So the selection story is dead.
+
+### B. Where the U actually comes from — the comparison group
+
+Identical event study, only the control group changed (targeting, unit + sector × year FE):
+
+| comparison group | n | pre-2018 mean | max \|t\| | post-2018 mean |
+|---|---|---|---|---|
+| all LOW units | 3,658 | **+0.028** | 1.09 | +0.158 |
+| band-eligible donors | 3,583 | +0.056 | 1.51 | +0.177 |
+| donors with positive SC weight (§5h's panel) | 1,484 | **+0.160** | 2.38 | +0.244 |
+
+Donors earn synthetic-control weight by fitting the treated units' pre-2018 paths.
+Conditioning the control group on positive weight therefore **selects the controls on the
+outcome's own pre-period**, and that alone roughly triples the pre-2018 coefficient while
+leaving the post-2018 gap about the same. Figure `sc19d_prepanel.png`. Volume behaves
+identically (pre +0.051 on all LOW, +0.145 on weighted donors).
+
+**This is a correction to §5h, and a caution for the whole §5 line of work**: any event
+study or DiD run on an SC-selected donor pool inherits a pre-trend from the selection.
+The §5h figure `sc18_did_event.png` shows the contaminated panel; `sc19d_prepanel.png`
+replaces it. What survives of §5h point 3 is only the narrower methodological claim: a flat
+SC pre-gap is a property of the fit, not a parallel-trends test.
+
+### C. The continuous dose-response, pre-determined
+
+ln X_ukt = α_u + γ_t + β·(IP_uk × Post_t), IP fixed at its 2015-17 mean and standardised:
+
+| | targeting | volume |
+|---|---|---|
+| unit + year | +0.025 (0.020) t=1.25 | +0.027 (0.041) t=0.65 |
+| + sector × year | **+0.042 (0.024) t=1.74** | +0.026 (0.045) t=0.59 |
+| + country × year | +0.016 (0.012) t=1.29 | +0.006 (0.013) t=0.43 |
+| + × decoupling (triple) | +0.028 (0.039) t=0.72 | +0.009 (0.024) t=0.39 |
+
+Continuous-dose event study, pre-determined: pre-2018 coefficients average −0.021 with
+max |t| 1.66 — flat, and if anything sloping the *other* way from §5h's quartile version.
+
+**Scaling.** The §5h quartile contrast is only **1.31 sd** of targeting wide (HIGH averages
++1.31 sd, LOW +0.00 sd). At +0.042 per sd the linear dose-response implies +5.5% over that
+contrast — against the +13% to +21% the quartile DiD reported. The discrete contrast is
+2.5-4× larger than the dose-response supports, which is a second reason to prefer the
+continuous version: the quartile estimate is a tail phenomenon.
+
+### D. Time-varying dose — the version to avoid
+
+ln X_ukt on IP_ukt (contemporaneous, time-varying): +0.006 (0.007) t=0.95 for targeting,
++0.019 (0.018) t=1.06 for volume; nothing under any FE structure, and nothing pre-2018.
+
+More importantly, the reverse regression — dose_t on its own lagged export growth, unit and
+year FE — shows **volume responds to past performance**: Δln X at t−1, t−2, t−3 enter at
++0.005 (t=1.37), +0.010 (t=2.24), +0.008 (t=2.77), joint p = **0.034**. Targeting does not:
+joint p = 0.53. So time-varying volume is contaminated by the policy reaction function.
+This is an independent reason to prefer targeting, additional to §3w's.
+
+### What this means for the design
+
+The answer to "shouldn't we go continuous instead of picking a window" is **yes for the
+quartile cut, no for the window.** Continuous-but-pre-determined is the right object:
+it removes the arbitrary cut, has flat pre-trends, and gives a more modest and more stable
+estimate (+4.2% per sd, t=1.74; +1.6% per sd under country × year FE, t=1.29 — weak, but no
+longer the collapse to zero the quartile version showed). Fully time-varying treatment
+removes the window too, but at the cost of the exogenous-event logic and, for volume, of
+exogeneity itself.
+
+**Honest reading of the magnitude.** In this unweighted OLS-on-logs estimand the continuous
+dose-response is +4.2% per sd at t=1.74 and the decoupling triple is insignificant
+(+0.028, t=0.72). That is not a contradiction of the gravity headline (+5.2% per sd of
+targeting in decoupling sectors, p=0.002): gravity is PPML on levels with the destination
+margin, a different estimand on a different weighting — see §6. It does mean the
+"among-the-sectors" version of the result is suggestive at best.
