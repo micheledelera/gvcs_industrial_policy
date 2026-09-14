@@ -3770,3 +3770,102 @@ sectors, p=0.002, 16.9m observations) is PPML on levels with the destination mar
 α_ist absorbing the country whole. It is a different estimand on a different weighting, and
 whether it survives excluding the top 4% of country-sectors is still the open question —
 now doubly worth running, since §5j shows the unweighted version is tail-dependent too.
+
+## §5k. Anatomy of the +0.029 — what one sd is, and who identifies it — `data/sc20d_anatomy.py`
+
+The §5j headline, taken apart. Spec as estimated:
+
+    ln X_ikt = α_ik + γ_kt + γ_it + β·(IP_ik × Post_t) + ε_ikt
+
+5,166 country-sectors × 18 years = 92,988 obs; IP = `share_frac_policies` fixed at its
+2015-17 mean and standardised; Post = 1[t ≥ 2018]; SEs clustered on 140 countries;
+β = +0.0287 (0.0128), t = 2.24.
+
+### One sd is a move to the 98th percentile
+
+| | all 5,166 units | among the 2,011 users |
+|---|---|---|
+| mean | 0.00022 | — |
+| sd | 0.00158 | — |
+| p50 | 0.00000 | 0.00008 |
+| p90 | 0.00033 | 0.00104 |
+| p95 | 0.00084 | 0.00210 |
+| p99 | 0.00465 | 0.00897 |
+| max | 0.07692 | 0.07692 |
+
+61% of units are zero. **mean + 1 sd = 0.00181, which is the 97.9th percentile of all units
+and the 94.5th among users**; only 111 units (2.15%) sit at or above it. So "+2.9% per sd"
+is not a marginal effect in the body of the distribution — it is the fitted difference
+between an average country-sector and a 98th-percentile one.
+
+### The identifying variation is four units
+
+Residualising the regressor on the FE by alternating projections reproduces β exactly
+(+0.0287). 47.4% of the regressor's variance survives the projection, so the FE are not the
+problem. The concentration is:
+
+| unit | dose | pctile | % of identifying variance | β without it |
+|---|---|---|---|---|
+| Chile, ISIC 2410 | 0.0769 | 100.0 | **46.6%** | +0.0348 |
+| UAE, 2410 | 0.0326 | 100.0 | 5.7% | +0.0279 |
+| Malaysia, 2410 | 0.0247 | 100.0 | 2.8% | +0.0268 |
+| Russia, 2910 | 0.0169 | 99.9 | 2.4% | +0.0311 |
+| Thailand, 2410 | 0.0232 | 99.9 | 2.4% | +0.0292 |
+| Qatar, 2029 | 0.0167 | 99.9 | 2.2% | +0.0332 |
+
+Top 2 units hold 50% of it; top 15 hold 72%; top 50 hold 87.5%. **Kish effective n = 4
+units of 5,166.** By country: Chile 50.0%, UAE 10.9%, Russia 3.9%, Malaysia 3.2%,
+Qatar 2.6%, Thailand 2.5%.
+
+No single unit flips the sign — dropping Chile 2410 *raises* β to +0.0348 — but §5j showed
+the top-1% block as a whole takes it to +0.0008. The slope is defined jointly by ~20 cells.
+
+**This also voids the t-statistic.** Cluster-robust inference with 140 clusters is
+meaningless when one cluster supplies half the identifying variance and the effective
+number of observations is four. t = 2.24 should not be read as 5% significance; it is a
+number computed under an asymptotic that does not apply here.
+
+### What the dose variable actually is
+
+`share_frac_policies` is the sector's share of **the country's own** policy activity: the
+arithmetic confirms it (Chile 2410 frac 1.385 / share 0.0769 = country total 18.0;
+Malaysia 2410 3.728 / 0.0247 = 151.0; Russia 2910 19.69 / 0.0169 = 1167.7). So it rises
+both when a country targets a sector heavily and when a country **does almost nothing at
+all**.
+
+The top of the distribution is the second case:
+
+| unit | n_policies per year | share_frac |
+|---|---|---|
+| Chile 2410 | **1.7** | 0.0769 |
+| UAE 2410 | **1.3** | 0.0326 |
+| Qatar 2029 | **0.3** | 0.0167 |
+| Chile 2599 | **0.3** | 0.0157 |
+| Russia 2910 | 41.3 | 0.0169 |
+
+corr(n_policies, share_frac_policies) = **0.242** across the sample. And the sector is
+almost always the same one: ISIC **2410, basic iron and steel**, whose 226 country-sectors
+average a dose **31× the rest of the sample**, and which accounts for 8 of the 12
+highest-dose cells in the entire panel (Qatar, Chile, UAE, Malaysia, Thailand, Mexico,
+Egypt, plus one more).
+
+So the identifying variation in §5j is: **small commodity exporters — Chile, Qatar, the UAE —
+whose handful of recorded GTA measures happen to sit in steel.** That is measuring "this
+country barely intervenes and what little it does is steel", not "this country targets this
+sector intensively". Steel is also the sector with the densest global trade-remedy activity
+and few HS lines, so a share-of-portfolio metric is maximally distorted there.
+
+### Consequence
+
+§5j's verdict ("a null with a tail") stands but understates the problem: the tail is not
+just small, it is **measuring the wrong thing**. Before any version of this design can be
+reported, `share_frac_policies` needs replacing with a measure that does not have a
+country-portfolio denominator — e.g. HS lines covered as a share of the *sector's* lines, or
+policy value per unit of sector output.
+
+**This is now the first-order open question, ahead of the top-4% test.** The gravity
+headline (§3, +5.2% per sd, p=0.002) uses the same `share_frac_policies` variable
+(`build_rect.py:21`, LAG = 3). Its identification is different — the DDD off the destination
+margin within α_ist, PPML-weighted by trade value rather than by dose variance — so the
+concentration does *not* automatically transfer, and the anatomy above cannot be assumed to
+apply. But it has to be run on the gravity estimate before that result can be reported.
