@@ -3470,3 +3470,93 @@ absolute terms — median pre-RMSPE of 0.33 log points against a pre-gap of 0.04
 Cunningham's/ADH's own standard (§5c) these are not units whose synthetics track them
 "closely over a long stretch of time"; the fit filter was swept in §5c and made things
 worse, for the reason documented there.
+
+## §5h. DiD on the same two groups — `data/sc18_did.py`, `data/plot_sc18_did.py`
+
+The §5b/§5g figure contrasts a TREATED group (HIGH policy) with a PLACEBO group (LOW
+policy) and lets the synthetic control reweight the second. A DiD gives up the reweighting
+and compares the two groups' changes directly:
+
+    ln X_ukt = α_u + γ_t + β·(HIGH_u × Post_t) + ε_ukt,     Post_t = 1[t ≥ 2018]
+
+β = (HIGH after − HIGH before) − (LOW after − LOW before). Same §5b sample (5,166
+country-sectors, balanced 2007–2024), same quartile definitions, both measures, SEs
+clustered on country. Three definitions of "the placebo group": **A** all LOW units,
+**B** the 500 drawn placebos (literally the grey band in §5g), **C** the 1,484 LOW units
+carrying positive SC weight (the SC's effective comparison set).
+
+### Targeting
+
+| | A: all LOW (3,658) | B: drawn (500) | C: weighted donors (1,484) |
+|---|---|---|---|
+| 1 collapsed 2×2, pre = 2007–17 | +0.143 (0.091) t=1.57 | +0.129 (0.100) t=1.28 | +0.135 (0.094) t=1.44 |
+| 1b collapsed 2×2, pre = 2015–17 | +0.147 (0.072) t=2.03 | +0.142 (0.084) t=1.69 | **+0.213 (0.074) t=2.87** |
+| 2 TWFE (unit + year) | +0.143 (0.091) | +0.129 (0.100) | +0.135 (0.094) |
+| 3 + sector × year | +0.132 (0.110) t=1.20 | +0.146 (0.140) t=1.04 | +0.099 (0.114) t=0.87 |
+| 4 + country × year | +0.027 (0.060) t=0.44 | −0.012 (0.098) t=−0.12 | +0.017 (0.074) t=0.23 |
+| 5 SC-weighted TWFE | — | — | **+0.203 (0.098) t=2.07** |
+| 6 + HIGH linear trend | — | — | +0.139 (0.063) t=2.19 |
+| 7 SC-weighted + HIGH trend | — | — | +0.160 (0.066) t=2.41 |
+
+Raw group means: HIGH +0.650 log points from pre to post, LOW +0.508 to +0.515.
+
+### Volume
+
+Null in every cell: +0.046 (0.148) on sample A, −0.032 (0.184) on sample C, −0.069 (0.169)
+with country × year, +0.027 (0.182) SC-weighted. Sample B with country × year is −0.463
+(0.212, t=−2.18) — the one negative significant cell in the whole table, and with 500
+randomly drawn controls out of 3,747 it should be read as noise, not as a finding.
+
+### What the comparison to §5b shows
+
+**1. The plain DiD is smaller and not significant: +0.14 against the SC's +0.245.** Two
+things account for the gap, and both are mechanical.
+
+*The pre-period.* Abadie's τ is a post-period level comparison — mean post treated minus
+w′mean post donors — so it carries the +0.048 pre-gap with it. The DiD differences that
+out. Re-running the 2×2 with the SC's own base window as "before" (spec 1b, pre = 2015–17)
+gives +0.213, most of the way to +0.245.
+
+*The weighting.* On the identical sample C, moving from equal weights to the SC's own donor
+weights takes the DiD from +0.135 (t=1.44) to **+0.203 (t=2.07)**. So the SC's positive
+result depends on the particular mix of the 1,484 donors it selects, not on the HIGH-vs-LOW
+contrast as such. That is the same class of finding as §6: the estimate is a weighting
+result. Here it is visible without leaving the log-outcome estimand.
+
+**2. Country × year FE collapses it, again.** +0.017 (t=0.23) on sample C, −0.012 on
+sample B. This is §5f's +0.058 reproduced in a design with no synthetic control in it at
+all, which makes the §5e/§5f diagnosis harder to attribute to the SC machinery.
+
+**3. The event study shows a pre-period the synthetic control could not show.** With unit
+and sector × year FE and 2017 omitted (figure `sc18_did_event.png`), the HIGH−LOW
+differential traces a **U**:
+
+    2007 +0.24   2011 +0.24   2013 +0.12   2015 +0.01   2017  0 (ref)
+    2018 +0.14   2020 +0.21   2022 +0.33   2024 +0.29
+
+Pre-2018 coefficients average +0.16 with max |t| = 2.38 — a clear violation of parallel
+pre-trends, in the *opposite* direction to the estimated effect. Volume traces the same U
+(+0.34 in 2007 → 0 in 2015–17 → +0.26 in 2022).
+
+This matters for how §5b should be read. §5g reported a flat SC pre-gap (level +0.048,
+slope +0.0017/yr, t=0.39) and I treated that as reassuring on trends. It is not evidence
+of parallel trends: **SC weights are chosen to make the pre-period gap flat**, so a flat
+pre-gap is a property of the fit, not a test it passed. With equal weights on the same
+units the two groups were converging for a decade. The two facts are consistent — the SC
+is doing its job — but only the DiD reveals what the reweighting is absorbing.
+
+The substantive worry this raises: the HIGH group's relative position in 2024 (+0.29) is
+barely above where it was in 2007 (+0.24), with 2015–17 the trough. Anchoring "before" on
+2015–17, which both the SC and spec 1b do, starts the comparison at the bottom of a dip, so
+part of the post-2018 gain is a return to the groups' earlier relative position. A plausible
+reading of the selection: GTA-measured policy in 2015–17 lands on sectors that had been
+losing ground, which is what industrial policy is often for.
+
+**4. The linear-trend correction is not the right fix.** Specs 6–7 survive it (+0.139,
+t=2.19; +0.160, t=2.41) and the fitted trend is a precise zero (−0.0004, se 0.0120) — but
+that is because the pre-period is U-shaped, not linear, so a linear term has nothing to
+remove. Do not read specs 6–7 as clearing the pre-trend problem; read the event study.
+
+**Caveat.** Everything here is unweighted OLS on logs — the §6 "among the sectors"
+estimand, one country-sector one vote. The gravity result lives in the size-weighted
+estimand and is not comparable; see §6.
