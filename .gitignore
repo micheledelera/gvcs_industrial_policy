@@ -96,3 +96,6 @@ data/swapfile
 !data/sc19_continuous.csv
 !data/sc19d_locate.csv
 !data/sc19d_prepanel.png
+!data/sc20_main.csv
+!data/sc20c_tail.csv
+!data/sc20_tail.png

@@ -3665,3 +3665,108 @@ dose-response is +4.2% per sd at t=1.74 and the decoupling triple is insignifica
 targeting in decoupling sectors, p=0.002): gravity is PPML on levels with the destination
 margin, a different estimand on a different weighting — see §6. It does mean the
 "among-the-sectors" version of the result is suggestive at best.
+
+## §5j. The recommended design, run properly — `data/sc20_main.py`, `sc20b_tests.py`, `sc20c_tail.py`, `data/sc20_tail.png`
+
+Continuous dose, pre-determined in the 2015-17 window, as §5i recommended:
+
+    ln X_ikt = α_ik + γ_t + β·(IP_ik × Post_t) + ε_ikt,     Post_t = 1[t ≥ 2018]
+
+IP standardised, so β is log points per sd of policy. §5b balanced panel, 5,166
+country-sectors, 92,988 observations, 140 countries, 125 sectors, clustered on country.
+
+### 1. FE ladder
+
+| | targeting | volume |
+|---|---|---|
+| unit + year | +0.025 (0.020) t=1.25 | +0.027 (0.041) t=0.65 |
+| + sector × year | +0.042 (0.024) t=1.74 | +0.026 (0.045) t=0.59 |
+| + country × year | +0.016 (0.012) t=1.29 | +0.006 (0.013) t=0.43 |
+| **+ both** | **+0.029 (0.013) t=2.24** | −0.005 (0.014) t=−0.38 |
+| unbalanced panel, sector × year | +0.041 (0.023) t=1.80 | +0.039 (0.044) t=0.87 |
+| unbalanced panel, country × year | +0.019 (0.010) t=1.87 | +0.001 (0.014) t=0.10 |
+
+Two-way clustered on country and sector, sector × year FE: targeting +0.042 (0.019) t=2.20.
+The saturated spec is the cleanest object here — every country-year and every sector-year
+shock absorbed, identification from dose variation within both — and unlike the quartile
+version (§5h spec 4: +0.017, t=0.23) it does not collapse. The unbalanced panel (8,615
+units, requiring only positive 2015-17 exports) gives the same answer, so the 6.4% survival
+selection flagged in §5g is not driving anything.
+
+### 2. Decoupling triple, functional form, pre-trends
+
+Triple, saturated FE: dose × Post +0.044 (0.019) t=2.34; **dose × Post × Dec +0.019 (0.017)
+t=1.16**. The payoff is not concentrated in high-decoupling sectors in this estimand — what
+the data support is "targeted sectors grew faster after 2018", not "targeted sectors
+captured decoupling".
+
+Functional form, sector × year FE: dose in sd +0.042 (t=1.74), ln(1+dose) +0.043 (t=1.76),
+percentile rank +0.097 (t=1.96).
+
+**Pre-trends, joint tests** (the §3m standard, not year-by-year):
+
+| | sector × year | + country × year |
+|---|---|---|
+| targeting, 10 pre-2018 coefs = 0 | χ² 5.51, **p = 0.854** | χ² 6.94, **p = 0.731** |
+| volume, 10 pre-2018 coefs = 0 | χ² 14.86, p = 0.137 | χ² 18.75, **p = 0.044 — REJECTS** |
+
+This is the first design in the whole exercise where targeting **passes** a joint
+pre-trend test. Adding a dose-specific linear trend leaves +0.027 (t=2.03) with the trend
+itself a precise zero (+0.0017, se 0.0032). Volume fails, on top of §5i's reverse-causality
+rejection — volume should be dropped.
+
+### 3. And then it dies in the tail
+
+The targeting share is savagely skewed: among the 2,011 users, median 0.0001, p95 0.0021,
+p99 0.0090, **max 0.0769** — 770× the median. Holding the saturated FE fixed and making the
+dose progressively tail-insensitive (figure `sc20_tail.png`):
+
+| | β | t |
+|---|---|---|
+| dose in sd (headline) | +0.0287 (0.0128) | **+2.24** |
+| winsorised at p99 | +0.0214 (0.0183) | +1.17 |
+| winsorised at p95 | +0.0072 (0.0199) | +0.36 |
+| winsorised at p90 | −0.0014 (0.0201) | −0.07 |
+| percentile rank | −0.0114 (0.0328) | −0.35 |
+| top 1% of users dropped (~20 units) | **+0.0008 (0.0421)** | +0.02 |
+| top 5% of users dropped | −0.0492 (0.1195) | −0.41 |
+
+Decile step function among users, zero-policy omitted, same FE: +0.07, +0.13, −0.04, +0.15,
++0.10, −0.10, −0.06, −0.08, −0.03, +0.07 (ses ≈ 0.10-0.15). **No slope.**
+
+The extensive/intensive decomposition tells the same story from the other side:
+
+| | any policy × Post | dose among users × Post |
+|---|---|---|
+| unit + year | +0.227 (0.099) t=2.30 | +0.008 (0.028) t=0.30 |
+| + sector × year | +0.221 (0.104) t=2.12 | +0.036 (0.031) t=1.15 |
+| + country × year | +0.056 (0.065) t=0.86 | +0.021 (0.019) t=1.09 |
+| + both | +0.002 (0.076) t=0.02 | +0.046 (0.020) t=2.30 |
+
+Pre-2018 placebo trends on both margins are nil (any +0.0067, t=1.06; dose −0.0003,
+t=−1.53). So: unconditionally the whole thing is an extensive-margin level difference
+between GTA-recorded and unrecorded country-sectors (+0.227), which the country-year and
+sector-year FE remove entirely (+0.002). What is left is a continuous intensive-margin
+coefficient of +0.046 (t=2.30) that the decile function cannot see and that vanishes when
+roughly twenty country-sectors are dropped.
+
+### Verdict on this design
+
+It is the best-behaved specification in the file — flat pre-trends that survive a joint
+test, no collapse under saturated FE, robust to sample balance and to two-way clustering —
+and its point estimate still rests on about twenty observations. **The right reading is a
+null with a tail, not a positive result.** The honest statement is: among developing
+country-sectors, once you compare within country-year and within sector-year, there is no
+detectable dose-response of US export growth to pre-2018 industrial-policy targeting,
+except in a handful of extremely heavily targeted cells that cannot carry the claim.
+
+This is §6's problem transplanted from the outcome to the treatment. There, 4% of
+country-sectors held 83.5% of trade value; here a comparable handful holds the policy
+variation. The two concentration problems are the substantive finding of §5-§6 and are
+independent of any estimator choice.
+
+**What this does not touch.** The gravity headline (+5.2% per sd of targeting in decoupling
+sectors, p=0.002, 16.9m observations) is PPML on levels with the destination margin and
+α_ist absorbing the country whole. It is a different estimand on a different weighting, and
+whether it survives excluding the top 4% of country-sectors is still the open question —
+now doubly worth running, since §5j shows the unweighted version is tail-dependent too.
