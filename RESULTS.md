@@ -4094,3 +4094,80 @@ clustering that generates the observed correlation, so the null distribution has
 little country-level variance and the test is anti-conservative against a country-level
 confound. That confound is the margin on which §5h, §5j, §8 and §8b all died (country × year
 FE takes §8b from +0.256 to +0.057). §8d redoes the randomisation at the country level.
+
+## §8d. Trimming ω and permuting countries — the DiD+SC line closes — `data/sc24_sdid_country.py`
+
+§8c left two things to fix: ω was inert because 2,497 donors against an 11-period pre-path
+is underdetermined, and the randomisation permuted units when real treatment is
+country-clustered.
+
+### Fix 1 — trim the donor pool. τ is not a stable object in K
+
+Controls inside the §5b bands around the treated-group mean, then the K nearest on MVA/GDP,
+log MVA per capita, ECI and export share:
+
+| K | τ_sdid | effective n | max weight | pre-fit RMSE |
+|---|---|---|---|---|
+| 20 | **−0.050** | 20 | 0.053 | 0.244 |
+| 50 | +0.174 | 50 | 0.022 | 0.131 |
+| 100 | +0.237 | 100 | 0.011 | 0.098 |
+| 250 | +0.022 | 250 | 0.004 | 0.040 |
+| all | +0.211 | 2,468 | 0.0006 | 0.020 |
+
+−0.05, +0.17, +0.24, +0.02, +0.21. Non-monotonic and sign-flipping across a nuisance
+parameter, while **pre-fit RMSE improves monotonically** from 0.244 to 0.020. Better
+pre-period fit does not buy a more stable estimate — so the fit criterion cannot discipline
+this design, and any single K is a specification choice with a 0.29-log-point range
+attached. This is the Ferman-Pinto-Possebom specification-search problem in its purest form
+in this file.
+
+**And the trimmed pool collapses onto one country.** At K = 20, fifteen of the twenty
+weighted donors are **Costa Rica** (5.0-5.3% each), the rest Serbia and two others. Demanding
+close characteristic matches among *never-targeted* units delivers one small economy — the
+§4a "no untreated Vietnam" problem again, now inside the donor pool rather than the treated
+group.
+
+### Fix 2 — country-level randomisation
+
+300 draws, permuting whole countries into treatment until the treated unit count matches:
+
+| | τ | placebo mean | placebo sd | two-sided p |
+|---|---|---|---|---|
+| K = 20 (a real synthetic design) | −0.050 | −0.086 | 0.265 | **0.837** |
+| K = all (ω inert) | +0.211 | +0.004 | 0.100 | **0.033** |
+| §8c, unit-level permutation, K = all | +0.216 | +0.007 | 0.038 | 0.0033 |
+
+The placebo sd is **2.6× wider** under country-level permutation than unit-level (0.100 vs
+0.038), and p moves from 0.0033 to 0.0332. §8c's unit-level p-value was anti-conservative by
+an order of magnitude, as flagged. Recorded because this is a general point about
+randomisation inference on clustered treatments, not a quirk of this data.
+
+### What this settles
+
+Two statements, both true, and they point in opposite directions:
+
+1. **The between-country difference is not chance.** τ = +0.211 with p = 0.033 under a
+   randomisation test that respects country clustering. This is the first estimate in this
+   file to survive a clustering-respecting test.
+2. **It survives only in the version that is not a synthetic design.** At K = all, ω is
+   uniform (effective n 2,468) and τ_sdid is the λ-weighted DiD. The moment the donor pool
+   is trimmed enough for ω to mean anything, the estimate is −0.05 with p = 0.84.
+
+Randomisation says the treatment labelling is not random. Matching says that once you
+require the comparison units to be comparable, there is nothing there. A randomisation test
+cannot separate these, because it randomises *which* countries are treated without making
+treated and control countries alike — and comparability is precisely what is missing
+(§4a, §5e).
+
+**The DiD+SC line is closed.** Across §3x-§3y (SDiD, failed on regularisation), §3z-§3ag
+(SC on long differences), §4a-§4i (canonical Abadie at country level), §5a-§5f
+(country-sector HIGH vs LOW), §5h-§5j (DiD on the same groups, continuous dose), §8-§8b
+(subsidy and persistence treatments), and §8c-§8d (SDiD done properly), the synthetic
+component never survives being made identifiable. The binding constraint is not the
+estimator and not the treatment definition — it is that policy-using and non-using
+developing countries are not comparable, and the trade value is concentrated in the ones
+with no counterfactual.
+
+Remaining work is the two gravity tests: the destination-margin headline (+5.2% per sd,
+p = 0.002) re-run (i) excluding the top 4% of country-sectors by trade value and (ii) with a
+policy measure that has no country-portfolio denominator.

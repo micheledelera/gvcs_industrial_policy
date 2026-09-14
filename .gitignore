@@ -108,3 +108,7 @@ data/swapfile
 !data/sc23_omega.csv
 !data/sc24_ksweep.csv
 !data/sc24_paths.csv
+!data/sc24_permctry_0.npy
+!data/sc24_permctry_20.npy
+!data/sc23_perm_stratified.npy
+!data/sc23_perm_unstratified.npy
