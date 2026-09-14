@@ -3869,3 +3869,78 @@ headline (§3, +5.2% per sd, p=0.002) uses the same `share_frac_policies` variab
 margin within α_ist, PPML-weighted by trade value rather than by dose variance — so the
 concentration does *not* automatically transfer, and the anatomy above cannot be assumed to
 apply. But it has to be run on the gravity estimate before that result can be reported.
+
+## §7. Treatment definitions — inventory, and the properties of the underlying measures
+
+Planning section, prompted by the observation that every SC and DiD result in §3z-§5k
+changes sign or significance with the treatment definition. Facts first.
+
+### The four GTA measures barely agree with each other
+
+Pairwise correlations across country-sectors, 2015-17 means:
+
+| | n_policies | frac_policies | share_n | share_frac |
+|---|---|---|---|---|
+| n_policies | 1.000 | 0.722 | 0.392 | 0.242 |
+| frac_policies | 0.722 | 1.000 | 0.275 | 0.334 |
+| share_n_policies | 0.392 | 0.275 | 1.000 | 0.516 |
+| share_frac_policies | 0.242 | 0.334 | 0.516 | 1.000 |
+
+`n_policies` and `share_frac_policies` — the two we have used as "volume" and "targeting"
+throughout — correlate at **0.242**. Choosing between them is not a robustness check; they
+are different treatments. The `share_*` family carries the country-portfolio denominator
+documented in §5k.
+
+### Coverage and scale of each field
+
+| variable | mean | sd | max | share > 0 |
+|---|---|---|---|---|
+| n_policies | 0.581 | 2.020 | 63.7 | 23.1% |
+| frac_policies | 0.061 | 0.571 | 41.6 | 23.1% |
+| share_n_policies | 0.0001 | 0.0004 | 0.0094 | 23.1% |
+| share_frac_policies | 0.0001 | 0.0010 | 0.0896 | 23.1% |
+| **n_sub** | **488.9** | **11,908** | **1,048,055** | **5.7%** |
+| frac_sub | 2.376 | 27.09 | 1,545.8 | 5.7% |
+
+**`n_sub` is a subsidy VALUE, not a count** — median 372 among the 1,545 country-sectors
+that have one, maximum 1.05m. It has been treated as just another count. Its correlation
+with `n_policies` among units where both are positive is **0.178 in logs**, so it is close
+to an orthogonal treatment, and it is the only field that measures promotional effort in
+money rather than counting interventions of any kind.
+
+### Targeting persistence is bimodal — a natural binary
+
+Years with any recorded intervention, 2009-2017, out of nine:
+
+| years | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| country-sectors | 20,354 | 1,156 | 836 | 580 | 427 | 361 | 320 | 569 | **1,923** | **1,440** |
+| share | 72.8% | 4.1% | 3.0% | 2.1% | 1.5% | 1.3% | 1.1% | 2.0% | 6.9% | 5.1% |
+
+72.8% never, 12.0% in essentially every year, and a thin middle. Every treatment definition
+used so far has been a quantile of a **three-year average of a count**, which throws this
+structure away. A persistently-targeted (8-9 years) versus never-targeted split is a
+genuine binary of the kind canonical SC requires, uses nine years instead of three so it is
+not window-sensitive, and needs no arbitrary cut.
+
+**Caveat on persistence.** Anti-dumping and countervailing duties have statutory durations
+of about five years, so trade remedies appear as *persistent* by construction. Persistence
+fixes window-sensitivity and one-off noise; it does **not** fix the §5k trade-remedy
+contamination. Only an instrument-type restriction does that.
+
+### Inventory of what has been tried
+
+| § | unit of treatment | definition | result |
+|---|---|---|---|
+| §3z-§3ag | country-sector | `IP_ik > 0`, any intervention 2015-17 | null under proper SC (§3ag) |
+| §3ah | country | any recorded policy, all its sectors treated | null |
+| §4a-§4h | country | any GTA intervention, 36 users vs non-users | null under Abadie inference |
+| §4i | country | top tercile of intensity (12 countries), middle dropped | +0.339 raw, placebo p 0.79-0.999 |
+| §5a-§5f | country-sector | top vs bottom quartile of positive `share_frac` | +0.245 → +0.058 once country-demeaned |
+| §5h | country-sector | same two groups, DiD | +0.13 (t=1.20), zero under country × year FE |
+| §5i-§5k | country-sector | continuous, pre-determined; and time-varying | +0.029 voided by §5k; time-varying null |
+
+Seven definitions, all transformations of the same underlying object: counts of GTA
+interventions mapped HS→ISIC, pooled across instrument types. Unexplored: instrument type,
+subsidy value, persistence, sector-denominated coverage, ISIC-2 aggregation, and the
+country-type × sector-type 2×2.
