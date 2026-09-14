@@ -104,3 +104,7 @@ data/swapfile
 !data/sc21_concentration.csv
 !data/sc22_event.csv
 !data/sc22_concentration.csv
+!data/sc23_sdid_paths.csv
+!data/sc23_omega.csv
+!data/sc24_ksweep.csv
+!data/sc24_paths.csv

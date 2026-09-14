@@ -4034,3 +4034,63 @@ parallel-trends violation — which is precisely the case synthetic DiD (Arkhang
 2021) is built for, since its time weights reweight pre-periods toward those that predict
 the post-period instead of assuming parallel trends. §3x/§3y failed on regularisation with a
 fuzzy treatment; a sharp binary is the condition SDiD needs.
+
+## §8c. Synthetic DiD on the §8b treatment — `data/sc23_sdid.py`
+
+Arkhangelsky, Athey, Hirshberg, Imbens & Wager (2021) on §8b's design: treated = any
+intervention in ≥ 6 of 2009-2017 (1,083 units, 25 countries), controls = never targeted
+(2,497 units), outcome ln US imports 2007-2024 balanced. Unit weights ω on the simplex with
+a free intercept, time weights λ on the pre-periods fitted on controls to predict their own
+post-period mean, τ from weighted two-way least squares with weights ω_i·λ_t.
+
+**Bug found and fixed before any result was read.** The first run returned τ = NaN: three
+pre-years take exactly zero time weight, and the weighted two-way demeaning divided by those
+zero column weights. The permutation p-values it printed (0.0020) were pure NaN
+contamination — `|NaN| >= |NaN|` is False, so no placebo counted as an exceedance and p
+collapsed to 1/501. Same class of error as the §5b NaN bug. The comparison now asserts
+finiteness before computing p.
+
+### ω does no work, and the reason is not the regularisation
+
+| ζ (× ADHIW) | τ_sdid | donors > 0 | effective n | max weight |
+|---|---|---|---|---|
+| 0.00 | +0.2157 | 2,497 | 2,429 | 0.0008 |
+| 0.01 | +0.2157 | 2,497 | 2,429 | 0.0008 |
+| 0.10 | +0.2156 | 2,497 | 2,430 | 0.0008 |
+| 0.50 | +0.2137 | 2,497 | 2,445 | 0.0007 |
+| 1.00 | +0.2105 | 2,497 | 2,468 | 0.0006 |
+
+**Correction to my initial read.** I first attributed the uniform ω to ADHIW's ζ exploding
+at N_tr = 1,083. That is wrong: ω is uniform at **ζ = 0** too (effective n 2,429). With
+2,497 donors fitting an 11-period pre-path the unit-weight problem is massively
+underdetermined — §4d's degeneracy — so a large set of ω fits equally well and the projected
+gradient returns the near-uniform solution its initialisation favours. τ_sdid is therefore
+just the λ-weighted DiD, and the synthetic part of synthetic DiD is inert. §5b trimmed to
+K = 20 donors for precisely this reason; §8d does the same here.
+
+### The time weights, by contrast, do work
+
+| 2007 | 2008 | 2009 | 2010 | 2011 | 2012 | 2013 | 2014 | 2015 | 2016 | 2017 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0.000 | 0.019 | 0.000 | 0.032 | **0.179** | 0.020 | 0.110 | 0.124 | 0.153 | 0.000 | **0.363** |
+
+λ loads on 2017, 2011 and 2015 and zeroes 2007, 2009 and 2016 — so the estimator compares
+the post-period against selected recent pre-years rather than a flat pre-period average.
+This is the one component that responds to §8b's parallel-trends violation.
+
+### Estimates and inference
+
+τ_sdid = **+0.2156**; on the identical sample plain DiD +0.2434 and Abadie-style SC (no time
+weights, no intercept) +0.3386. Jackknife over the 25 treated countries: se 0.0682,
+**t = 3.16**. Randomisation over 300 draws: stratified by sector, placebo mean +0.0070,
+sd 0.0381, **p = 0.0033**; unstratified, placebo mean −0.0009, sd 0.0390, **p = 0.0033**.
+Zero of 300 placebos reached |0.216| in either version.
+
+**Why that p-value is not yet believable.** Both permutations reassign treatment across
+*units*. Real treatment is country-clustered — 25 countries, and §8b's concentration
+diagnostic put South Africa at 21% and Pakistan at 15% of the identifying variance. A
+permutation that scatters 1,083 treated units across 139 countries destroys exactly the
+clustering that generates the observed correlation, so the null distribution has far too
+little country-level variance and the test is anti-conservative against a country-level
+confound. That confound is the margin on which §5h, §5j, §8 and §8b all died (country × year
+FE takes §8b from +0.256 to +0.057). §8d redoes the randomisation at the country level.
