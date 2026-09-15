@@ -98,7 +98,7 @@ The chapter's argument for why this stage is separable: SC needs no post-treatme
 to build the counterfactual, so design can be fixed before estimation. We honour that by
 freezing A0–A4 in this file before running Part B.
 
-- `[~]` **A0. Question, treatment, date, outcome — PROPOSED, awaiting sign-off.**
+- `[x]` **A0. Question, treatment, date, outcome — DECIDED.**
   Evidence in `data/a0_outcomes.py`.
 
   **Question.** Does industrial policy help developing countries capture the reallocation of
@@ -129,7 +129,7 @@ freezing A0–A4 in this file before running Part B.
   | `lnS` ln share of US imports in sector k | 3.108 | **−0.05** | −7.102 | −9.911 | 0.0% |
   | `lnD` ln US share of the country-sector's exports | 1.827 | −0.69 | −3.427 | −2.910 | 0.0% |
 
-  **Proposed: `lnS` primary, `lnD` secondary.**
+  **DECIDED: `lnS` primary, `lnD` secondary, `lnX` as a check.**
   - `lnS` is the question as posed — decoupling reallocates a roughly fixed pot of US
     sectoral demand, so capturing it *is* a share gain. It is scale-free (§4c found that
     decisive for hull feasibility), the best-behaved of the three (skew −0.05), and since
@@ -140,8 +140,10 @@ freezing A0–A4 in this file before running Part B.
     country-year confound cannot touch because it nets out country-sector scale. It is
     arguably *better identified* but answers a narrower question — redirection toward the US
     rather than capture of US demand. Hence secondary, and the natural bridge to §3.
-  - `lnX` is rejected: neither scale-free nor free of sector-year shocks, so it makes GSC do
-    the most work with the least help. It is what §5b used.
+  - `lnX` is **retained as a check**, not dropped (user decision). It is neither scale-free
+    nor free of sector-year shocks, so it makes GSC do the most work with the least help —
+    but it is what §5b used, so keeping it makes every new result directly comparable to the
+    existing §5 line rather than only to itself.
 
   **Weighting, per §6.** Log share is unit-weighted — the "among the sectors" estimand. The
   dollar-weighted version is a *different estimand*, not a robustness check, and §6 found the
@@ -151,7 +153,71 @@ freezing A0–A4 in this file before running Part B.
   (2.6–2.8 log points: policy goes to big sectors). On `lnD` they start *below* (−3.43 vs
   −2.91) — policy-using sectors are *less* US-oriented pre-2018. The sign of the baseline gap
   flips with the outcome, which is worth remembering when reading any level comparison.
-- `[ ]` **A1. Treated unit(s).** Track 1: which unit, and why it is a defensible single case.
+- `[x]` **A1. Treated units — DECIDED.** Evidence in `data/a1_treated.py`,
+  `data/a1_illustration.py`.
+
+  **Unit.** Country-sector (i,k), developing economies excluding China, balanced positive US
+  imports 2007–2024 → **5,168 units**. Country-level is ruled out by §4a (no untreated
+  Vietnam; canonical SC feasible for 5–20% of treated trade value); §4b found country-sectors
+  fix the hull problem; and the question is about sectors capturing demand.
+
+  **Treated: targeted in ≥ 6 of 2009–17 → 1,083 units, 25 countries, 123 sectors.** The
+  §8b persistence definition, the only one of §7's seven to survive: no country-portfolio
+  denominator (§5k), best-balanced treated group in the exercise, and a genuine binary, which
+  both canonical SC and GSC require.
+
+  **Controls: strictly clean → 2,223 units.** New check, never run before. Of the 2,499 units
+  never targeted 2009–17, **276 (11%) acquire policy after 2018** — so they are treated in
+  the post-period, which violates Xu's requirement that controls be "never exposed to the
+  treatment in the observed time span" and would bias the ATT toward zero. Dropped. Total:
+  1,083 treated + 2,223 clean controls, with 1,862 intermittent/contaminated units excluded.
+
+  **Threshold: 6+ primary, with 5+/7+/8+/9+ swept — and the sweep is itself a finding.**
+
+  | threshold | treated | countries | largest country | top 3 | pre-2018 lnS trend gap/yr |
+  |---|---|---|---|---|---|
+  | 5+ | 1,276 | 29 | 9% | 28% | **+0.0035** |
+  | **6+** | **1,083** | **25** | **11%** | **32%** | **+0.0092** |
+  | 7+ | 898 | 22 | 13% | 35% | +0.0101 |
+  | 8+ | 689 | 20 | 15% | 41% | +0.0182 |
+  | 9+ | 323 | 16 | 17% | 49% | +0.0194 |
+
+  The pre-treatment trend gap between treated and clean controls **rises monotonically with
+  the threshold**, and country concentration worsens with it too. So a *tighter* definition of
+  "persistent" is worse on both counts — the opposite of the natural instinct. At 9+ the gap
+  compounds to ~0.21 log points over the pre-period; at 6+ it is ~0.10. Read as selection:
+  the more persistently a sector is targeted, the more it was already gaining share before
+  2018. 6+ is chosen as two-thirds of years, a defensible reading of "persistent", and it
+  matches §8b so results stay comparable.
+
+  **Single-unit illustration: Vietnam, ISIC 2630 (communication equipment).** $5.1bn of US
+  imports 2015–17, 4.48% of US imports in the sector, **China 58.8%** of US imports in that
+  sector, targeted 6 of 9 years, and **44 strictly-clean donors within the same sector**.
+
+  **CORRECTION.** I first reported that the persistence treatment does not select Vietnam's
+  significant sectors and that its largest targeted sector was $5m. That was a units error —
+  `imports` is in **thousands of USD** (calibrated: US total 2016 = 1,937,439,360 raw =
+  $1.94tn; Mexico $264bn; Vietnam $41.8bn; China $463bn), so the figure was $5.1**bn** and
+  the size filter in the first candidate search demanded $200tn, returning zero candidates.
+  With correct units, **29 of the 1,083 treated units** are large, decoupling-exposed and
+  donor-rich: Bangladesh 1410 apparel ($5.2bn), Vietnam 2630 ($5.1bn), Indonesia and India
+  1410, Mexico 2599 fabricated metal ($2.7bn), India 1392 textiles ($2.6bn), and so on.
+
+  **Coverage caveat that survives the correction.** The treatment still touches only a small
+  share of the value in the countries that actually gained:
+
+  | | units in sample | targeted 6+ | their US imports | country total | share |
+  |---|---|---|---|---|---|
+  | Vietnam | 109 | 5 | $5.7bn | $42.1bn | 14% |
+  | Mexico | 124 | 7 | $13.7bn | $271.5bn | 5% |
+  | Thailand | 123 | 1 | $0.2bn | $30.0bn | 1% |
+  | Malaysia | 110 | 2 | $0.1bn | $35.2bn | 0% |
+  | Bangladesh | 52 | 3 | $5.2bn | $6.2bn | **84%** |
+
+  So the ATT will be identified off a subset covering 0–14% of the winners' export value
+  (Bangladesh excepted). That is a softer version of §5k/§7's point — persistent GTA policy
+  is not absent from the winners, but it is not where most of their value sits either. To be
+  stated as a scope condition, not discovered later.
 - `[ ]` **A2. Donor pool, with exclusions.** *Track 1 only — GSC uses every control unit.* ADH *dropped* states with their own tobacco
   programmes. Our analogue is untested: should we drop countries with their own large
   post-2018 shocks, their own China exposure, or their own policy regimes? We have never
