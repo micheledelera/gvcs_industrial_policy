@@ -4811,8 +4811,16 @@ bootstrap percentile p recentres the draws and asks how often |draw| ≥ |estima
 |---|---|---|---|---|---|---|---|
 | lnS, r = 1 | +0.196 | 0.159 | 1.23 | **0.218** | 0.230 | 0.220 | [−11%, +66%] |
 | lnS, r = 2 | +0.229 | 0.238 | 0.96 | **0.336** | 0.346 | 0.280 | [−21%, +101%] |
+| lnD, r = 2 | +0.235 | 0.246 | 0.95 | **0.340** | 0.349 | 0.345 | [−22%, +105%] |
+| lnX, r = 2 | +0.234 | 0.239 | 0.98 | **0.328** | 0.338 | 0.265 | [−21%, +102%] |
 
-**No significant effect: p ≈ 0.22–0.35.** The three methods agree closely, so the bootstrap
+The two secondary outcomes land in exactly the place predicted from their point estimates:
+`lnD` (destination margin) and `lnX` (log US imports) give +0.235 and +0.234 with block
+standard errors of 0.246 and 0.239, so p ≈ 0.33–0.35 in both. Per A0, `lnS` is primary and
+`lnX` a check; the fact that all three agree to within 0.006 log points and 0.01 in p means
+the A0 outcome choice is doing no work here — nothing rides on it.
+
+**No significant effect in any outcome: p ≈ 0.22–0.35.** The three methods agree closely, so the bootstrap
 distribution is not badly skewed and the normal approximation costs nothing. **No individual
 post-treatment year's own 95% band excludes zero** in either specification.
 
@@ -4822,6 +4830,9 @@ post-treatment year's own 95% band excludes zero** in either specification.
 |---|---|---|
 | **country-blocked (correct)** | p = **0.218** | p = **0.336** |
 | unit-level (ignores clustering) | p = 0.005 | p = 0.018 |
+
+(`lnD` and `lnX` behave the same: unit-level p = 0.008 and 0.017 against country-blocked
+0.340 and 0.328 — a factor of 20 to 40 in the p-value from the clustering choice alone.)
 
 That is the whole distance between a publishable result and a null, and it turns on one
 modelling choice. Country clustering is the right one: policy is set at country level, there
