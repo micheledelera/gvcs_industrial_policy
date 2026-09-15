@@ -3453,6 +3453,26 @@ row 1; demeaned τ_classic = +0.037).
    unusual against that distribution. This is the visual content of "median placebo
    p = 0.60".
 
+**Inference on the post gap, all four quantities** (jackknife over countries; added after
+the §5g figure, since the differenced version was never reported):
+
+| targeting, n=500, 35 countries | estimate | se | t |
+|---|---|---|---|
+| pre-2018 gap | +0.0476 | 0.0125 | +3.80 |
+| post gap (Abadie τ) | +0.2454 | 0.0760 | +3.23 |
+| **post minus pre (the DiD-equivalent)** | **+0.1979** | **0.0795** | **+2.49** |
+| post, ridge-augmented | +0.1793 | 0.0802 | +2.23 |
+
+Abadie placebo on the same units: median p 0.549, and **11% of treated units fall below
+p < 0.10 — against the 10% expected by chance.** Volume: post gap +0.0702 (0.1562), t=0.45,
+but its pre-gap is +0.0466 (0.0177), t=2.63, statistically indistinguishable from targeting's.
+Country-demeaned (§5f): post +0.0372 (0.0636) t=0.58, differenced +0.0675 (0.0465) t=1.45,
+augmented +0.0583 (0.0654) t=0.89.
+
+So the post gap is significant at 1% on the raw level comparison and at 5% once the
+pre-gap is differenced out or the ridge correction applied — and not significant at all
+under Abadie's own placebo inference, or after country-demeaning.
+
 **The inference tension, stated plainly.** Row 1 shows a mean gap with a jackknife t of
 3.23; row 2 shows a placebo p of 0.60. These are not contradictory — they are different
 questions. The jackknife asks whether the *average* treated gap differs from zero, and
