@@ -1,0 +1,4 @@
+outcome,coef,se,p,N
+(1) TOTAL exports to world,-0.0059,0.0032,0.0623,286534
+(2) US-bound only,0.0175,0.0039,0.0,241134
+(3) NON-US only,-0.0081,0.0036,0.0243,286523

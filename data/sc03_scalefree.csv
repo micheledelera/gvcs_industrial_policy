@@ -1,0 +1,5 @@
+outcome,n_tr,n_don,inside_n,inside_val_pct,big_inside,big_n,med_rmspe_rel
+1. us_share_own,39,130,39,100.0,10,10,0.010919559374119158
+2. us_orientation,39,130,39,100.0,10,10,0.05540745407860209
+3. us_share_mkt,39,130,24,5.414215109324653,0,10,0.2557487489452047
+4. us_share_dec,39,115,39,100.0,10,10,0.014108907245049557
