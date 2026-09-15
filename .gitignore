@@ -134,3 +134,4 @@ __pycache__/
 !data/fig_main_clean.pdf
 !data/c1c2_randomisation.csv
 !data/c1c2_placebos.npz
+!data/c_npboot.csv
