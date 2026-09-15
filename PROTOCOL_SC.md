@@ -317,11 +317,33 @@ freezing A0–A4 in this file before running Part B.
   counterfactual vs donor-pool mean on the **pre-period outcomes**, plus a comparison of
   **estimated factor loadings** (Xu's Fig. 3b), which is where the time-invariant
   characteristics now live.
-- `[~]` **A4. Common support.** Track 1: convex hull. Track 2: **factor-loading overlap**
-  (Xu Fig. 3b) — the GSC analogue, and the check that distinguishes interpolation from
-  extrapolation. Neither has been done for a chosen design. §4a–§4c did this at
-  country level and found canonical SC infeasible for the countries that matter. Redo for
-  whichever unit Track 1 picks.
+- `[x]` **A4. Common support — PASSES.** Full diagnostics in §10 of RESULTS.md; code
+  `data/a4_support.py`, figure `data/a4_support.png`.
+
+  Legitimately a design-stage step: the IFE model is fitted on control data only and each
+  treated unit's loadings come from its eleven pre-2018 outcomes, so no treated
+  post-treatment outcome is used.
+
+  | r | inside controls' range on every dimension | strictly inside convex hull | median treated Mahalanobis pctile | counterfactual inside data range |
+  |---|---|---|---|---|
+  | 1 | 99.6% | 99.6% | 55.8% | 100.0% |
+  | **2** | **98.2%** | **97.0%** | **49.5%** | **99.7%** |
+  | 3 | 92.2% | 84.7% | 65.4% | 98.1% |
+  | 4 | 93.0% | 83.1% | 59.1% | 98.1% |
+
+  **This is the diagnostic §4a failed.** At country level there was no untreated Vietnam and
+  canonical SC was feasible for 5–20% of treated trade value. At country-sector level with a
+  scale-free outcome the support problem does not bind, and the median treated unit sits at
+  the **49.5th percentile** of the control distribution — typical, not extreme. Xu's second
+  required check (imputed counterfactuals within the observed data range) also passes.
+
+  **r decision: 1 and 2 co-primary, 0–4 swept.** The CV curve on the actual panel is
+  r=0 0.796, r=1 **0.620**, r=2 0.632, r=3 0.729, r=4 0.874, r=5 1.323. The CV minimiser is
+  r = 1 but r = 2 is within 2%, and §9c showed the CV errs *downward* at T₀ = 11, so r = 2 is
+  the defensible upper choice. Support is strongest at r ≤ 2; at r = 3–4 some 15–17% of
+  treated units become extrapolations, so those are robustness only. Crucially **r = 0 is
+  clearly worst**, so there is genuine factor structure beyond two-way fixed effects — the
+  §9c worry that the CV would collapse to r = 0 does not materialise.
 
 ## Part B — Estimation, canonical Abadie
 

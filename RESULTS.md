@@ -4422,3 +4422,58 @@ factor-loading overlap plot alongside. The protocol's B2.4 is amended accordingl
 Within Monte Carlo error of nominal 95% (±1.8pp on 150 draws). Remaining cells
 (N_co = 400 and 1000 at N_tr = 5, and N_co = 1000 at N_tr = 50) still running; this section
 will be completed when they land.
+
+## §10. A4 — common support under GSC, and what the factors turn out to be — `data/a4_support.py`, `data/plot_a4.py`, `data/a4_support.png`
+
+First estimation on real data under the merged protocol. Panel: 1,083 persistently-targeted
+country-sectors against 2,223 strictly clean controls, 2007–2024, outcome `lnS`, X = Dec_k ×
+Post. Design-stage legitimate — the IFE fit uses control data only and treated loadings come
+from the eleven pre-2018 outcomes, so no treated post-treatment outcome enters.
+
+### Common support passes, where §4a failed
+
+| r | inside controls' range, all dims | strictly inside convex hull | median treated Mahalanobis pctile | counterfactual inside data range |
+|---|---|---|---|---|
+| 1 | 99.6% | 99.6% | 55.8% | 100.0% |
+| **2** | **98.2%** | **97.0%** | **49.5%** | **99.7%** |
+| 3 | 92.2% | 84.7% | 65.4% | 98.1% |
+| 4 | 93.0% | 83.1% | 59.1% | 98.1% |
+
+At r = 2, 97% of treated units lie strictly inside the convex hull of the control loading
+cloud, and the **median treated unit sits at the 49.5th percentile** of the control
+Mahalanobis distribution — typical of the donors rather than extreme. Contrast §4a, where at
+country level there was no untreated Vietnam and canonical SC was feasible for 5–20% of
+treated trade value. §4c's conjecture that a scale-free outcome fixes the support problem is
+confirmed in the GSC metric.
+
+Xu's second mandatory diagnostic — imputed counterfactuals staying "within reasonable
+intervals" — passes at 98–100%.
+
+### The CV curve, and r = 0 is not selected
+
+| r | 0 | 1 | 2 | 3 | 4 | 5 |
+|---|---|---|---|---|---|---|
+| CV MSPE | 0.796 | **0.620** | 0.632 | 0.729 | 0.874 | 1.323 |
+
+The minimiser is r = 1, with r = 2 within 2% of it. Two things follow. **r = 0 is clearly
+worst**, so there is real factor structure beyond two-way fixed effects — the §9c fear that
+the CV would collapse to r = 0 on this short panel does not materialise. And since §9c showed
+the CV errs *downward* at T₀ = 11, r = 2 is the defensible upper choice. **Decision: r = 1 and
+r = 2 co-primary, 0–4 swept, r ≥ 3 robustness only given the support loss.**
+
+### What the factors are — and why this matters for §8b
+
+Factor 1, scaled by its loading sd, runs monotonically from **−0.95 in 2007 to +0.98 in
+2024**, crossing zero around 2015–16. It is a smooth secular trend. Factor 2 is an inverted U
+peaking about 2014 (−0.90 → +0.69 → −0.53). The additive year effects are small and flat
+(−0.20 to +0.13), and **neither factor breaks at 2018** — as expected, since `lnS` already
+nets out the sector-year mean.
+
+So what GSC is doing here is fitting **heterogeneous secular trends in share** through each
+unit's loading on factor 1, plus one curvature term. That is precisely what two-way fixed
+effects cannot absorb, and precisely what made §8b's joint pre-trend test reject
+(p = 0.012–0.036). **The mechanism by which GSC could succeed where the §5–§8 designs failed
+is therefore visible in the estimated factor structure, not merely hoped for.** Whether it
+does succeed is B2, and §9c's warning stands: at T₀ = 11 the common estimation error does not
+average out over treated units, so the standard error will plateau rather than fall like
+1/√N_tr.

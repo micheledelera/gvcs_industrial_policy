@@ -113,3 +113,5 @@ data/swapfile
 !data/sc23_perm_stratified.npy
 !data/sc23_perm_unstratified.npy
 __pycache__/
+!data/a4_support.csv
+!data/a4_support.png
