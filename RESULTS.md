@@ -4280,3 +4280,83 @@ provide valid uncertainty estimates." Our N_tr is 500–1,083, so the **nonparam
 bootstrap over units, blocked at country** (per §8c/§8d's clustering lesson) is both the
 right tool and easier to get right. It needs validating in this same Monte Carlo at large
 N_tr before use. The parametric version still needs fixing for the Track 1 single-unit case.
+
+## §9b. Both §9 defects fixed and re-validated — `data/gsc.py`, `data/gsc_validate3.py`
+
+### FIX 2 — the bootstrap bug, and it was a real bug
+
+The leave-one-control-out prediction errors feeding Xu's Algorithm 2 were computed against a
+donor pool that evaluated to **every unit**, so each fake-treated control was predicted from
+a pool that still contained the **real treated units** — whose post-period outcomes carry
+δ growing 1→10. Fixed to the other controls only. The diagnostic confirms the mechanism
+exactly:
+
+| sd of leave-one-out prediction errors | old pool (incl. treated) | fixed pool (controls only) |
+|---|---|---|
+| post-period | **4.325** | **1.019** |
+| pre-period | 1.067 | 0.964 |
+
+A 4.25× inflation in the post-period and essentially none in the pre-period — the signature
+of contamination by a treatment effect that is zero before 2018 and large after. And since
+ε has true sd 1 by construction, the fixed value of 1.019 is almost exactly right: a
+well-fitted control's prediction error is just its own noise.
+
+### Coverage now attains nominal
+
+| | coverage | boot se | actual sd | se/sd |
+|---|---|---|---|---|
+| T₀=15, N_co=80, N_tr=5 — before | 100.0% | 1.363 | ~0.50 | ~2.7 |
+| **T₀=15, N_co=80, N_tr=5 — after** | **92.5%** | 0.510 | 0.526 | **0.97** |
+| **T₀=20, N_co=45, N_tr=5 — after** | **96.2%** | 0.508 | 0.496 | **1.02** |
+
+Both within one Monte Carlo standard error (±2.4pp on 80 draws) of 95%, with bootstrap SEs
+essentially equal to the estimator's true sampling SD. **Property (iv) now passes.**
+
+### Nonparametric block bootstrap at large N_tr — and an estimand lesson
+
+N_tr = 50, N_co = 80, T₀ = 20:
+
+| resampling | target | coverage | boot se | actual sd | se/sd |
+|---|---|---|---|---|---|
+| controls only | sample ATT 4.715 | 90.0% | 0.183 | 0.208 | 0.88 |
+| treated too | population ATT 5.000 | 88.3% | 0.276 | 0.218 | 1.26 |
+
+Neither beats the parametric version, and the reason is the **estimand**, not the method.
+Resampling controls only omits the treated units' own ε, so the SE runs 12% light and
+coverage slips to 90%. Resampling treated units too targets the *population* ATT — but δ is
+drawn once per design cell, so the realised sample ATT (4.715) sits a fixed −0.285 from the
+population value (5.000), and that constant offset eats the interval no matter how well the
+SE is estimated. Xu is explicit on this: "we attempt to make inference about the ATT in the
+sample we draw, not the ATT of the population."
+
+**Decision for the project.** Use the **parametric bootstrap with country blocks** — now
+validated at se/sd ≈ 1.0 — rather than the nonparametric one. Xu recommends nonparametric
+for large N_tr because it lets you approximate the joint distribution of (X_i, λ_i, δ_i) for
+the treated group, which targets the population ATT; our question is about the policy-using
+country-sectors we actually observe, so the sample ATT is the right target and the parametric
+route is both correct and cheaper to block by country. `bootstrap(..., blocks=country_id,
+max_loo=...)` does it; `max_loo` caps the leave-one-out loop, which would otherwise be 2,497
+GSC fits.
+
+### FIX 1 — the r = 0 branch, with an honest side-effect
+
+`ife_fit` now accepts r = 0 and adds no factors, so the CV's r = 0 option is a genuine
+two-way fixed effects fit rather than an r = 1 fit with the factors zeroed afterwards.
+
+| T₀, N_co | r=0 | r=1 | **r=2** | r=3 | r=4 | correct |
+|---|---|---|---|---|---|---|
+| 15, 40 | 12% | 9% | **68%** | 10% | 2% | 68% |
+| 20, 45 | **29%** | 2% | **62%** | 6% | 1% | 62% |
+| 20, 80 | 8% | 8% | **77%** | 6% | 2% | 77% |
+| 30, 80 | 2% | 0% | **86%** | 10% | 2% | 86% |
+
+The fix makes the CV pick r = 2 slightly *less* often (62–86% against 70–87% before),
+because a correctly-fitted two-way FE model genuinely wins leave-one-out MSPE some of the
+time when T₀ and N_co are small — parsimony beating noisily-estimated loadings. That is the
+CV behaving properly, not a defect.
+
+**Implication for our application, worth flagging in advance.** Our T₀ = 11 is shorter than
+every cell here, so the CV may well select a small r, possibly r = 0. That would not be a
+failure — it would be the cross-validation telling us the latent factor structure adds
+nothing beyond two-way fixed effects for this panel, which is itself an answer to the
+question §5–§8 kept running into.

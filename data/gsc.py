@@ -23,8 +23,11 @@ prediction a_i + xi_t + lambda_i'f_t is, and that is all the estimator uses.
 import numpy as np
 
 def _factors(R, r):
-    """top-r factors of a T x N residual matrix, normalised so F'F/T = I_r"""
+    """top-r factors of a T x N residual matrix, normalised so F'F/T = I_r.
+    r = 0 returns empty blocks, which makes ife_fit a plain two-way fixed effects fit."""
     T = R.shape[0]
+    if r == 0:
+        return np.zeros((T, 0)), np.zeros((R.shape[1], 0))
     w, V = np.linalg.eigh(R @ R.T)
     U = V[:, np.argsort(w)[::-1][:r]]
     F = U * np.sqrt(T)
@@ -87,11 +90,8 @@ def cv_r(Y, X, treated, T0, rmax=5):
     Xc = None if X is None else X[:, co, :]
     Xt = None if X is None else X[:, treated, :]
     for r in range(0, rmax + 1):
-        if r == 0:
-            beta, F, Lam, a_c, xi = ife_fit(Y[:, co], Xc, 1)
-            F = np.zeros_like(F); Lam = np.zeros_like(Lam)
-        else:
-            beta, F, Lam, a_c, xi = ife_fit(Y[:, co], Xc, r)
+        # r = 0 is two-way fixed effects, fitted as such (ife_fit with r=0 adds no factors)
+        beta, F, Lam, a_c, xi = ife_fit(Y[:, co], Xc, r)
         k = 0 if X is None else X.shape[2]
         net = Y[:, treated] - (Xt @ beta if k else 0.0) - xi[:, None]
         errs = []
@@ -116,18 +116,20 @@ def bootstrap(Y, X, treated, T0, r, B=200, rng=None, blocks=None, max_loo=None):
     beta, F, Lam, a_c, xi = ife_fit(Y[:, co], Xc, r)
     fitc = ((Xc @ beta if X is not None else 0.0) + a_c[None, :] + xi[:, None] + F @ Lam.T)
     eps_c = Y[:, co] - fitc                                   # T x Nco
-    # leave-one-control-out prediction errors, for the treated units' error distribution
+    # Leave-one-control-out prediction errors, for the treated units' error distribution.
+    # BUGFIX: the donor pool here must be the OTHER CONTROLS only. The previous version built
+    # `sub = m | fake`, which evaluates to every unit, so each fake-treated control was
+    # predicted from a pool that still contained the REAL treated units -- whose post-period
+    # outcomes carry delta != 0. That contaminated the IFE fit and inflated every prediction
+    # error, which is what produced the 100% coverage / 2.4x-too-large SEs in §9.
     eps_p = []
     loo = co if max_loo is None or len(co) <= max_loo else rng.choice(co, max_loo, replace=False)
-    for j0 in range(len(loo)):
-        j = int(np.where(co == loo[j0])[0][0])
-        m = np.ones(N, bool); m[co[j]] = False
-        fake = np.zeros(N, bool); fake[co[j]] = True
-        sub = m | fake
-        g = gsc(Y[:, sub], None if X is None else X[:, sub, :],
-                fake[sub], T0, r)
+    for u in loo:
+        sub = co.copy()                                   # controls only, no treated units
+        fake = (sub == u)
+        g = gsc(Y[:, sub], None if X is None else X[:, sub, :], fake, T0, r)
         eps_p.append(g['gap'][:, 0])
-    eps_p = np.array(eps_p).T                                  # T x Nco
+    eps_p = np.array(eps_p).T                                  # T x n_loo
     fit_all = np.zeros((T, N))
     fit_all[:, co] = fitc
     fit_all[:, tr] = base['Y0']
@@ -138,13 +140,49 @@ def bootstrap(Y, X, treated, T0, r, B=200, rng=None, blocks=None, max_loo=None):
             Yb[:, co] += eps_c[:, rng.integers(0, eps_c.shape[1], len(co))]
             Yb[:, tr] += eps_p[:, rng.integers(0, eps_p.shape[1], len(tr))]
         else:
+            # resample one residual series per BLOCK, shared by every unit in it, so
+            # within-block (e.g. within-country) correlation is preserved
             for grp in np.unique(blocks):
                 idx = np.where(blocks == grp)[0]
-                src = rng.integers(0, eps_c.shape[1])
-                pick = np.array([src] * len(idx))
-                for jj, u in enumerate(idx):
-                    Yb[:, u] += (eps_p[:, pick[jj] % eps_p.shape[1]] if treated[u]
-                                 else eps_c[:, pick[jj] % eps_c.shape[1]])
+                jc = rng.integers(0, eps_c.shape[1]); jp = rng.integers(0, eps_p.shape[1])
+                for u in idx:
+                    Yb[:, u] += eps_p[:, jp] if treated[u] else eps_c[:, jc]
         atts.append(gsc(Yb, X, treated, T0, r)['att'])
     A = np.array(atts)
     return base['att'], A.std(axis=0, ddof=1), A
+
+
+def bootstrap_np(Y, X, treated, T0, r, B=200, rng=None, blocks=None, resample_treated=True):
+    """Nonparametric bootstrap over UNITS -- Xu's prescription when N_tr is large
+    ("a simple nonparametric bootstrap procedure can provide valid uncertainty estimates").
+
+    blocks             group id per unit; whole groups are resampled together, which is what
+                       clustering by country requires (cf. §8c/§8d, where country-blocking
+                       widened the null 2.6x against unit-level resampling).
+    resample_treated   True targets the POPULATION ATT, since redrawing treated units carries
+                       the heterogeneity of delta_it. False resamples only controls and so
+                       targets the ATT of the treated units actually in the sample, which is
+                       Xu's stated estimand ("the ATT in the sample we draw").
+    """
+    rng = rng or np.random.default_rng(0)
+    co = np.where(~treated)[0]; tr = np.where(treated)[0]
+    base = gsc(Y, X, treated, T0, r)['att']
+    if blocks is None:
+        units = np.arange(Y.shape[1]); blocks = units
+    gb = {g: np.where(blocks == g)[0] for g in np.unique(blocks)}
+    g_co = [g for g, ix in gb.items() if not treated[ix].any()]
+    g_tr = [g for g, ix in gb.items() if treated[ix].any()]
+    atts = []
+    for _ in range(B):
+        pick = [gb[g] for g in rng.choice(g_co, len(g_co), replace=True)]
+        pick += [gb[g] for g in (rng.choice(g_tr, len(g_tr), replace=True)
+                                 if resample_treated else g_tr)]
+        idx = np.concatenate(pick)
+        tb = treated[idx]
+        if tb.sum() < 2 or (~tb).sum() < r + 2: continue
+        try:
+            atts.append(gsc(Y[:, idx], None if X is None else X[:, idx, :], tb, T0, r)['att'])
+        except Exception:
+            pass
+    A = np.array(atts)
+    return base, A.std(axis=0, ddof=1), A

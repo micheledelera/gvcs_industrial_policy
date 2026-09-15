@@ -109,16 +109,11 @@ freezing A0–A4 in this file before running Part B.
 
 No R in this container, so `gsynth` is unavailable and GSC is implemented directly.
 
-- `[!]` **B2.0. Validate the implementation on Xu's own Monte Carlo DGP** — done, §9.
-  Point estimates pass (bias ≤ 0.036, SD near the 1/√5 efficiency floor, CV picks r = 2 in
-  70–87%, and Xu's three estimator comparisons all hold). **The parametric bootstrap FAILS:
-  100% coverage against nominal 95%, SE 2.2–2.7× too large, from double-counting prediction
-  error.** GSC inference must not be used on project data until fixed; for our N_tr the
-  nonparametric block bootstrap (blocked at country) is what Xu prescribes anyway and needs
-  validating at large N_tr. Also: the r = 0 branch of the CV is implemented wrongly.
-  Original text of the step:** (his eq. 3:
-  N_tr = 5, N_co = 45, T = 30, T₀ = 20, w = 0.8, two factors, true ATT = 5 at T₀+5). Check we
-  recover his Table 1 bias, SD, RMSE and 95% coverage before touching our data.
+- `[x]` **B2.0. Validate the implementation on Xu's own Monte Carlo DGP** — done, §9 and
+  §9b. All of Xu's stated properties now hold: bias ≤ 0.036 with SD near the 1/√5 efficiency
+  floor; CV picks r = 2 in 62–86%; his three estimator comparisons hold; and after fixing a
+  contaminated donor pool in the leave-one-control-out step, bootstrap coverage is 92.5% and
+  96.2% against nominal 95% with se/sd of 0.97 and 1.02. The r = 0 branch of the CV is fixed.
 - `[ ]` **B2.1. Step 1** — fit the IFE model on controls only: minimise over β, F, Λ_co
   subject to F'F/T = I_r and Λ'Λ diagonal.
 - `[ ]` **B2.2. Step 2** — estimate each treated unit's factor loadings by projecting its
@@ -126,9 +121,11 @@ No R in this container, so `gsynth` is unavailable and GSC is implemented direct
 - `[ ]` **B2.3. Step 3** — impute Y_it(0) and form ATT_t.
 - `[ ]` **B2.4. Choose r by leave-one-out cross-validation** on treated pre-periods
   (Xu Algorithm 1). Report the CV curve, not just the winner.
-- `[ ]` **B2.5. Inference** — per §9, use the **nonparametric block bootstrap over units,
-  blocked at country** (Xu's own prescription for large N_tr), validated in his Monte Carlo
-  at large N_tr first. The parametric bootstrap over-covers in our implementation.
+- `[x]` **B2.5. Inference — decided in §9b.** Use the **parametric bootstrap (Algorithm 2)
+  with country blocks**, `bootstrap(..., blocks=country_id, max_loo=...)`, validated at
+  se/sd ≈ 1.0. Not the nonparametric one: resampling controls only runs 12% light (it omits
+  the treated units' own ε) and resampling treated units targets the population rather than
+  the sample ATT, which is not Xu's estimand or ours.
 - `[ ]` **B2.6. Diagnostics Xu requires** — plot raw treated and control paths with imputed
   counterfactuals; plot treated vs control factor loadings and check overlap.
 - `[ ]` **B2.7. Heterogeneity** — GSC returns per-unit effects in one run, so report ATT by
