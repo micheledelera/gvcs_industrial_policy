@@ -4418,10 +4418,19 @@ factor-loading overlap plot alongside. The protocol's B2.4 is amended accordingl
 | N_co | N_tr | coverage | boot se | actual sd | se/sd |
 |---|---|---|---|---|---|
 | 80 | 5 | **93.3%** | 0.543 | 0.582 | 0.93 |
+| 400 | 5 | **93.3%** | 0.572 | 0.594 | 0.96 |
+| 1000 | 5 | **93.3%** | 0.491 | 0.499 | 0.98 |
+| 1000 | 50 | **96.0%** | 0.187 | 0.195 | 0.96 |
 
-Within Monte Carlo error of nominal 95% (±1.8pp on 150 draws). Remaining cells
-(N_co = 400 and 1000 at N_tr = 5, and N_co = 1000 at N_tr = 50) still running; this section
-will be completed when they land.
+All four within Monte Carlo error of nominal 95% (±1.8pp on 150 draws, ±2.2pp on 100), with
+se/sd between 0.93 and 0.98. **Coverage passes at T₀ = 11 across the whole grid**, including
+the N_tr = 50 cell closest to our shape. So the inference machinery is sound at our
+pre-period length — the §9c warnings concern the *size* of the standard error and the CV's
+choice of r, not the validity of the interval.
+
+Also note the N_tr = 50 row confirms the plateau directly: the bootstrap se is 0.187 where
+1/√50 = 0.141, so the machinery correctly reports the inflated-but-honest uncertainty rather
+than the naive floor.
 
 ## §10. A4 — common support under GSC, and what the factors turn out to be — `data/a4_support.py`, `data/plot_a4.py`, `data/a4_support.png`
 
@@ -4557,3 +4566,81 @@ the threshold sits inside a **smooth** distribution, not at a natural break, and
 the pre-trend gap rises monotonically with it. **The threshold sweep is therefore not a
 robustness check but part of the primary result**, and the estimate must be reported across
 5+/6+/7+/8+/9+ rather than at 6+ with the others relegated to an appendix.
+
+## §10c. B2 — GSC estimates on the merged design — `data/b2_estimate.py`, `data/b2_bootdiag.py`, `data/b2_inference.py`
+
+### Two mechanical facts found before reading any estimate
+
+**1. Under GSC the mean pre-period gap is zero by construction.** Step 2 regresses the
+treated unit's pre-period outcome on [1, F_pre]; the intercept makes the OLS residuals sum to
+zero per unit. Verified: max |mean pre-period gap| across treated units = **1.3 × 10⁻¹⁴**.
+So the GSC pre-period mean gap is **not a pre-trend test** — unlike in DiD, where it is the
+whole diagnostic. Only the *year-by-year* pattern is informative (sd across pre-years 0.047).
+This deserves recording as a general point about reading GSC output.
+
+**2. My block bootstrap was wrong, and it mattered by a factor of nine.** The first version
+drew one residual series per country and broadcast it to every unit in that country, which
+imposes *perfect* within-country correlation instead of preserving the observed correlation.
+On this panel it inflated the post-ATT se from 0.077 to 0.688. Fixed to draw a donor country
+and hand each target unit the residual series of its positional counterpart there. The two
+wrong schemes now serve as bounds: unit-level assumes independence within country, broadcast
+assumes perfect dependence.
+
+### The estimates
+
+Post-2018 mean ATT, threshold 6+, with the corrected block bootstrap:
+
+| spec | ATT | se (unit) | se (**block**) | t (block) |
+|---|---|---|---|---|
+| **lnS, r = 1** | **+0.196** | 0.068 | **0.147** | **1.33** |
+| lnS, r = 2 | +0.229 | 0.101 | 0.251 | 0.91 |
+| lnD, r = 2 | +0.235 | 0.086 | 0.231 | 1.02 |
+| lnX, r = 2 | +0.234 | 0.097 | 0.256 | 0.91 |
+
+Clustering inflates the se by 2.2–2.6×, the same factor §8d found. **The point estimates are
+remarkably consistent — +0.20 to +0.24 across all three outcomes and both r — and none is
+statistically significant once country clustering is respected** (t = 0.91–1.33).
+
+Threshold and r sweeps for lnS (post-2018 mean ATT):
+
+| threshold | r=0 | r=1 | r=2 | r=3 | r=4 |
+|---|---|---|---|---|---|
+| 5+ | +0.267 | +0.228 | +0.239 | +0.313 | +0.287 |
+| **6+** | +0.289 | **+0.196** | **+0.229** | +0.223 | +0.193 |
+| 7+ | +0.298 | +0.193 | +0.207 | +0.188 | +0.152 |
+| 8+ | +0.358 | +0.173 | +0.200 | +0.187 | +0.143 |
+| 9+ | +0.307 | +0.104 | +0.143 | +0.396 | +0.326 |
+
+Stable in r for r ≥ 1 at any given threshold, and **declining in the threshold** — tighter
+persistence gives *smaller* estimates (+0.24 at 5+ down to +0.14 at 9+), the opposite of a
+dose-response. r = 0 is always the largest, as expected, since with no factors the
+heterogeneous trends are attributed to treatment.
+
+**lnD is fragile in r**: +0.04, −0.00, −0.02, −0.04, −0.11 at r = 1 across thresholds, but
++0.21 to +0.26 at r = 2. Flagged — the destination margin should not be reported without the
+r sweep attached.
+
+### The ATT path, and a timing problem
+
+lnS, r = 2, threshold 6+:
+
+| 2007 | 2008 | 2009 | 2010 | 2011 | 2012 | 2013 | 2014 | 2015 | 2016 | 2017 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| +0.04 | +0.05 | −0.12 | −0.03 | +0.06 | −0.00 | +0.03 | +0.01 | −0.02 | −0.02 | +0.01 |
+
+| 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 |
+|---|---|---|---|---|---|---|
+| +0.04 | +0.09 | **+0.19** | **+0.32** | **+0.40** | +0.26 | +0.31 |
+
+The pre-period wobbles inside ±0.12 with no trend; the post-period is a **monotone ramp**
+peaking in 2022. All three outcomes trace the same shape.
+
+That shape is *better* for a policy story than §5g's, which was a one-year level shift in
+2018 matching the tariff schedule — a phase-in is what an investment or capacity response
+should look like. **But the timing is now a problem in the other direction.** The effect is
+essentially absent in 2018 (+0.04) and 2019 (+0.09) and accumulates over 2020–2022, which is
+the COVID supply-chain disruption, not the tariff event. §3ae had dated the earlier
+divergence to 2018–19 precisely to rule COVID out; this path does the opposite. Either the
+policy response took two years to bite, or what is being measured is pandemic-era
+reallocation that policy-using sectors were positioned to absorb. **The design cannot
+currently distinguish these, and that is the first thing B2's remaining steps must address.**

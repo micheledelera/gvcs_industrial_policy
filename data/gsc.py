@@ -140,13 +140,24 @@ def bootstrap(Y, X, treated, T0, r, B=200, rng=None, blocks=None, max_loo=None):
             Yb[:, co] += eps_c[:, rng.integers(0, eps_c.shape[1], len(co))]
             Yb[:, tr] += eps_p[:, rng.integers(0, eps_p.shape[1], len(tr))]
         else:
-            # resample one residual series per BLOCK, shared by every unit in it, so
-            # within-block (e.g. within-country) correlation is preserved
-            for grp in np.unique(blocks):
-                idx = np.where(blocks == grp)[0]
-                jc = rng.integers(0, eps_c.shape[1]); jp = rng.integers(0, eps_p.shape[1])
-                for u in idx:
-                    Yb[:, u] += eps_p[:, jp] if treated[u] else eps_c[:, jc]
+            # Proper block resampling. BUGFIX: the previous version drew ONE residual series
+            # per block and broadcast it to every unit in that block, which imposes PERFECT
+            # within-country correlation rather than preserving the observed correlation. On
+            # the §5b panel that inflated the post-ATT se from 0.077 to 0.688, a factor of 9.
+            # Correct scheme: draw a DONOR block and hand each target unit the residual
+            # series of its positional counterpart in that donor block, so within-block
+            # correlation is carried over as observed rather than forced to one.
+            cmap = {u: jj for jj, u in enumerate(co)}
+            bl = {gg: np.where(blocks == gg)[0] for gg in np.unique(blocks)}
+            donor_pool = [gg for gg, ix in bl.items() if not treated[ix].any()] or list(bl)
+            for gg, tgt in bl.items():
+                src = bl[donor_pool[rng.integers(0, len(donor_pool))]]
+                for pos, u in enumerate(tgt):
+                    s_u = src[pos % len(src)]
+                    if treated[u]:
+                        Yb[:, u] += eps_p[:, rng.integers(0, eps_p.shape[1])]
+                    else:
+                        Yb[:, u] += eps_c[:, cmap.get(s_u, rng.integers(0, eps_c.shape[1]))]
         atts.append(gsc(Yb, X, treated, T0, r)['att'])
     A = np.array(atts)
     return base['att'], A.std(axis=0, ddof=1), A

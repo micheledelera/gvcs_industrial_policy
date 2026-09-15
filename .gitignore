@@ -115,3 +115,6 @@ data/swapfile
 __pycache__/
 !data/a4_support.csv
 !data/a4_support.png
+!data/b2_grid.csv
+!data/b2_boot.csv
+!data/b2_inference.csv
