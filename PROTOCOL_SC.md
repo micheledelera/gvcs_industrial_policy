@@ -17,16 +17,42 @@ record the conclusion here before moving on. Status markers:
 | pre-periods | 19 (1970–88) | 11 (2007–17) |
 | T₀ vs N₀ | T₀ ≫ needed | T₀ = 11 against thousands of donors |
 
-Every step below is run on **two tracks**:
+**MERGED DESIGN (revised).** The two tracks are now one: follow the Mixtape's step
+sequence and discipline throughout, and substitute Xu's GSC estimator at every step that
+assumes a single treated unit. The single-treated-unit case study (Vietnam) is retained as a
+worked **illustration**, not a parallel track, because it is the only place ADH's full
+apparatus — post/pre RMSPE ratio, exact p-value, placebo spaghetti — applies literally.
 
-- **Track 1 — canonical Abadie.** One treated unit, ADH-faithful. Proposed: **Vietnam** at
-  country level, or one Vietnamese sector. This is the chapter as written, and the design the
-  method was built for. §5d/§5e already point at Vietnam as the case of interest.
-- **Track 2 — generalized SC (Xu 2017).** Our actual estimand: many treated units. Xu's GSC
-  is not an optional extra here — it is the estimator the chapter's method is missing, and it
-  addresses our failures one for one (see below).
+### What the merge keeps, changes, and costs
 
-### Why Xu (2017) is the right Track 2 estimator
+| Mixtape step | under the merge |
+|---|---|
+| Part A, design stage | **unchanged.** And the discipline survives: GSC picks r by CV on treated *pre-treatment* outcomes only, so design is still separable from estimation (Rubin 2007/2008, ADH) |
+| B1, solve W\* given V, and V by min pre-RMSPE | **dissolved.** GSC projects onto an estimated factor space instead of weighting covariates, so there is no V. This closes the single largest gap against the chapter *and* removes a specification-search margin |
+| B2, balance table | **modified.** Treated mean vs imputed-counterfactual mean vs donor-pool mean, on covariates and on pre-period outcomes, plus a comparison of estimated factor loadings |
+| B3, weights table | **real cost.** GSC has no explicit per-donor weights, and transparency is the feature the chapter prizes most. Mitigation: GSC's imputation is linear in the controls' outcomes through F̂ and Λ̂, so implied donor weights can be derived and tabulated. That derivation is ours, not standard — label it as such |
+| B4/B5, paths and gap figures | **unchanged.** Xu's own Figure 2 is exactly these two panels |
+| C1–C4, ADH exact p-value | **replaced as primary, retained as secondary.** Primary is the validated parametric bootstrap with country blocks (§9b). Secondary is an ADH-style randomisation test *on the ATT*, permuting treatment by country block. This combination **fixes** the §7/C4 defect: there is now one aggregate statistic to rank, so no aggregation of 500 exact p-values is needed |
+| C8, post/pre RMSPE ratio and the 2× filter | **demoted from inference to robustness.** Both are single-unit devices; per-unit pre-fit is still computable, so the filter becomes a sample restriction. §5c's finding that the ratio statistic runs backwards here stands, so the test statistic is the ATT |
+| C5–C7, Figures 11.5/11.6/11.7 | **survive modified.** Spaghetti of per-treated-unit GSC gaps against placebo gaps; histogram of permuted ATTs with the actual marked |
+| D1, placebo-in-time | **unchanged**, and applies directly to GSC |
+| D2, leave-one-donor-out | **improved.** With 2,497 controls, dropping one is meaningless; becomes **leave-one-country-out**, which also matches our clustering |
+| D3, lag-set sweep | **improved.** Becomes the r sweep plus the CV curve — a strictly smaller specification space |
+| new, GSC-specific | factor-loading overlap plot (Xu Fig. 3b), and his instruction to check imputed counterfactuals lie "within reasonable intervals" |
+
+### The binding constraint: T₀ = 11
+
+The Zenodo source panel is 2007–2024 (`code/gvc_ip_gravity.py` header), so **T₀ = 11 is a
+data constraint, not a build choice** — extending it means rebuilding from raw BACI, which is
+not in this repository. This matters because:
+
+- Xu cautions against T₀ < 10; we are at 11, just over his floor.
+- §9b found the CV selects r = 0 more often as T₀ falls, and **T₀ = 11 is shorter than every
+  cell validated so far** (coverage was checked at T₀ = 15 and 20, the CV at T₀ ≥ 15).
+- So the merged design needs **one more validation cell at T₀ = 11 exactly**, for coverage
+  and for the CV's r distribution, before GSC is trusted on this panel. Added as B2.0b.
+
+### Why Xu (2017) is the right estimator for the multiple-treated-unit steps
 
 | our documented failure | what GSC does about it |
 |---|---|
@@ -114,6 +140,8 @@ No R in this container, so `gsynth` is unavailable and GSC is implemented direct
   floor; CV picks r = 2 in 62–86%; his three estimator comparisons hold; and after fixing a
   contaminated donor pool in the leave-one-control-out step, bootstrap coverage is 92.5% and
   96.2% against nominal 95% with se/sd of 0.97 and 1.02. The r = 0 branch of the CV is fixed.
+- `[ ]` **B2.0b. Validate at T₀ = 11, our actual pre-period length** — coverage and the CV's
+  r distribution, with N_co scaled toward our 2,497. The binding constraint above.
 - `[ ]` **B2.1. Step 1** — fit the IFE model on controls only: minimise over β, F, Λ_co
   subject to F'F/T = I_r and Λ'Λ diagonal.
 - `[ ]` **B2.2. Step 2** — estimate each treated unit's factor loadings by projecting its
