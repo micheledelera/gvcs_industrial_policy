@@ -125,3 +125,6 @@ __pycache__/
 !data/b2_report_paths_lnX.npy
 !data/b2_clustering.csv
 !data/b2_countryeffect.csv
+!data/b2_lnx_sector.csv
+!data/b2_paths_lnX_sector.png
+!data/b2_paths_lnX_sector.npy
