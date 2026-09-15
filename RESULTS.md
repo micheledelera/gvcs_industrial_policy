@@ -4644,3 +4644,85 @@ divergence to 2018–19 precisely to rule COVID out; this path does the opposite
 policy response took two years to bite, or what is being measured is pandemic-era
 reallocation that policy-using sectors were positioned to absorb. **The design cannot
 currently distinguish these, and that is the first thing B2's remaining steps must address.**
+
+## §10d. B2.7 — heterogeneity, and the estimate is entirely in the smallest units — `data/b2_hetero.py`
+
+All from one GSC fit (lnS, threshold 6+, r = 2, pooled ATT +0.2291), since GSC returns a
+per-unit effect in a single run.
+
+### Concentration: passes, unlike every earlier design
+
+| check | ATT |
+|---|---|
+| pooled | +0.2291 |
+| drop 1% most influential treated units (n=10) | +0.2330 |
+| drop 5% (n=54) | +0.2359 |
+| drop 10% (n=108) | +0.2223 |
+
+**Kish effective n = 491 of 1,083**; the top 15 units hold 8.6% of the absolute effect.
+Compare §5k, where effective n was **4** and dropping the top 1% took the estimate from
++0.029 to +0.001. This is a genuinely diffuse estimate. **Leave-one-country-out** agrees:
+across the 13 countries with ≥ 15 treated units the ATT ranges only +0.184 (drop India) to
++0.264 (drop Russia).
+
+### But by size quintile, the estimate is *only* the smallest units
+
+| size quintile of US imports | n | ATT | jackknife se | t |
+|---|---|---|---|---|
+| **smallest** | 217 | **+1.0126** | 0.1558 | **+6.50** |
+| 2nd | 216 | −0.1148 | 0.2071 | −0.55 |
+| 3rd | 217 | +0.0094 | 0.1494 | +0.06 |
+| 4th | 216 | +0.1642 | 0.1450 | +1.13 |
+| largest | 217 | +0.0723 | 0.1932 | +0.37 |
+
+The pooled +0.229 is **the smallest 20% of treated units and nothing else**. Quintiles 2–5
+are jointly indistinguishable from zero, and the largest quintile — which holds essentially
+all the trade value — is +0.07 (t = 0.37).
+
+**§10b's size worry was real but I had the direction wrong.** I predicted persistence would
+proxy for *big* sectors, and the concern was that "big sectors did better" would masquerade
+as a policy effect. The opposite: the effect lives in the *small* units. A share moving from
+0.01% to 0.027% is +1.0 log points and economically trivial, and small shares are
+mechanically volatile in logs. So:
+
+**The pooled ATT is not an economically meaningful average.** This is §6's "among the
+sectors versus among the dollars" distinction at its starkest — the unweighted log-share
+estimand gives one vote to a $0.5m country-sector and one to a $5bn one, and the answer comes
+entirely from the former. The dollar-weighted answer is approximately the largest quintile's
++0.07, i.e. null. **§6's weighting question is therefore the decisive one for this design,
+not a footnote.**
+
+### Robust to the §5k overlap
+
+| | n | ATT | jackknife se | t |
+|---|---|---|---|---|
+| all treated | 1,083 | +0.2291 | 0.0916 | +2.50 |
+| excluding `share_frac` top quartile | 784 | +0.1882 | 0.0945 | +1.99 |
+| only `share_frac` top quartile | 299 | +0.3365 | 0.1616 | +2.08 |
+
+The estimate survives excluding the 299 units that overlap §5k's voided measure, so it is not
+that defect returning.
+
+**Note an inference discrepancy to resolve.** The jackknife-over-country se here is 0.092
+(t = 2.50) against the block bootstrap's 0.251 (t = 0.91) — a factor of 2.7. The bootstrap
+accounts for estimation error in F̂ and λ̂, which the unit-level jackknife ignores, so **the
+bootstrap is the right one** and the jackknife numbers in this section should be read as
+within-subgroup dispersion rather than as tests.
+
+### By country: wide dispersion, and the actual winners are absent
+
+| country | n | ATT | | country | n | ATT |
+|---|---|---|---|---|---|---|
+| Pakistan | 26 | +1.018 | | Poland | 119 | +0.072 |
+| Croatia | 79 | +0.724 | | Bulgaria | 94 | +0.038 |
+| India | 115 | +0.612 | | Brazil | 110 | −0.039 |
+| Turkiye | 29 | +0.472 | | Romania | 96 | −0.088 |
+| Indonesia | 82 | +0.409 | | Argentina | 75 | −0.090 |
+| Colombia | 50 | +0.288 | | Russia | 41 | −0.660 |
+| Hungary | 102 | +0.283 | | | | |
+
+Positive in South and Southeast Asia plus Turkey, Croatia, Colombia and Hungary; nil or
+negative across Eastern Europe, Latin America and Russia. No clean story. And **Vietnam,
+Mexico, Thailand, Malaysia and Bangladesh do not appear at all** — none has ≥ 15 treated
+units. That is A1's scope condition biting exactly where it was flagged: the design is
+identified off countries that are not the ones that visibly gained from decoupling.

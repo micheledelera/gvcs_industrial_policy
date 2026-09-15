@@ -451,6 +451,27 @@ No R in this container, so `gsynth` is unavailable and GSC is implemented direct
   `gsynth` port exists, otherwise export the GSC estimates and ship the Python alongside) on an exported
   analysis dataset, so the final numbers are reproducible in the user's own toolchain.
 
+## OPEN DESIGN QUESTION — carried forward, may force a revision
+
+**The 2018 event date may be wrong, or the estimand may be contaminated by COVID (§10c).**
+The ATT path is +0.04 in 2018 and +0.09 in 2019, then +0.19, +0.32, +0.40 through 2020–2022.
+§3ae had dated the earlier divergence to 2018–19 precisely to rule COVID out; this path does
+the opposite. Two readings the design cannot currently separate:
+
+1. the policy response took ~two years to bite (a phase-in, which suits a capacity mechanism);
+2. what is measured is pandemic-era supply-chain reallocation that policy-using sectors
+   happened to be positioned to absorb.
+
+Candidate resolutions, none yet run:
+- split the post-period and report 2018–19 and 2020–24 separately;
+- re-date the event to 2020 and see whether the pre-period stays flat (if 2018–19 belongs to
+  the pre-period, a 2020 event should fit better);
+- check whether the ramp concentrates in sectors with known COVID disruption
+  (electronics, medical goods, furniture) versus those without;
+- a placebo-in-time at 2015 (protocol D1) to confirm the machinery does not manufacture ramps.
+
+User's instruction: proceed for now, revisit before any result is reported.
+
 ## Running conclusions
 
 *(filled in as we go)*

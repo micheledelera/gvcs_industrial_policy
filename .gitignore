@@ -118,3 +118,4 @@ __pycache__/
 !data/b2_grid.csv
 !data/b2_boot.csv
 !data/b2_inference.csv
+!data/b2_hetero.csv
