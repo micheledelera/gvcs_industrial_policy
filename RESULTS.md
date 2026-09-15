@@ -4800,3 +4800,44 @@ donor's outcomes to the treated counterfactual is not linear and no clean per-do
 exists. **GSC weights time periods and factor directions, not donors.** The transparency the
 chapter prizes is genuinely lost, not merely relocated — and the honest substitute is the
 loading distribution plus a list of controls nearest the treated group in loading space.
+
+## §10f. Statistical significance of the B2 ATTs — `data/b2_pvalues.py`
+
+p-values computed three ways so the dependence on the inference scheme is visible rather
+than assumed. 25 treated countries, so a t reference with 24 df is the honest one; the
+bootstrap percentile p recentres the draws and asks how often |draw| ≥ |estimate|.
+
+| spec | ATT | block se | t | p normal | p t(24) | p percentile | 95% CI |
+|---|---|---|---|---|---|---|---|
+| lnS, r = 1 | +0.196 | 0.159 | 1.23 | **0.218** | 0.230 | 0.220 | [−11%, +66%] |
+| lnS, r = 2 | +0.229 | 0.238 | 0.96 | **0.336** | 0.346 | 0.280 | [−21%, +101%] |
+
+**No significant effect: p ≈ 0.22–0.35.** The three methods agree closely, so the bootstrap
+distribution is not badly skewed and the normal approximation costs nothing. **No individual
+post-treatment year's own 95% band excludes zero** in either specification.
+
+### The result turns entirely on clustering
+
+| clustering | lnS r = 1 | lnS r = 2 |
+|---|---|---|
+| **country-blocked (correct)** | p = **0.218** | p = **0.336** |
+| unit-level (ignores clustering) | p = 0.005 | p = 0.018 |
+
+That is the whole distance between a publishable result and a null, and it turns on one
+modelling choice. Country clustering is the right one: policy is set at country level, there
+are only 25 treated countries, and §10d found per-country ATTs from −0.66 (Russia) to +1.02
+(Pakistan). Treating 1,083 country-sectors as independent draws is indefensible.
+
+This is §8d's lesson recurring — there, country-block randomisation widened the null by 2.6×
+and moved p from 0.003 to 0.033. Same mechanism, same magnitude, different estimator.
+
+### Two qualifications on "not significant"
+
+1. **A large effect is not ruled out.** The upper bound is +101%. With 25 treated countries,
+   T₀ = 11, and §9c's finding that the standard error *plateaus* rather than shrinking as
+   treated units are added, this design has limited power close to by construction. "Not
+   significant" here means **uninformative**, not "no effect".
+2. **The stronger test has not been run.** Part C's ADH-style randomisation test — permuting
+   treatment across countries and recomputing the GSC ATT — yields an exact p-value and is
+   what the chapter prescribes. Given §8d found unit-level permutation anti-conservative by an
+   order of magnitude, that is the number to have before anything is called final.
