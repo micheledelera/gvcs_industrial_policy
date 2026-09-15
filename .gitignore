@@ -132,3 +132,5 @@ __pycache__/
 !data/c1_placebo_dist.npz
 !data/fig_main_clean.png
 !data/fig_main_clean.pdf
+!data/c1c2_randomisation.csv
+!data/c1c2_placebos.npz
