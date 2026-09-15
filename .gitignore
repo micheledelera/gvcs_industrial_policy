@@ -128,3 +128,7 @@ __pycache__/
 !data/b2_lnx_sector.csv
 !data/b2_paths_lnX_sector.png
 !data/b2_paths_lnX_sector.npy
+!data/c1_randomisation.csv
+!data/c1_placebo_dist.npz
+!data/fig_main_clean.png
+!data/fig_main_clean.pdf
