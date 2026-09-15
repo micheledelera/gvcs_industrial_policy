@@ -4191,3 +4191,92 @@ with no counterfactual.
 Remaining work is the two gravity tests: the destination-margin headline (+5.2% per sd,
 p = 0.002) re-run (i) excluding the top 4% of country-sectors by trade value and (ii) with a
 policy measure that has no country-portfolio denominator.
+
+## §9. GSC implemented from scratch and validated against Xu's Monte Carlo — `data/gsc.py`, `data/gsc_validate.py`, `data/gsc_validate2.py`
+
+Protocol step B2.0. No R here, so `gsynth` is unavailable and Xu (2017) is implemented
+directly: Bai (2009) IFE on controls only with additive unit and time effects imposed,
+projection of treated pre-period outcomes onto the estimated factor space, imputation, plus
+Algorithm 1 (leave-one-pre-period-out CV for r) and Algorithm 2 (parametric bootstrap).
+
+Validated on Xu's own design (his eq. 3): N_tr = 5, q = 10, two factors, w = 0.8,
+δ̄ = [1..10], observables/factors/loadings drawn once per cell and only ε redrawn, bias
+measured against the **realised** ATT at T₀+5. The provided text of the paper cites Table 1
+without its digits, so this checks the properties Xu states rather than replicating digits.
+
+### (i)–(iii) Bias, SD, RMSE — **pass**
+
+| T₀ | N_co | bias | SD | RMSE |
+|---|---|---|---|---|
+| 10 | 40 | +0.013 | 0.829 | 0.828 |
+| 10 | 80 | +0.010 | 0.526 | 0.525 |
+| 15 | 40 | +0.036 | 0.651 | 0.651 |
+| 15 | 80 | +0.005 | 0.497 | 0.497 |
+| 20 | 40 | −0.036 | 0.530 | 0.531 |
+| 20 | 80 | +0.006 | 0.555 | 0.554 |
+| 30 | 40 | +0.007 | 0.541 | 0.541 |
+| 30 | 80 | +0.029 | 0.547 | 0.547 |
+
+Bias ≤ 0.036 throughout and shrinking; SD falls from 0.829 to ~0.53; RMSE ≈ SD. **Extra
+check not in Xu:** the irreducible SD in this design is the treated units' own noise at
+T₀+5, 1/√5 = **0.447**. At 0.53 the estimator contributes ~0.08 of its own, i.e. it runs
+close to the efficiency floor — stronger evidence of a correct implementation than the bias
+numbers alone.
+
+### (v) Does the CV pick r = 2? — **pass**
+
+| T₀, N_co | r=0 | r=1 | **r=2** | r=3 | r=4 |
+|---|---|---|---|---|---|
+| 15, 40 | 2% | 14% | **71%** | 10% | 2% |
+| 20, 45 | 18% | 6% | **70%** | 6% | 1% |
+| 20, 80 | 1% | 6% | **86%** | 5% | 2% |
+| 30, 80 | 0% | 2% | **87%** | 10% | 2% |
+
+Rising in T₀ and N_co, consistent with Xu's "picks the correct number of factors with high
+probability." **Implementation wart:** the r = 0 spike at (20, 45) is mine, not his — my
+r = 0 branch fits with r = 1 and then zeroes F and Λ, so the additive effects were estimated
+under a different model. Needs fixing to a clean two-way-FE-only fit; it affects only the
+r = 0 option of the CV.
+
+### (vi) Head-to-head, T₀ = 20, N_co = 45, 300 reps — **pass on Xu's three claims**
+
+| estimator | mean | bias | SD | RMSE |
+|---|---|---|---|---|
+| GSC | 5.591 | **+0.057** | 0.636 | 0.638 |
+| DiD (two-way FE) | 5.765 | +0.231 | 0.492 | 0.543 |
+| IFE (constant effect) | 5.401 | −0.133 | 0.231 | 0.266 |
+| SC (Abadie) | 6.660 | **+1.127** | 0.811 | 1.388 |
+
+Target 5.534. GSC less biased than DiD (0.057 vs 0.231) ✓; less biased than IFE ✓; both less
+biased and more efficient than canonical SC (SD 0.636 vs 0.811) ✓ — all three of Xu's stated
+comparisons hold.
+
+**But my IFE comparison is not apples-to-apples and should not be read as IFE winning.**
+IFE imposes a constant effect, so its estimand is the *pooled* post-period average, whose
+truth is mean(δ̄) = 5.5 — which coincidentally sits within 0.03 of this draw's T₀+5 target of
+5.534. Its low RMSE is that coincidence, not performance. A fair test compares all four on
+the pooled post-period ATT, where IFE's constant-effect assumption is still wrong across
+units. Not yet run.
+
+### (iv) Bootstrap coverage — **FAIL**
+
+| T₀, N_co | coverage | nominal | mean bootstrap se | actual SD (part i) |
+|---|---|---|---|---|
+| 15, 80 | **100.0%** | 95% | 1.363 | ~0.50 |
+| 20, 45 | **100.0%** | 95% | 1.183 | ~0.53 |
+
+The parametric bootstrap **over-covers badly**: its SE is 2.2–2.7× the estimator's actual
+sampling SD. Diagnosis: treated-unit errors are drawn from leave-one-control-out *prediction*
+errors, which Xu intends to be larger than in-sample residuals — but re-estimating on the
+simulated panel then adds a second layer of prediction error on top of the injected one,
+correlated with it through the refitted pre-period loadings. The uncertainty is being
+double-counted.
+
+**Consequence for the project.** GSC's point estimates are validated; **its inference is
+not**, and must not be used on project data as it stands. Two routes, and the first is what
+Xu prescribes for our case anyway: he notes the parametric bootstrap is for **small N_tr**,
+and that "when N_tr is large in particular, a simple nonparametric bootstrap procedure can
+provide valid uncertainty estimates." Our N_tr is 500–1,083, so the **nonparametric block
+bootstrap over units, blocked at country** (per §8c/§8d's clustering lesson) is both the
+right tool and easier to get right. It needs validating in this same Monte Carlo at large
+N_tr before use. The parametric version still needs fixing for the Track 1 single-unit case.
