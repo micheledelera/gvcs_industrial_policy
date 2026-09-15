@@ -15,6 +15,15 @@ is the ESTIMAND rather than the method:
                           25 observed countries represent. Wider, and arguably the estimand
                           the research question actually asks about.
 Crossed with the blocking level, which SS10c/the clustering sweep showed is the binding choice.
+
+RESULT NOTE, recorded here so the CSV is not misread later. At SECTOR level the
+resample_treated=False cell is DEGENERATE and must be discarded: all 123 ISIC 4-digit sectors
+contain at least one treated unit, so there are no control-only blocks to resample and the
+function returns the original panel every draw (se exactly 0, CI collapsed on the point
+estimate). The country cut has 114 control-only blocks of 139 and is fine. The sector
+resample_treated=True cell is valid but mislabelled: with no control-only blocks it is a plain
+sector-level cluster bootstrap, and the sample-versus-population distinction does not exist
+there.
 """
 import numpy as np, pandas as pd, sys, time
 from scipy import stats
