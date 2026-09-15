@@ -30,7 +30,7 @@ apparatus — post/pre RMSPE ratio, exact p-value, placebo spaghetti — applies
 | Part A, design stage | **unchanged.** And the discipline survives: GSC picks r by CV on treated *pre-treatment* outcomes only, so design is still separable from estimation (Rubin 2007/2008, ADH) |
 | B1, solve W\* given V, and V by min pre-RMSPE | **dissolved.** GSC projects onto an estimated factor space instead of weighting covariates, so there is no V. This closes the single largest gap against the chapter *and* removes a specification-search margin |
 | B2, balance table | **modified.** Treated mean vs imputed-counterfactual mean vs donor-pool mean, on covariates and on pre-period outcomes, plus a comparison of estimated factor loadings |
-| B3, weights table | **real cost.** GSC has no explicit per-donor weights, and transparency is the feature the chapter prizes most. Mitigation: GSC's imputation is linear in the controls' outcomes through F̂ and Λ̂, so implied donor weights can be derived and tabulated. That derivation is ours, not standard — label it as such |
+| B3, weights table | **real cost, and larger than I first claimed.** I wrote that implied donor weights "can be derived" because the imputation is linear in control outcomes through F̂ and Λ̂. **That was too optimistic** (corrected in §10e): controls enter only via F̂ and ξ̂, and F̂ comes from an eigendecomposition, so the map is not linear in individual donor outcomes. GSC weights *time periods and factor directions*, not donors. The honest analogue is to report the loading distribution and which controls sit closest to the treated group in loading space |
 | B4/B5, paths and gap figures | **unchanged.** Xu's own Figure 2 is exactly these two panels |
 | C1–C4, ADH exact p-value | **replaced as primary, retained as secondary.** Primary is the validated parametric bootstrap with country blocks (§9b). Secondary is an ADH-style randomisation test *on the ATT*, permuting treatment by country block. This combination **fixes** the §7/C4 defect: there is now one aggregate statistic to rank, so no aggregation of 500 exact p-values is needed |
 | C8, post/pre RMSPE ratio and the 2× filter | **demoted from inference to robustness.** Both are single-unit devices; per-unit pre-fit is still computable, so the filter becomes a sample restriction. §5c's finding that the ratio statistic runs backwards here stands, so the test statistic is the ATT |
@@ -347,17 +347,22 @@ freezing A0–A4 in this file before running Part B.
 
 ## Part B — Estimation, canonical Abadie
 
-- `[ ]` **B1. Solve W\* given V, and V by minimising pre-period RMSPE.** *We have never done
+- `[—]` **B1. DISSOLVED under the merge** (see A3): GSC projects onto an estimated factor
+  space instead of weighting covariates, so there is no V to optimise. Original text:
+  *We have never done
   the nested V optimisation.* Everything in RESULTS.md stacks lagged outcomes and covariates
   with implicit equal weighting — i.e. a fixed diagonal V. ADH's `synth` optimises V. This is
   the largest single gap against the chapter.
-- `[ ]` **B2. Balance table** (chapter Table 11.1): treated vs synthetic vs donor-pool mean,
+- `[x]` **B2. Balance table — §10e.** Reconceived per A3: treated vs imputed counterfactual
+  vs donor-pool mean on pre-period outcomes and on factor loadings, since time-invariant
+  covariates are absorbed by the loadings. Original text: (chapter Table 11.1): treated vs synthetic vs donor-pool mean,
   for every matching variable. Not produced anywhere in this project.
 - `[~]` **B3. Weights table**: who is in the synthetic unit and with what weight. Done ad hoc
   in §3af and §8d; never as a clean table for a chosen design.
-- `[~]` **B4. Paths figure** (Figure 11.3): treated vs synthetic. Done as §5g/`sc10_paths.png`
+- `[x]` **B4. Paths figure — §10e** for the MERGED design. (§5g/`sc10_paths.png` was the old
+  §5b design, which is why this sat at `[~]`.) Original text: (Figure 11.3): treated vs synthetic. Done as §5g/`sc10_paths.png`
   for Track 2.
-- `[~]` **B5. Gap figure** (Figure 11.4): treated minus synthetic. Done as §5g row 2, but as
+- `[x]` **B5. Gap figure — §10e** for the MERGED design. Original text: (Figure 11.4): treated minus synthetic. Done as §5g row 2, but as
   percentile envelopes rather than a single gap line.
 
 ## Part B2 — Estimation, generalized SC (Xu 2017)
@@ -376,12 +381,12 @@ No R in this container, so `gsynth` is unavailable and GSC is implemented direct
   37–50% of the time, erring **downward**, which biases GSC toward the two-way-FE answer.
   Remaining coverage cells still running. Original text:** — coverage and the CV's
   r distribution, with N_co scaled toward our 2,497. The binding constraint above.
-- `[ ]` **B2.1. Step 1** — fit the IFE model on controls only: minimise over β, F, Λ_co
+- `[x]` **B2.1. Step 1** — reported in §10e. Step 1** — fit the IFE model on controls only: minimise over β, F, Λ_co
   subject to F'F/T = I_r and Λ'Λ diagonal.
-- `[ ]` **B2.2. Step 2** — estimate each treated unit's factor loadings by projecting its
+- `[x]` **B2.2. Step 2** — reported in §10e. Step 2** — estimate each treated unit's factor loadings by projecting its
   pre-treatment outcomes onto the estimated factor space.
-- `[ ]` **B2.3. Step 3** — impute Y_it(0) and form ATT_t.
-- `[ ]` **B2.4. Do NOT choose r by CV alone** — per §9c it selects the true r only 37–50% of
+- `[x]` **B2.3. Step 3** — reported in §10e. Step 3** — impute Y_it(0) and form ATT_t.
+- `[x]` **B2.4. Done — r swept in §10 (CV curve) and §10c (grid). Do NOT choose r by CV alone** — per §9c it selects the true r only 37–50% of
   the time at T₀ = 11 and errs downward. Report the ATT across a **sweep of r ∈ {0,1,2,3,4}**
   plus the CV curve, and treat a low CV-selected r as weak evidence of no factor structure
   rather than good evidence of it.
@@ -390,9 +395,9 @@ No R in this container, so `gsynth` is unavailable and GSC is implemented direct
   se/sd ≈ 1.0. Not the nonparametric one: resampling controls only runs 12% light (it omits
   the treated units' own ε) and resampling treated units targets the population rather than
   the sample ATT, which is not Xu's estimand or ours.
-- `[ ]` **B2.6. Diagnostics Xu requires** — plot raw treated and control paths with imputed
+- `[x]` **B2.6. Done — loading overlap and counterfactual-range checks in §10; paths in §10e. Diagnostics Xu requires** — plot raw treated and control paths with imputed
   counterfactuals; plot treated vs control factor loadings and check overlap.
-- `[ ]` **B2.7. Heterogeneity** — GSC returns per-unit effects in one run, so report ATT by
+- `[x]` **B2.7. Done — §10d. Heterogeneity** — GSC returns per-unit effects in one run, so report ATT by
   country and by sector without re-estimating.
 
 ## Part C — Inference: ADH randomisation, exact p-values

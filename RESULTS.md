@@ -4726,3 +4726,77 @@ negative across Eastern Europe, Latin America and Russia. No clean story. And **
 Mexico, Thailand, Malaysia and Bangladesh do not appear at all** — none has ≥ 15 treated
 units. That is A1's scope condition biting exactly where it was flagged: the design is
 identified off countries that are not the ones that visibly gained from decoupling.
+
+## §10e. The B2 steps I skipped — B2.1–B2.3 reported, balance table, paths and gap — `data/b2_report.py`, `data/plot_b2.py`, `data/b2_paths.png`
+
+Going back for the reporting steps. B2.1–B2.3 had *executed* (they run inside `gsc()`, so A4
+and §10c both invoked them) but were never displayed; and the balance table, paths figure and
+gap figure had never been produced for the merged design at all — §5g's figures belong to the
+superseded §5b design. Primary spec throughout: lnS, threshold 6+, r = 2.
+
+### B2.1 — step 1, IFE on controls only
+
+2,223 controls × 18 years. Control-side fit **RMSE 0.948 against an outcome sd of 2.971,
+R² = 0.898**. Control loadings: factor 1 sd 0.716, factor 2 sd 0.482.
+
+**β on Dec_k × Post = −0.000299** — a sector 10pp more Chinese-exposed gives every exporter
+in it −0.003 log points of share after 2018. Effectively **zero**. Worth flagging: the
+decoupling-exposure covariate A2 added does essentially nothing, so sector exposure does not
+predict share gains among controls. Slightly awkward for the decoupling story, and it means
+A2's covariate is doing no work.
+
+### B2.2 — step 2, treated loadings
+
+Treated loadings: factor 1 mean +0.033 sd 1.030, factor 2 mean +0.011 sd 0.535 — centred on
+the controls but more dispersed on factor 1. Per-unit pre-period projection RMSE: **median
+0.292**, p90 0.865, max 2.678, against an outcome sd of 3.200. So the median treated unit's
+pre-period is fitted to 9% of the outcome's dispersion, but the tail is fitted much worse.
+
+### B2 — balance table (A3's version)
+
+| | treated | synthetic | donor pool | treated − synthetic |
+|---|---|---|---|---|
+| lnS 2007–09 | −7.369 | −7.357 | −10.417 | **−0.012** |
+| lnS 2010–12 | −7.266 | −7.273 | −10.364 | **+0.007** |
+| lnS 2013–14 | −7.177 | −7.197 | −10.316 | **+0.020** |
+| lnS 2015–17 | −7.102 | −7.093 | −10.229 | **−0.009** |
+| Dec_k (China share, %) | 23.9 | — | 26.7 | — |
+| loading on factor 1 | 0.033 | — | 0.000 | — |
+| loading on factor 2 | 0.011 | — | −0.000 | — |
+
+Balance is essentially exact: treated minus synthetic is within 0.02 log points in every
+pre-period window, against a raw donor pool sitting **3.1 log points** lower. This is the
+ADH Table 11.1 structure (real / synthetic / donor mean) and it is what the counterfactual is
+doing work for.
+
+### B2.3 — step 3, and a reading of the gap that matters
+
+Post-2018: treated observed mean −6.922, imputed counterfactual −7.152, ATT **+0.229**.
+
+Decomposing 2017 → 2024:
+
+| | 2017 | 2024 | change |
+|---|---|---|---|
+| treated | −7.048 | −6.927 | **+0.121** |
+| counterfactual | −7.061 | −7.233 | **−0.173** |
+
+So of the +0.294 change in the gap, the treated units' own rise contributes **41%** and the
+counterfactual's predicted *decline* contributes **59%**. The estimate is therefore mostly
+"targeted sectors did not fall as the model predicted they would", not "targeted sectors
+rose". That is a legitimate synthetic-control reading but it puts the weight on the
+counterfactual's downward extrapolation, which is exactly where §9c said the factor structure
+is least reliable at T₀ = 11.
+
+**And the 95% band includes zero in every single post-treatment year** (2018 through 2024),
+consistent with the pooled t of 0.91.
+
+### B3 — a correction: GSC does not yield implied donor weights
+
+In the merge table I wrote that implied per-donor weights "can be derived" because the
+imputation is linear in control outcomes through F̂ and Λ̂. **That was too optimistic.** The
+treated counterfactual is â_tr + ξ̂ + F̂λ̂_tr, and controls enter *only* through F̂ and ξ̂; F̂
+comes from an eigendecomposition of the control residual matrix, so the map from an individual
+donor's outcomes to the treated counterfactual is not linear and no clean per-donor weight
+exists. **GSC weights time periods and factor directions, not donors.** The transparency the
+chapter prizes is genuinely lost, not merely relocated — and the honest substitute is the
+loading distribution plus a list of controls nearest the treated group in loading space.
