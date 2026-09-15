@@ -135,3 +135,4 @@ __pycache__/
 !data/c1c2_randomisation.csv
 !data/c1c2_placebos.npz
 !data/c_npboot.csv
+!data/d1_placebo_time.csv
