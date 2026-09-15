@@ -98,9 +98,59 @@ The chapter's argument for why this stage is separable: SC needs no post-treatme
 to build the counterfactual, so design can be fixed before estimation. We honour that by
 freezing A0–A4 in this file before running Part B.
 
-- `[ ]` **A0. Question, treatment, date, outcome.** What is the intervention, when does it
-  bite, what is the outcome. Decide whether the outcome is US imports in levels, logs, or a
-  share; ADH used per-capita sales (a rate, not a level).
+- `[~]` **A0. Question, treatment, date, outcome — PROPOSED, awaiting sign-off.**
+  Evidence in `data/a0_outcomes.py`.
+
+  **Question.** Does industrial policy help developing countries capture the reallocation of
+  US import demand away from China after 2018?
+
+  **Event and date: 2018.** US Section 301 tariffs from July 2018; §3ae dated the divergence
+  in our own data to 2018–19, before COVID. The event is *US policy toward China*, hence
+  exogenous to any individual developing country-sector — which is the whole reason this
+  design is possible.
+
+  **Treatment — a precision point that shapes A2/A3.** This is *not* "policy adopted in
+  2018". Policy is pre-determined, measured before the event. What switches on in 2018 is the
+  **interaction**: decoupling × policy status. So D_it = 1 for policy-using country-sectors
+  after 2018, and the counterfactual being imputed is "what would a policy-using
+  country-sector have done, facing the same 2018 shock, had it behaved like a non-using one".
+  A synthetic unit built from never-targeted donors is exactly that — **provided the donors
+  were exposed to the same decoupling shock.** Otherwise the counterfactual becomes "no
+  policy AND no decoupling". §5b handled this by matching donors on China's share of US
+  imports; GSC uses all controls, so exposure must enter either as a covariate in X or be
+  left to the factors. Carried forward to A2/A3.
+
+  **Outcome — the fork.** Measured on the balanced sample of 5,168 developing ex-China
+  country-sectors (1,083 targeted 6+ of 2009–17, 2,499 never):
+
+  | outcome | sd | skew | treated mean | donor mean | treated outside donor range |
+  |---|---|---|---|---|---|
+  | `lnX` ln US imports | 2.998 | +0.19 | 8.909 | 6.309 | 0.7% |
+  | `lnS` ln share of US imports in sector k | 3.108 | **−0.05** | −7.102 | −9.911 | 0.0% |
+  | `lnD` ln US share of the country-sector's exports | 1.827 | −0.69 | −3.427 | −2.910 | 0.0% |
+
+  **Proposed: `lnS` primary, `lnD` secondary.**
+  - `lnS` is the question as posed — decoupling reallocates a roughly fixed pot of US
+    sectoral demand, so capturing it *is* a share gain. It is scale-free (§4c found that
+    decisive for hull feasibility), the best-behaved of the three (skew −0.05), and since
+    ln S = ln X − ln(sector-year total) it **absorbs sector-year shocks by construction** —
+    the outcome definition does the work of α_kt, leaving the factor structure only the
+    country dimension to handle.
+  - `lnD` is the destination margin, where the gravity +5.2% lives, and the one outcome the
+    country-year confound cannot touch because it nets out country-sector scale. It is
+    arguably *better identified* but answers a narrower question — redirection toward the US
+    rather than capture of US demand. Hence secondary, and the natural bridge to §3.
+  - `lnX` is rejected: neither scale-free nor free of sector-year shocks, so it makes GSC do
+    the most work with the least help. It is what §5b used.
+
+  **Weighting, per §6.** Log share is unit-weighted — the "among the sectors" estimand. The
+  dollar-weighted version is a *different estimand*, not a robustness check, and §6 found the
+  two differ by an order of magnitude. Both to be reported, labelled as distinct questions.
+
+  **Note on the treated/donor gap.** On `lnX` and `lnS` treated units start well above donors
+  (2.6–2.8 log points: policy goes to big sectors). On `lnD` they start *below* (−3.43 vs
+  −2.91) — policy-using sectors are *less* US-oriented pre-2018. The sign of the baseline gap
+  flips with the outcome, which is worth remembering when reading any level comparison.
 - `[ ]` **A1. Treated unit(s).** Track 1: which unit, and why it is a defensible single case.
 - `[ ]` **A2. Donor pool, with exclusions.** *Track 1 only — GSC uses every control unit.* ADH *dropped* states with their own tobacco
   programmes. Our analogue is untested: should we drop countries with their own large
