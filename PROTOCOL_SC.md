@@ -268,10 +268,55 @@ freezing A0–A4 in this file before running Part B.
 
   **ADH's own exclusion analogue** — dropping states with their own tobacco programmes — is
   the 276 contaminated controls already removed in A1.
-- `[ ]` **A3. Matching variables.** Covariates X plus lagged outcomes. ADH use both, and
-  stress lagged outcomes "to soak up the heterogeneity". Ferman–Pinto–Possebom warn that the
-  choice of lags is a specification-search margin, so the set must be fixed here and swept
-  later, not chosen on results.
+- `[x]` **A3. Matching variables — DECIDED.**
+
+  **First: two of the chapter's choices dissolve here, and that is the point of the merge.**
+  - *Which pre-treatment lags to match on* — ADH's `synth` makes this a genuine choice
+    (`cigsale(1988) cigsale(1980) cigsale(1975)`). GSC's step 2 projects the treated unit's
+    outcome onto the factor space using **all T₀ pre-periods**, so there is no lag set to
+    choose. **Ferman–Pinto–Possebom's specification search over lags does not apply**, which
+    retires protocol step D3's lag sweep. This is the third such margin to close under the
+    merge, after V (B1) and the donor-pool size K (A2).
+  - *Time-invariant covariates* — central in ADH (Table 11.1 carries GDP per capita, retail
+    price, beer consumption) but **absorbed by λ_i** in GSC, since a unit-specific constant is
+    exactly what a factor loading is. They cannot enter as x_it with common β, and including
+    them is redundant rather than wrong.
+
+  So the only open choice is what goes in **X**, and it should be minimal. Xu notes the field
+  has moved that way: "Increasingly, researchers rely solely on lagged outcomes as covariates
+  (Ben-Michael, Feller, and Rothstein 2021)."
+
+  **Primary: X = {Dec_k × Post}.** The only covariate that is simultaneously (a) time-varying,
+  so not absorbed by λ_i, (b) pre-determined in its cross-sectional part (Dec measured
+  2015–17), (c) not affected by the treatment, and (d) substantively needed — within a sector
+  shares sum to one, so the Chinese share that is available to be reallocated sets the size of
+  the opportunity every exporter in that sector faces. Decided in A2.
+
+  **Matching variables in full, then: the eleven pre-2018 values of `lnS`, used in their
+  entirety, plus Dec_k × Post.** Nothing else.
+
+  **Robustness: baseline capability with time-varying coefficients.** Xu's Remark 3 permits
+  observed time-invariant covariates as z_i′θ_t, which is expressible in our implementation as
+  z_i interacted with year dummies. Adding baseline MVA/GDP, log MVA per capita, ECI and
+  sector export share this way is legitimate — they are pre-determined — and it tests
+  something we have asked since §3l: whether the latent factors are in fact capturing
+  industrial capability. If the estimate does not move, they were. Note this is a *restricted*
+  version of λ_i′f_t with observed rather than latent loadings, so partial redundancy is
+  expected.
+
+  **Explicitly excluded as bad controls.** UNIDO turns out to have **complete annual coverage
+  2007–2024 for 207 countries** on MVA/GDP and MVA per capita, so time-varying capability
+  measures are available. They are still excluded from X, because post-2018 MVA/GDP is
+  plausibly *affected by the treatment* — if industrial policy raises manufacturing value
+  added, conditioning on it absorbs the effect — and Xu's Assumption 2 requires
+  ε_it ⊥ x_js for all j, s. Same reasoning excludes total exports, non-US exports and sector
+  output. Availability is not a reason to include.
+
+  **Consequence for B2 (the balance table).** You cannot show balance on covariates that are
+  not in the model. Under the merge the balance table becomes: treated vs imputed
+  counterfactual vs donor-pool mean on the **pre-period outcomes**, plus a comparison of
+  **estimated factor loadings** (Xu's Fig. 3b), which is where the time-invariant
+  characteristics now live.
 - `[~]` **A4. Common support.** Track 1: convex hull. Track 2: **factor-loading overlap**
   (Xu Fig. 3b) — the GSC analogue, and the check that distinguishes interpolation from
   extrapolation. Neither has been done for a chosen design. §4a–§4c did this at
