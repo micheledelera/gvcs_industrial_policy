@@ -112,3 +112,4 @@ data/swapfile
 !data/sc24_permctry_20.npy
 !data/sc23_perm_stratified.npy
 !data/sc23_perm_unstratified.npy
+__pycache__/
