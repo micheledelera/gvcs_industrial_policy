@@ -121,3 +121,5 @@ __pycache__/
 !data/b2_hetero.csv
 !data/b2_paths.png
 !data/b2_pvalues.csv
+!data/b2_paths_lnX.png
+!data/b2_report_paths_lnX.npy
