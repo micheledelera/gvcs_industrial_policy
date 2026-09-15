@@ -218,10 +218,56 @@ freezing A0–A4 in this file before running Part B.
   (Bangladesh excepted). That is a softer version of §5k/§7's point — persistent GTA policy
   is not absent from the winners, but it is not where most of their value sits either. To be
   stated as a scope condition, not discovered later.
-- `[ ]` **A2. Donor pool, with exclusions.** *Track 1 only — GSC uses every control unit.* ADH *dropped* states with their own tobacco
-  programmes. Our analogue is untested: should we drop countries with their own large
-  post-2018 shocks, their own China exposure, or their own policy regimes? We have never
-  applied any exclusion rule of this kind.
+- `[x]` **A2. Donor pool — DECIDED.** Evidence in `data/a2_donors.py`. Under the merge this
+  is not "which donors per treated unit" but "which units are legitimate controls at all",
+  plus the requirement carried from A0 that donors face the same decoupling shock.
+
+  **The A0 trap does not bind.** China's share of US imports in the unit's sector, 2015-17:
+
+  | | n | mean | p10 | p50 | p90 |
+  |---|---|---|---|---|---|
+  | treated (6+ of 9) | 1,083 | 23.9% | 2.7% | 17.5% | 56.0% |
+  | clean controls | 2,223 | **26.7%** | 1.8% | 21.6% | 58.4% |
+
+  **73% of clean controls sit inside the treated units' p10-p90 exposure range**, and in
+  high-exposure sectors (China >= 25%) the shares are 37% of treated against 43% of controls.
+  Controls are if anything *slightly more* exposed than treated units, which biases against
+  finding a policy effect since controls had marginally more opportunity. So the
+  counterfactual is not "no policy AND no decoupling", and **no exposure band is needed**.
+
+  **Primary pool: all 2,223 strictly clean developing controls, pooled across sectors**, with
+  **Dec_k x Post entered as a covariate in X** so the size of the reallocation opportunity is
+  held constant with a common beta. No per-treated-unit pool, therefore **no K parameter at
+  all** — a direct gain over §5b and §8d, where tau swung from -0.05 to +0.24 across K.
+
+  **Explicitly rejected: a band restriction on Chinese share.** It would reintroduce exactly
+  the tuning parameter §8d showed destabilises the estimate, and the overlap above makes it
+  unnecessary.
+
+  **Secondary design — per-sector GSC, exposure fixed by construction.** Because lnS is a
+  share *within* a sector, donors in the same sector share the treated unit's exposure
+  exactly. Feasibility against Xu's N_co >= 40 caution:
+
+  | donors per sector | sectors | treated units covered | treated US imports covered |
+  |---|---|---|---|
+  | >= 40 | 12 of 125 | 140 (13%) | **$49.2bn (35%)** |
+  | >= 30 | 22 | 260 (24%) | $62.5bn (44%) |
+  | >= 20 | 42 | 463 (43%) | $94.2bn (67%) |
+  | >= 10 | 84 | 841 (78%) | $134.0bn (95%) |
+
+  Run per-sector on the **12 sectors with >= 40 clean donors** — a minority of units but a
+  third of treated value, and it includes the substantively interesting ones: 1410 apparel
+  (12 treated, 66 donors, $13.8bn), 2630 communication equipment (14 treated, 44 donors,
+  China 58.8%, $6.4bn), 2599 fabricated metal, 1392 textiles (China 58.1%). This is the
+  design-purist answer to A0 and is reported alongside the pooled estimate.
+
+  **Robustness only: advanced economies.** 3,776 advanced-economy country-sectors have a
+  balanced positive US series and would nearly double the donor pool. Kept out of the primary
+  pool because they run their own industrial policy (CHIPS Act, EU programmes) and so are not
+  "never exposed" in Xu's sense.
+
+  **ADH's own exclusion analogue** — dropping states with their own tobacco programmes — is
+  the 276 contaminated controls already removed in A1.
 - `[ ]` **A3. Matching variables.** Covariates X plus lagged outcomes. ADH use both, and
   stress lagged outcomes "to soak up the heterogeneity". Ferman–Pinto–Possebom warn that the
   choice of lags is a specification-search margin, so the set must be fixed here and swept
