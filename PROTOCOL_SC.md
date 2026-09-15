@@ -140,15 +140,22 @@ No R in this container, so `gsynth` is unavailable and GSC is implemented direct
   floor; CV picks r = 2 in 62–86%; his three estimator comparisons hold; and after fixing a
   contaminated donor pool in the leave-one-control-out step, bootstrap coverage is 92.5% and
   96.2% against nominal 95% with se/sd of 0.97 and 1.02. The r = 0 branch of the CV is fixed.
-- `[ ]` **B2.0b. Validate at T₀ = 11, our actual pre-period length** — coverage and the CV's
+- `[~]` **B2.0b. Validate at T₀ = 11, our actual pre-period length** — §9c. Bias passes
+  (≤ 0.016) and coverage passes at the first cell (93.3%, se/sd 0.93), but two warnings
+  land: the SE contains a common component of ≈ 0.47 that does NOT average out over treated
+  units, so it will plateau rather than fall like 1/√N_tr; and the CV picks the true r only
+  37–50% of the time, erring **downward**, which biases GSC toward the two-way-FE answer.
+  Remaining coverage cells still running. Original text:** — coverage and the CV's
   r distribution, with N_co scaled toward our 2,497. The binding constraint above.
 - `[ ]` **B2.1. Step 1** — fit the IFE model on controls only: minimise over β, F, Λ_co
   subject to F'F/T = I_r and Λ'Λ diagonal.
 - `[ ]` **B2.2. Step 2** — estimate each treated unit's factor loadings by projecting its
   pre-treatment outcomes onto the estimated factor space.
 - `[ ]` **B2.3. Step 3** — impute Y_it(0) and form ATT_t.
-- `[ ]` **B2.4. Choose r by leave-one-out cross-validation** on treated pre-periods
-  (Xu Algorithm 1). Report the CV curve, not just the winner.
+- `[ ]` **B2.4. Do NOT choose r by CV alone** — per §9c it selects the true r only 37–50% of
+  the time at T₀ = 11 and errs downward. Report the ATT across a **sweep of r ∈ {0,1,2,3,4}**
+  plus the CV curve, and treat a low CV-selected r as weak evidence of no factor structure
+  rather than good evidence of it.
 - `[x]` **B2.5. Inference — decided in §9b.** Use the **parametric bootstrap (Algorithm 2)
   with country blocks**, `bootstrap(..., blocks=country_id, max_loo=...)`, validated at
   se/sd ≈ 1.0. Not the nonparametric one: resampling controls only runs 12% light (it omits

@@ -4360,3 +4360,65 @@ every cell here, so the CV may well select a small r, possibly r = 0. That would
 failure — it would be the cross-validation telling us the latent factor structure adds
 nothing beyond two-way fixed effects for this panel, which is itself an answer to the
 question §5–§8 kept running into.
+
+## §9c. GSC at T₀ = 11, this project's actual pre-period — `data/gsc_validate_t11.py`
+
+Protocol step B2.0b. T₀ = 11 is a **data constraint**: the Zenodo source panel is 2007–2024
+(`code/gvc_ip_gravity.py` header), so lengthening the pre-period means rebuilding from raw
+BACI, which is not in this repository. Xu cautions against T₀ < 10 and §9b found the CV
+degrades as T₀ falls, so this validates at T₀ = 11 exactly, with N_co pushed toward our 2,497
+and N_tr toward our 500–1,083. Xu's DGP throughout.
+
+### (1) Bias passes — but the standard error stops shrinking in N_tr
+
+| N_co | N_tr | bias | SD | RMSE | floor 1/√N_tr |
+|---|---|---|---|---|---|
+| 80 | 5 | −0.003 | 0.538 | 0.538 | 0.447 |
+| 400 | 5 | −0.009 | 0.477 | 0.477 | 0.447 |
+| 1000 | 5 | +0.003 | 0.637 | 0.637 | 0.447 |
+| **1000** | **50** | −0.016 | **0.501** | 0.500 | **0.141** |
+
+Bias ≤ 0.016 throughout. But from N_tr = 5 to N_tr = 50 the irreducible floor falls by √10
+while the actual SD barely moves. Decomposing as SD² ≈ c² + 1/N_tr gives **c = 0.454 at
+N_tr = 5 and c = 0.481 at N_tr = 50** — the same quantity. So at T₀ = 11 there is a
+**common estimation error of ≈ 0.47 that does not average out across treated units**,
+because F̂ and β̂ are shared by all of them. This is Xu's incidental-parameters warning made
+quantitative.
+
+**Consequence.** With N_tr = 500–1,083 the SE will *plateau* at that common component, not
+fall like 1/√N_tr. Do not expect tight intervals merely because there are a thousand treated
+country-sectors.
+
+### (2) The cross-validation degrades badly at T₀ = 11
+
+| N_co | r=0 | r=1 | **r=2 (truth)** | r=3 | r=4 | correct |
+|---|---|---|---|---|---|---|
+| 80 | 36% | 4% | **50%** | 8% | 2% | 50% |
+| 400 | 32% | 26% | **37%** | 4% | 2% | 37% |
+| 1000 | 20% | 29% | **44%** | 6% | 1% | 44% |
+| 2000 | — | — | — | — | — | *pending* |
+
+Against 62–86% at T₀ ≥ 15 (§9b). It does **not** improve with N_co — 50%, 37%, 44% — so T₀
+is what binds, exactly as Xu states ("both large N_co and large T₀ are necessary"). And the
+errors are systematically **downward**: r = 0 or r = 1 is selected 40–58% of the time.
+
+**Consequence, and it is directional.** On our panel the CV will probably select r = 0 or 1
+even if the true factor structure is richer. Under-selecting r means GSC absorbs *less*
+unobserved heterogeneity than it should, which biases it **toward the two-way fixed effects
+answer**. So (a) the hope that GSC's latent factors would absorb the country-year story is
+weakened at our pre-period length, and (b) a low CV-selected r on our data would be **weak
+evidence of no factor structure**, not good evidence of it.
+
+**Therefore: do not use the CV alone.** Report the ATT across a sweep of r ∈ {0,1,2,3,4} and
+show how it moves — the same discipline as §8d's K sweep and §3aa's MVA_W sweep — with Xu's
+factor-loading overlap plot alongside. The protocol's B2.4 is amended accordingly.
+
+### (3) Bootstrap coverage at T₀ = 11
+
+| N_co | N_tr | coverage | boot se | actual sd | se/sd |
+|---|---|---|---|---|---|
+| 80 | 5 | **93.3%** | 0.543 | 0.582 | 0.93 |
+
+Within Monte Carlo error of nominal 95% (±1.8pp on 150 draws). Remaining cells
+(N_co = 400 and 1000 at N_tr = 5, and N_co = 1000 at N_tr = 50) still running; this section
+will be completed when they land.
