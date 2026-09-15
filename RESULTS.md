@@ -4477,3 +4477,83 @@ is therefore visible in the estimated factor structure, not merely hoped for.** 
 does succeed is B2, and §9c's warning stands: at T₀ = 11 the common estimation error does not
 average out over treated units, so the standard error will plateau rather than fall like
 1/√N_tr.
+
+## §10b. Auditing the persistence treatment — `data/a1_persistence_audit.py`
+
+Prompted by the question of whether persistence is actually well founded. Two worries that
+A1 never checked, plus an honest account of how the definition was arrived at.
+
+**Definition.** Treated = a country-sector with at least one GTA-recorded intervention in
+**≥ 6 of the 9 years 2009–2017**. Controls = zero interventions in **every** year 2009–2024.
+Note it counts *years with any intervention*, not interventions — a unit with one measure in
+each of six years scores the same as one with twenty in each.
+
+### Worry 1 — is it duration recording rather than political priority? **Mostly cleared**
+
+§7 itself warned that AD/CVD duties carry statutory five-year lives, so "6+ of 9 years" might
+record one long instrument. It does not:
+
+| | value |
+|---|---|
+| interventions per **active** year, treated units | mean 3.49, median 2.75, p25 2.12 |
+| treated units averaging ≤ 1.5 per active year | 7% |
+| treated units averaging ≤ 1.0 per active year | **0%** |
+| mean longest unbroken run / mean active years | 6.84 / 7.76 = **0.86** |
+| treated units whose active years are a single unbroken run | 62% |
+
+Nearly three and a half interventions per active year rules out one-measure-recorded-annually.
+Contiguity is high, but combined with the intervention count that reads as *sustained*
+attention, which is what "persistent" should mean.
+
+**Sector composition also clears.** Treated units spread over **123 of 125 sectors**, the
+largest holding just 21 of 1,083 (1.9%). Remedy-prone sectors (basic metals, basic chemicals,
+cement, fabricated metal) are 10% of treated against 6% of controls — mildly
+over-represented, but nothing like §5k, where ISIC 2410 alone supplied 46.6% of the
+identifying variance. Persistence is a genuinely different animal from `share_frac_policies`.
+
+**Overlap with the voided measure is limited:** 299 of 1,083 persistence-treated units (28%)
+are also top-quartile on `share_frac_policies`; corr(years targeted, share_frac) = **+0.157**.
+So 72% of the treated group is untouched by §5k's defect — but a robustness excluding the
+overlapping 299 is warranted.
+
+### Worry 2 — is persistence just size? **Real, and must be handled**
+
+corr(years targeted, log US imports) = **+0.331**, and the gradient is monotone:
+
+| size quintile of US imports | mean years targeted | share treated |
+|---|---|---|
+| smallest | 0.97 | 7% |
+| 2nd | 1.62 | 12% |
+| 3rd | 2.29 | 20% |
+| 4th | 3.23 | 30% |
+| largest | 3.84 | **36%** |
+
+Governments persistently target big sectors. Levels are absorbed by the unit effect and by
+using a share outcome, so the live risk is that size correlates with *trends* — which A1's
+pre-trend gradient suggests it does. Factor 1 (the secular trend factor, §10) is the intended
+defence, but "big sectors did better after 2018" is a rival explanation that the design does
+not rule out by construction. **Required: size-stratified estimation (as §6b) and/or baseline
+log size entered as z_i′θ_t via Xu's Remark 3.**
+
+### How we actually landed on persistence — the honest provenance
+
+1. §7 audited seven treatment definitions; all were transformations of one variable.
+2. §7 proposed persistence **partly because it looked bimodal** on the full 27.9k panel
+   (72.8% zero, 12% at 8–9 years, thin middle) — a "natural" binary needing no arbitrary cut.
+3. §8 killed the promotional/subsidy half of that proposal outright.
+4. §8b then found the bimodality is **much weaker on the actual estimation sample**: 48.3%
+   zero, then 10.5 / 6.5 / 5.6 / 4.3 / 3.7 / 3.6 / 4.0 / 7.1 / 6.3 — a fairly smooth decline
+   with only a modest bump at 8–9.
+5. **So the original justification largely evaporated**, and what carried persistence forward
+   was the remaining case: no country-portfolio denominator, the best-balanced treated group
+   in the exercise (25 countries, largest 11%, Kish effective n 88 against §5k's 4), and a
+   genuine binary, which both canonical SC and GSC require.
+6. A1 then set the threshold at 6+ **largely because §8b had used it** — path dependence, not
+   because 6 is special. "Two-thirds of years" is a rationalisation after the fact.
+
+**Conclusion, stated plainly.** The treatment is defensible on balance, denominator and
+binary grounds, and the duration and sector-composition worries do not survive scrutiny. But
+the threshold sits inside a **smooth** distribution, not at a natural break, and A1 showed
+the pre-trend gap rises monotonically with it. **The threshold sweep is therefore not a
+robustness check but part of the primary result**, and the estimate must be reported across
+5+/6+/7+/8+/9+ rather than at 6+ with the others relegated to an appendix.
